@@ -1,0 +1,5 @@
+export { default as PatientBasicInfoCard } from './PatientBasicInfoCard/patientBasicInfoCard'
+export { default as PatientGeneralDataCard } from './PatientGeneralDataCard/patientGeneralDataCard'
+export { default as PatientLocationCard } from './PatientLocationCard/patientLocationCard'
+export { default as PatientAccountHolderCard } from './PatientAccountHolderCard/patientAccountHolderCard'
+export { default as PatientConsultationsTable } from './PatientConsultationsTable/patientConsultationsTable'
