@@ -27,16 +27,11 @@ export default function QuestionariosPage() {
         searchColumn="name"
         searchInputPlaceholder="Pesquisar questionário"
         mainAction={
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="border-primary-600 bg-primary-50 text-primary-600 hover:border-primary-700 hover:bg-primary-100 hover:text-primary-700"
-          >
+          <Button asChild variant="secondary-color" size="md">
             <a
               href="/questionnaire/Gabaritos questionários de saúde.pdf"
               download="Gabaritos questionários de saúde.pdf"
-              className="flex h-12 w-auto items-center gap-2 text-sm text-primary-600 hover:text-primary-700"
+              className="flex w-auto items-center gap-2 rounded-md border border-primary-500 bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
             >
               <Download className="h-4 w-4" />
               Gabaritos
