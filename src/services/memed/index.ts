@@ -20,8 +20,7 @@ class MemedService {
 
   constructor() {
     // Remove /v1 do final da URL se presente, pois será adicionado nos endpoints específicos
-    let baseUrl =
-      process.env.MEMED_API_URL || 'https://integrations.api.memed.com.br'
+    let baseUrl = process.env.MEMED_API_URL || 'https://api.memed.com.br/v1'
     baseUrl = baseUrl.replace(/\/v1\/?$/, '') // Remove /v1 do final
 
     this.config = {

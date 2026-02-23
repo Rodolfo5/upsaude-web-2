@@ -14,7 +14,7 @@ import { useDeleteUser } from '@/hooks/queries/useDeleteUser'
 import { errorToast, successToast } from '@/hooks/useAppToast'
 import { timestampToDate } from '@/lib/utils'
 import { approveUser, rejectUser } from '@/services/firestore/user'
-import { DoctorEntity, UserRole, UserStatus } from '@/types/entities/user'
+import { DoctorEntity, UserStatus } from '@/types/entities/user'
 
 import { DoctorDetailsModal } from './doctorDetailsModal'
 
@@ -175,25 +175,25 @@ export const doctorColumns: ColumnDef<DoctorEntity>[] = [
     accessorKey: 'email',
     header: 'E-mail',
   },
-  {
-    accessorKey: 'role',
-    header: 'Função',
-    cell: ({ row }) => {
-      const role = row.original.role
-      const variant =
-        role === UserRole.ADMIN
-          ? 'bg-purple-100 text-purple-800'
-          : 'bg-gray-100 text-gray-800'
+  // {
+  //   accessorKey: 'role',
+  //   header: 'Função',
+  //   cell: ({ row }) => {
+  //     const role = row.original.role
+  //     const variant =
+  //       role === UserRole.ADMIN
+  //         ? 'bg-purple-100 text-purple-800'
+  //         : 'bg-gray-100 text-gray-800'
 
-      return (
-        <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${variant}`}
-        >
-          {role}
-        </span>
-      )
-    },
-  },
+  //     return (
+  //       <span
+  //         className={`rounded-full px-2 py-1 text-xs font-medium ${variant}`}
+  //       >
+  //         {role}
+  //       </span>
+  //     )
+  //   },
+  // },
   {
     accessorKey: 'status',
     header: 'Status',

@@ -4,6 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import { useQueryClient } from '@tanstack/react-query'
 import { Column, ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown, Ban, ClipboardPlus, Eye, UserCheck } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { memo, useCallback, useState } from 'react'
 
 import { ConfirmationModal } from '@/components/organisms/Modals/ConfirmationModal/confirmationModal'
@@ -13,10 +14,9 @@ import { useDeleteUser } from '@/hooks/queries/useDeleteUser'
 import { errorToast, successToast } from '@/hooks/useAppToast'
 import { timestampToDate } from '@/lib/utils'
 import { updateUserDoc } from '@/services/user'
-import { PatientEntity, UserRole, UserStatus } from '@/types/entities/user'
+import { PatientEntity, UserStatus } from '@/types/entities/user'
 
 import { PatientDetailsModal } from './patientDetailsModal'
-import { useRouter } from 'next/navigation'
 
 const SortableHeader = ({
   column,
@@ -201,25 +201,25 @@ export const patientColumns: ColumnDef<PatientEntity>[] = [
     accessorKey: 'email',
     header: 'E-mail',
   },
-  {
-    accessorKey: 'role',
-    header: 'Função',
-    cell: ({ row }) => {
-      const role = row.original.role
-      const variant =
-        role === UserRole.ADMIN
-          ? 'bg-purple-100 text-purple-800'
-          : 'bg-gray-100 text-gray-800'
+  // {
+  //   accessorKey: 'role',
+  //   header: 'Função',
+  //   cell: ({ row }) => {
+  //     const role = row.original.role
+  //     const variant =
+  //       role === UserRole.ADMIN
+  //         ? 'bg-purple-100 text-purple-800'
+  //         : 'bg-gray-100 text-gray-800'
 
-      return (
-        <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${variant}`}
-        >
-          {role}
-        </span>
-      )
-    },
-  },
+  //     return (
+  //       <span
+  //         className={`rounded-full px-2 py-1 text-xs font-medium ${variant}`}
+  //       >
+  //         {role}
+  //       </span>
+  //     )
+  //   },
+  // },
   {
     accessorKey: 'status',
     header: 'Status',

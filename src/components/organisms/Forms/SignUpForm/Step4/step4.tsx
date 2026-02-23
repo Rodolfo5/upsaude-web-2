@@ -72,31 +72,39 @@ export function Step4({
 
   const cepValue = watch('office.cep')
 
-  // Observar mudanças no CEP e fazer a busca
+  // Observar mudanças no CEP e fazer a busca (ViaCEP exige exatamente 8 dígitos)
   useEffect(() => {
-    const fetchAddressByCep = async (cep: string) => {
-      const cleanCep = cep.replace(/\D/g, '')
+    const fetchAddressByCep = async (cep: unknown) => {
+      const cepStr = typeof cep === 'string' ? cep : String(cep ?? '')
+      const cleanCep = cepStr.replace(/\D/g, '')
 
-      if (cleanCep.length === 8) {
-        try {
-          const response = await fetch(
-            `https://viacep.com.br/ws/${cleanCep}/json/`,
-          )
-          const data = await response.json()
+      // ViaCEP retorna 400 se o CEP não tiver exatamente 8 dígitos
+      if (!/^\d{8}$/.test(cleanCep)) return
 
-          if (!data.erro) {
-            setValue('office.city', data.localidade)
-            setValue('office.state', data.uf)
-            setValue('office.neighborhood', data.bairro)
-            setValue('office.address', data.logradouro)
-          }
-        } catch (error) {
-          console.error('Erro ao buscar CEP:', error)
+      try {
+        const response = await fetch(
+          `https://viacep.com.br/ws/${cleanCep}/json/`,
+        )
+
+        if (!response.ok) {
+          console.warn('ViaCEP retornou erro:', response.status)
+          return
         }
+
+        const data = await response.json()
+
+        if (!data.erro) {
+          setValue('office.city', data.localidade)
+          setValue('office.state', data.uf)
+          setValue('office.neighborhood', data.bairro)
+          setValue('office.address', data.logradouro)
+        }
+      } catch (error) {
+        console.error('Erro ao buscar CEP:', error)
       }
     }
 
-    if (cepValue) {
+    if (cepValue != null && cepValue !== '') {
       fetchAddressByCep(cepValue)
     }
   }, [cepValue, setValue])
