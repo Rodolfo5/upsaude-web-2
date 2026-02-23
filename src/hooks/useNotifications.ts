@@ -9,44 +9,37 @@ import {
   query,
   where,
 } from 'firebase/firestore'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import firebaseApp from '@/config/firebase/firebase'
 import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
-} from '@/services/emailNotification/emailNotification'
-import type { EmailNotificationEntity } from '@/types/entities/emailNotification'
+} from '@/services/doctorNotification'
+import type { DoctorNotificationEntity } from '@/types/entities/doctorNotification'
 
 const db = getFirestore(firebaseApp)
-const COLLECTION_NAME = 'emailNotifications'
+const COLLECTION_NAME = 'doctorNotifications'
 
 export type NotificationsFilter = 'all' | 'unread' | 'read'
 
 function parseNotificationDoc(
   id: string,
   data: Record<string, unknown>,
-): EmailNotificationEntity {
+): DoctorNotificationEntity {
   return {
     id,
     ...data,
     createdAt:
       (data.createdAt as { toDate?: () => Date })?.toDate?.() ??
       (data.createdAt as Date),
-    sentAt:
-      (data.sentAt as { toDate?: () => Date })?.toDate?.() ??
-      (data.sentAt as Date | null) ??
-      null,
-    readAt:
-      (data.readAt as { toDate?: () => Date })?.toDate?.() ??
-      (data.readAt as Date | null) ??
-      null,
-    isRead: data.isRead === true,
-  } as EmailNotificationEntity
+    hasSeenToUsers: (data.hasSeenToUsers as string[]) ?? [],
+    users: (data.users as string[]) ?? [],
+  } as DoctorNotificationEntity
 }
 
 export interface UseNotificationsReturn {
-  notifications: EmailNotificationEntity[]
+  notifications: DoctorNotificationEntity[]
   loading: boolean
   error: string | null
   filter: NotificationsFilter
@@ -64,7 +57,7 @@ export function useNotifications(
   enabled: boolean,
 ): UseNotificationsReturn {
   const [allNotifications, setAllNotifications] = useState<
-    EmailNotificationEntity[]
+    DoctorNotificationEntity[]
   >([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -72,7 +65,7 @@ export function useNotifications(
 
   useEffect(() => {
     if (!recipientId || !enabled) {
-      setAllNotifications([])
+      setAllNotifications((prev) => (prev.length === 0 ? prev : []))
       setLoading(false)
       setError(null)
       return
@@ -83,7 +76,7 @@ export function useNotifications(
     const collectionRef = collection(db, COLLECTION_NAME)
     const q = query(
       collectionRef,
-      where('recipientId', '==', recipientId),
+      where('users', 'array-contains', recipientId),
       orderBy('createdAt', 'desc'),
       limit(100),
     )
@@ -92,7 +85,10 @@ export function useNotifications(
       q,
       (snapshot) => {
         const items = snapshot.docs.map((docSnap) =>
-          parseNotificationDoc(docSnap.id, docSnap.data() as Record<string, unknown>),
+          parseNotificationDoc(
+            docSnap.id,
+            docSnap.data() as Record<string, unknown>,
+          ),
         )
         setAllNotifications(items)
         setLoading(false)
@@ -102,13 +98,14 @@ export function useNotifications(
         console.error(
           '🔧 O Firestore precisa de um índice. Veja FIRESTORE_INDEX_FIX.md para resolver.',
         )
-        const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+        const errorMessage =
+          err instanceof Error ? err.message : 'Erro desconhecido'
         if (errorMessage.includes('index')) {
           setError('INDEX_REQUIRED')
         } else {
           setError(errorMessage)
         }
-        setAllNotifications([])
+        setAllNotifications((prev) => (prev.length === 0 ? prev : []))
         setLoading(false)
       },
     )
@@ -116,17 +113,23 @@ export function useNotifications(
     return () => unsubscribe()
   }, [recipientId, enabled])
 
-  const notifications = allNotifications.filter((n) => {
-    if (filter === 'all') return true
-    if (filter === 'unread') return !n.isRead
-    return n.isRead
-  })
+  const notifications = useMemo(
+    () =>
+      allNotifications.filter((n) => {
+        const isRead = n.hasSeenToUsers.includes(recipientId ?? '')
+        if (filter === 'all') return true
+        if (filter === 'unread') return !isRead
+        return isRead
+      }),
+    [allNotifications, filter, recipientId],
+  )
 
   const markAsRead = useCallback(
     async (id: string) => {
-      await markNotificationAsRead(id)
+      if (!recipientId) return
+      await markNotificationAsRead(id, recipientId)
     },
-    [],
+    [recipientId],
   )
 
   const markAllAsRead = useCallback(async () => {

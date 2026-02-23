@@ -170,7 +170,7 @@ export default function Sidebar() {
           })}
 
           {/* Notificações */}
-          <NotificationsModal recipientId={userUid ?? undefined}>
+          <NotificationsModal recipientId={userUid ?? undefined} align="left">
             <button
               type="button"
               className={cn(
@@ -184,7 +184,9 @@ export default function Sidebar() {
                 <BellIconWithBadge unreadCount={unreadCount} />
               </div>
               {isExpanded && (
-                <span className="truncate text-sm font-medium">Notificações</span>
+                <span className="truncate text-sm font-medium">
+                  Notificações
+                </span>
               )}
             </button>
           </NotificationsModal>
