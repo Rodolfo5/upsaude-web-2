@@ -28,17 +28,41 @@ function formatPrivateKey(key?: string): string | undefined {
 }
 
 /**
+ * Parâmetro de meta de peso (usado no WeightGoalModal)
+ */
+export interface WeightGoalParameter {
+  currentWeight: number // Peso atual em kg (do checkup)
+  objective: 'Ganhar' | 'Perder'
+  quantity: number // Quantidade de kg a ganhar/perder
+  deadline: number // Valor numérico do prazo
+  deadlineUnit: 'Dias' | 'Semanas' | 'Meses'
+  patientGuidelines?: string
+}
+
+/**
  * Resposta estruturada da IA para geração de plano
  */
 export interface AIHealthPlanResponse {
   mentalHealth: {
     goals: Array<{
       type: 'Qualidade de Sono' | 'Estresse' | 'Humor'
-      desiredParameter: string // Obrigatório: meta mensurável (ex: "Dormir 7-8h por noite")
+      /**
+       * - Qualidade de Sono: NUMBER de horas (ex: 8)
+       * - Estresse: exatamente "baixo" | "moderado" | "alto"
+       * - Humor: exatamente "ruim" | "intermediário" | "bom"
+       */
+      desiredParameter:
+        | number
+        | 'baixo'
+        | 'moderado'
+        | 'alto'
+        | 'ruim'
+        | 'intermediário'
+        | 'bom'
       activities: Array<{
         name: string
         description?: string
-        frequency: string // Obrigatório (ex: "Diariamente", "3x/semana")
+        frequency: string // ex: "Diariamente", "3x/semana"
         deadlineValue?: string
         deadlineUnit?: string // "Dia" | "Semana" | "Mês"
       }>
@@ -54,10 +78,23 @@ export interface AIHealthPlanResponse {
       desiredParameter?: string
       activities: Array<{
         name: string
-        description?: string
-        frequency?: string
+        description?: string // Orientações ao paciente sobre como realizar a medição
+        /**
+         * Valor numérico da frequência como string: "1" | "2" | "3" | "4" | "5" | "6" | "7"
+         */
+        frequencyValue: string
+        /**
+         * Unidade da frequência: exatamente "Dia" | "Semana" | "Mês"
+         */
+        frequencyUnit: 'Dia' | 'Semana' | 'Mês'
+        /**
+         * Valor do prazo como string: "1" a "12"
+         */
         deadlineValue?: string
-        deadlineUnit?: string
+        /**
+         * Unidade do prazo: exatamente "Dia" | "Semana" | "Mês"
+         */
+        deadlineUnit?: 'Dia' | 'Semana' | 'Mês'
       }>
       orientations: Array<{
         title: string
@@ -73,11 +110,18 @@ export interface AIHealthPlanResponse {
         | 'Movimentos - Passos'
         | 'Movimentos - Gasto Calórico'
         | 'Alimentação'
-      desiredParameter?: number | string // number para Passos/kcal/Peso/Hidratação; string para Alimentação (meta textual)
+      /**
+       * - Hidratação: NUMBER (litros/dia, ex: 2)
+       * - Peso: OBJETO WeightGoalParameter
+       * - Movimentos - Passos: NUMBER (passos/dia, ex: 8000)
+       * - Movimentos - Gasto Calórico: NUMBER (kcal/dia, ex: 250)
+       * - Alimentação: STRING com meta textual
+       */
+      desiredParameter?: number | string | WeightGoalParameter
       activities: Array<{
         name: string
         description?: string
-        frequency: string // Obrigatório (ex: "3x Semana", "Diariamente")
+        frequency: string // ex: "Diariamente", "5x Semana"
       }>
       orientations: Array<{
         area?: string
@@ -103,59 +147,108 @@ export interface AIHealthPlanResult {
 const HEALTH_PLAN_PROMPT = `
 Você é um **Assistente Clínico de IA** especializado em medicina preventiva e planos terapêuticos personalizados. Sua tarefa é analisar o checkup digital deste paciente e gerar um plano terapêutico inicial estruturado e baseado em evidências científicas.
 
-**INSTRUÇÕES CRÍTICAS:**
+**INSTRUÇÕES CRÍTICAS — LEIA COM ATENÇÃO ANTES DE GERAR O JSON:**
 
-1. **Saúde Mental**
-   - Crie 1-3 metas baseadas nos scores PHQ-9, GAD-7 e qualidade de sono. Tipos permitidos: "Qualidade de Sono", "Estresse", "Humor".
-   - **Toda meta DEVE ter "desiredParameter"**: meta mensurável e clara (ex: "Dormir 7-8 horas por noite", "Reduzir sintomas de ansiedade em 50% em 3 meses").
-   - **Toda atividade DEVE ter**: "name", "description" (detalhando o que fazer), "frequency" (ex: "Diariamente", "3x/semana"). Quando fizer sentido, inclua "deadlineValue" e "deadlineUnit" ("Dia", "Semana" ou "Mês") para dar prazo à atividade.
-   - Para cada meta: 2-3 atividades práticas (sempre com parâmetros acima) e 1-2 orientações educativas.
+---
 
-2. **Biomarcadores de Saúde**
-   - Identifique riscos cardiometabólicos (hipertensão, diabetes, colesterol, obesidade) e crie 1-3 metas específicas. Se houver dado de pressão arterial, inclua obrigatoriamente meta de pressão arterial.
-   - Para cada meta: atividades de monitoramento com "frequency", "deadlineValue" e "deadlineUnit" quando aplicável; orientações sobre o biomarcador.
+## 1. SAÚDE MENTAL
 
-3. **Estilo de Vida**
-   - **Movimentos**: Use EXATAMENTE os tipos "Movimentos - Passos" e/ou "Movimentos - Gasto Calórico". NUNCA use apenas "Movimentos".
-     - "Movimentos - Passos": "desiredParameter" deve ser um NÚMERO (ex: 8000 ou 10000) indicando meta de passos por dia.
-     - "Movimentos - Gasto Calórico": "desiredParameter" deve ser um NÚMERO (ex: 200 ou 300) indicando meta de gasto calórico em kcal por dia ou por semana, conforme o contexto.
-     - Para cada categoria de movimento: 2-3 atividades com "name", "description" (como alcançar a meta) e "frequency" (ex: "5x Semana", "Diariamente").
-   - **Alimentação**: Categoria com "type": "Alimentação". "desiredParameter" deve ser uma STRING com a meta alimentar (ex: "Aumentar consumo de fibras e reduzir ultraprocessados"). Inclua 2-3 atividades concretas (name, description, frequency) e 1-2 orientações (area: "Alimentação", title, description).
-   - Inclua também categorias Hidratação e Peso quando relevante, com desiredParameter numérico e atividades completas.
+- Crie 1-3 metas. Tipos permitidos: "Qualidade de Sono", "Estresse", "Humor".
+- **"desiredParameter" tem formato DIFERENTE para cada tipo — siga exatamente:**
+  - Tipo **"Qualidade de Sono"**: "desiredParameter" deve ser um **NÚMERO INTEIRO** representando as horas de sono desejadas (ex: 8). NÃO use texto.
+  - Tipo **"Estresse"**: "desiredParameter" deve ser EXATAMENTE uma dessas strings: **"baixo"**, **"moderado"** ou **"alto"**. NÃO use texto livre.
+  - Tipo **"Humor"**: "desiredParameter" deve ser EXATAMENTE uma dessas strings: **"ruim"**, **"intermediário"** ou **"bom"**. NÃO use texto livre.
+- Cada atividade DEVE ter: "name", "description" (o que fazer detalhado), "frequency" (ex: "Diariamente", "3x/semana"). Opcionalmente: "deadlineValue" (string "1"-"12") e "deadlineUnit" ("Dia", "Semana" ou "Mês").
+- Para cada meta: 2-3 atividades práticas e 1-2 orientações educativas.
 
-4. **Princípios**
-   - Use linguagem clara, empática e voltada ao paciente.
-   - Atividades devem ser factíveis, específicas e sempre com frequência e, quando cabível, prazo.
-   - Orientações devem ser educativas e baseadas em evidências.
-   - Limite a 2-3 metas por pilar e 2-4 categorias de estilo de vida para não sobrecarregar.
-   - Priorize problemas identificados na classificação de risco.
+---
 
-5. **Formato de Resposta**: Retorne APENAS um JSON válido, sem markdown, sem texto adicional. O JSON deve seguir exatamente esta estrutura (inclua exemplos de Movimentos e Alimentação completos):
+## 2. BIOMARCADORES DE SAÚDE
+
+- Identifique riscos cardiometabólicos (hipertensão, diabetes, colesterol, obesidade) e crie 1-3 metas. Se houver pressão arterial nos dados, inclua meta de pressão arterial obrigatoriamente.
+- **Atividades de biomarcadores têm formato ESPECIAL de frequência — siga exatamente:**
+  - **"frequencyValue"**: string com APENAS um número de 1 a 7 (ex: "1", "2", "3"). NÃO inclua "x" ou unidade aqui.
+  - **"frequencyUnit"**: EXATAMENTE uma dessas strings: **"Dia"**, **"Semana"** ou **"Mês"**. Maiúscula inicial.
+  - **"deadlineValue"**: string com número de 1 a 12 (ex: "3", "6"). Obrigatório.
+  - **"deadlineUnit"**: EXATAMENTE uma dessas strings: **"Dia"**, **"Semana"** ou **"Mês"**. Maiúscula inicial.
+  - **"description"**: orientações ao paciente sobre COMO realizar a medição (ex: "Medir em repouso, 30 minutos após acordar, anote os valores").
+  - NÃO use o campo "frequency" em atividades de biomarcadores — use APENAS "frequencyValue" e "frequencyUnit".
+
+---
+
+## 3. ESTILO DE VIDA
+
+- **Movimentos**: Use EXATAMENTE os tipos "Movimentos - Passos" e/ou "Movimentos - Gasto Calórico". NUNCA use apenas "Movimentos".
+  - "Movimentos - Passos": "desiredParameter" = NÚMERO de passos por dia (ex: 8000).
+  - "Movimentos - Gasto Calórico": "desiredParameter" = NÚMERO de kcal por dia (ex: 250).
+  - Para cada categoria: 2-3 atividades com "name", "description" e "frequency" (ex: "5x Semana", "Diariamente").
+- **Alimentação**: "type": "Alimentação". "desiredParameter" = STRING com meta alimentar (ex: "Aumentar consumo de fibras e reduzir ultraprocessados"). Inclua 2-3 atividades e 1-2 orientações (com "area": "Alimentação").
+- **Peso** (quando relevante): "type": "Peso". "desiredParameter" deve ser um OBJETO com os seguintes campos:
+  - "currentWeight": número com o peso atual em kg (use o valor dos dados do checkup)
+  - "objective": EXATAMENTE "Ganhar" ou "Perder"
+  - "quantity": número de kg a ganhar/perder (ex: 5)
+  - "deadline": número inteiro do prazo (ex: 3)
+  - "deadlineUnit": EXATAMENTE "Dias", "Semanas" ou "Meses" (com 's' no plural)
+  - "patientGuidelines": string com orientações ao paciente (ex: "Seguir as orientações de exercícios e alimentação")
+- **Hidratação** (quando relevante): "type": "Hidratação". "desiredParameter" = NÚMERO de litros por dia (ex: 2).
+
+---
+
+## 4. PRINCÍPIOS
+
+- Use linguagem clara, empática e voltada ao paciente.
+- Atividades factíveis, específicas, com frequência e prazo quando cabível.
+- Orientações educativas e baseadas em evidências.
+- Limite: 2-3 metas por pilar, 2-4 categorias de estilo de vida.
+- Priorize os problemas identificados na classificação de risco.
+
+---
+
+## 5. FORMATO DE RESPOSTA
+
+Retorne APENAS um JSON válido, sem markdown, sem texto adicional. Siga EXATAMENTE esta estrutura:
 
 {
   "mentalHealth": {
     "goals": [
       {
         "type": "Qualidade de Sono",
-        "desiredParameter": "Dormir 7-8 horas por noite",
+        "desiredParameter": 8,
         "activities": [
           {
             "name": "Estabelecer rotina de sono",
-            "description": "Ir para cama e acordar no mesmo horário todos os dias, inclusive fins de semana",
+            "description": "Ir para a cama e acordar no mesmo horário todos os dias, inclusive fins de semana",
             "frequency": "Diariamente",
             "deadlineValue": "4",
             "deadlineUnit": "Semana"
           },
           {
             "name": "Registro de horários de sono",
-            "description": "Anotar hora de deitar e de levantar para ajustar a rotina",
+            "description": "Anotar hora de deitar e de levantar para monitorar a consistência da rotina",
             "frequency": "Diariamente"
           }
         ],
         "orientations": [
           {
             "title": "Higiene do sono",
-            "description": "Evitar telas 1h antes de dormir, manter ambiente escuro e silencioso"
+            "description": "Evitar telas 1h antes de dormir, manter o quarto escuro, silencioso e com temperatura agradável"
+          }
+        ]
+      },
+      {
+        "type": "Estresse",
+        "desiredParameter": "moderado",
+        "activities": [
+          {
+            "name": "Mindfulness e meditação guiada",
+            "description": "Participar de sessões de meditação guiada online ou por aplicativo, 3 vezes por semana",
+            "frequency": "3x/semana"
+          }
+        ],
+        "orientations": [
+          {
+            "title": "Técnicas de relaxamento",
+            "description": "Respiração diafragmática: inspire por 4s, segure 4s, expire por 6s. Praticar diariamente"
           }
         ]
       }
@@ -165,12 +258,13 @@ Você é um **Assistente Clínico de IA** especializado em medicina preventiva e
     "goals": [
       {
         "name": "Controlar Pressão Arterial",
-        "desiredParameter": "Manter abaixo de 140/90 mmHg",
+        "desiredParameter": "Manter abaixo de 130/85 mmHg",
         "activities": [
           {
-            "name": "Aferir pressão arterial",
-            "description": "Medir pressão 3 vezes por semana, pela manhã, em repouso",
-            "frequency": "3x/semana",
+            "name": "Aferição da pressão arterial",
+            "description": "Medir em repouso, 30 minutos após acordar, com o paciente sentado. Anotar os valores sistólico e diastólico",
+            "frequencyValue": "3",
+            "frequencyUnit": "Semana",
             "deadlineValue": "3",
             "deadlineUnit": "Mês"
           }
@@ -178,7 +272,27 @@ Você é um **Assistente Clínico de IA** especializado em medicina preventiva e
         "orientations": [
           {
             "title": "Redução de sódio",
-            "description": "Limitar consumo de sal a menos de 5g por dia"
+            "description": "Limitar consumo de sal a menos de 5g por dia; evitar alimentos ultraprocessados"
+          }
+        ]
+      },
+      {
+        "name": "Monitoramento da Glicemia Capilar",
+        "desiredParameter": "Glicemia em jejum abaixo de 100 mg/dL",
+        "activities": [
+          {
+            "name": "Medição da glicemia capilar",
+            "description": "Medir a glicemia capilar em jejum, pela manhã, antes de qualquer refeição",
+            "frequencyValue": "1",
+            "frequencyUnit": "Semana",
+            "deadlineValue": "3",
+            "deadlineUnit": "Mês"
+          }
+        ],
+        "orientations": [
+          {
+            "title": "Controle glicêmico",
+            "description": "Reduzir carboidratos refinados e açúcares simples; priorizar alimentos com baixo índice glicêmico"
           }
         ]
       }
@@ -187,43 +301,50 @@ Você é um **Assistente Clínico de IA** especializado em medicina preventiva e
   "lifestyle": {
     "categories": [
       {
+        "type": "Peso",
+        "desiredParameter": {
+          "currentWeight": 85,
+          "objective": "Perder",
+          "quantity": 5,
+          "deadline": 3,
+          "deadlineUnit": "Meses",
+          "patientGuidelines": "Seguir as orientações de exercício e alimentação para otimizar a perda de gordura"
+        },
+        "activities": [
+          {
+            "name": "Monitoramento do peso",
+            "description": "Pesar-se 1 vez por semana, pela manhã, em jejum, com a mesma balança",
+            "frequency": "1x/semana"
+          }
+        ],
+        "orientations": [
+          {
+            "area": "Peso",
+            "title": "Estratégias para perda de peso saudável",
+            "description": "Déficit calórico moderado combinado com atividade física regular; evitar dietas extremamente restritivas"
+          }
+        ]
+      },
+      {
         "type": "Movimentos - Passos",
         "desiredParameter": 8000,
         "activities": [
           {
             "name": "Caminhada diária",
-            "description": "Caminhar pelo menos 30 minutos por dia, buscando atingir a meta de passos",
+            "description": "Caminhar pelo menos 30 minutos por dia, buscando atingir a meta de passos diários",
             "frequency": "Diariamente"
           },
           {
             "name": "Subir escadas",
-            "description": "Preferir escadas ao elevador quando possível para aumentar passos",
+            "description": "Preferir escadas ao elevador quando possível para aumentar o total de passos",
             "frequency": "5x Semana"
           }
         ],
         "orientations": [
           {
             "area": "Movimentos",
-            "title": "Benefícios da caminhada",
-            "description": "Caminhada regular melhora saúde cardiovascular e humor; use app ou relógio para contar passos"
-          }
-        ]
-      },
-      {
-        "type": "Movimentos - Gasto Calórico",
-        "desiredParameter": 250,
-        "activities": [
-          {
-            "name": "Atividade aeróbica moderada",
-            "description": "Ciclismo, natação ou caminhada rápida para gastar calorias diárias",
-            "frequency": "4x Semana"
-          }
-        ],
-        "orientations": [
-          {
-            "area": "Movimentos",
-            "title": "Gasto calórico",
-            "description": "Meta de 200-300 kcal/dia em atividade ajuda no equilíbrio energético"
+            "title": "Benefícios da caminhada regular",
+            "description": "Caminhada melhora saúde cardiovascular, humor e controle de peso. Use aplicativo ou relógio para contar os passos"
           }
         ]
       },
@@ -233,29 +354,53 @@ Você é um **Assistente Clínico de IA** especializado em medicina preventiva e
         "activities": [
           {
             "name": "Incluir 5 porções de frutas e verduras",
-            "description": "Adicionar frutas no café da manhã e salada no almoço e jantar",
+            "description": "Adicionar frutas no café da manhã e salada no almoço e jantar diariamente",
             "frequency": "Diariamente"
           },
           {
-            "name": "Trocar um snack industrial por fruta ou oleaginosas",
-            "description": "Substituir biscoitos ou salgadinhos por uma porção de fruta ou castanhas",
+            "name": "Trocar snacks industriais por naturais",
+            "description": "Substituir biscoitos ou salgadinhos por fruta, iogurte natural ou castanhas",
             "frequency": "Diariamente"
           }
         ],
         "orientations": [
           {
             "area": "Alimentação",
-            "title": "Pirâmide alimentar",
-            "description": "Priorizar base da pirâmide: grãos integrais, frutas, verduras e legumes"
+            "title": "Alimentação baseada em evidências",
+            "description": "Priorizar alimentos in natura ou minimamente processados; ler os rótulos e evitar produtos com longas listas de ingredientes"
+          }
+        ]
+      },
+      {
+        "type": "Hidratação",
+        "desiredParameter": 2,
+        "activities": [
+          {
+            "name": "Beber água regularmente",
+            "description": "Manter uma garrafa de água visível e beber ao longo do dia, priorizando antes das refeições",
+            "frequency": "Diariamente"
+          }
+        ],
+        "orientations": [
+          {
+            "area": "Hidratação",
+            "title": "Importância da hidratação",
+            "description": "Beber pelo menos 2 litros de água por dia. A água é essencial para o metabolismo e controle do apetite"
           }
         ]
       }
     ]
   },
-  "reasoning": "Breve explicação das recomendações baseadas nos dados do checkup"
+  "reasoning": "Breve explicação clínica das recomendações baseadas nos dados do checkup"
 }
 
-IMPORTANTE: Retorne apenas o JSON, sem markdown, sem código, sem explicações adicionais. Todas as atividades devem ter "frequency". Metas de saúde mental devem ter "desiredParameter". Categorias de movimento devem usar exatamente "Movimentos - Passos" ou "Movimentos - Gasto Calórico" com desiredParameter numérico.
+**REGRAS FINAIS — OBRIGATÓRIAS:**
+- Retorne APENAS o JSON, sem markdown, sem blocos de código, sem explicações.
+- Todas as atividades de Saúde Mental e Estilo de Vida DEVEM ter "frequency".
+- Atividades de Biomarcadores DEVEM ter "frequencyValue", "frequencyUnit", "deadlineValue" e "deadlineUnit".
+- "Qualidade de Sono" desiredParameter = NÚMERO (ex: 8). "Estresse" = "baixo"|"moderado"|"alto". "Humor" = "ruim"|"intermediário"|"bom".
+- Tipo "Peso" em Estilo de Vida: desiredParameter DEVE ser um OBJETO com currentWeight, objective, quantity, deadline, deadlineUnit (plural: "Dias"|"Semanas"|"Meses") e patientGuidelines.
+- Movimentos: use EXATAMENTE "Movimentos - Passos" ou "Movimentos - Gasto Calórico" com desiredParameter numérico.
 `.trim()
 
 /**
