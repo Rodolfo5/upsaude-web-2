@@ -47,9 +47,7 @@ export default function Home() {
         setUserUid('')
       },
       onPendingLogout: () => {
-        errorToast(
-          'Seu cadastro está sendo analisado. Aguarde a aprovação.',
-        )
+        errorToast('Seu cadastro está sendo analisado. Aguarde a aprovação.')
         logout()
         setUserUid('')
       },

@@ -68,9 +68,7 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
         setUserUid('')
       },
       onPendingLogout: () => {
-        errorToast(
-          'Seu cadastro está sendo analisado. Aguarde a aprovação.',
-        )
+        errorToast('Seu cadastro está sendo analisado. Aguarde a aprovação.')
         logout()
         setUserUid('')
       },
