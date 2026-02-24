@@ -1,6 +1,11 @@
 'use client'
 
-import { DoctorEntity, UserEntity, UserRole, UserStatus } from '@/types/entities/user'
+import {
+  DoctorEntity,
+  UserEntity,
+  UserRole,
+  UserStatus,
+} from '@/types/entities/user'
 
 function getQRCodePatientId(currentUser: UserEntity | null): string | null {
   const doctor = currentUser as DoctorEntity | null
