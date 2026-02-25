@@ -1,30 +1,16 @@
 import { NextResponse } from 'next/server'
 
+import { getFreshPrescriberToken } from '@/lib/memedPrescriberToken'
 import { memedService } from '@/services/memed'
 
-/**
- * GET /api/memed/get-prescription
- *
- * Busca uma prescrição específica pelo ID via API Memed
- *
- * Query params:
- * - prescriptionId: ID da prescrição na Memed (obrigatório)
- *
- * Resposta:
- * {
- *   success: boolean
- *   prescription?: MemedPrescription
- *   error?: string
- * }
- */
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const prescriptionId = searchParams.get('prescriptionId')
-    const prescriberToken = searchParams.get('prescriberToken')
+    const doctorId = searchParams.get('doctorId')
+    const prescriberTokenParam = searchParams.get('prescriberToken')
 
     if (!prescriptionId) {
-      console.error('❌ API Route - ID da prescrição não fornecido')
       return NextResponse.json(
         {
           success: false,
@@ -34,15 +20,29 @@ export async function GET(request: Request) {
       )
     }
 
-    if (!prescriberToken) {
+    let tokenToUse = prescriberTokenParam
+
+    if (doctorId) {
+      const tokenResult = await getFreshPrescriberToken(doctorId)
+      if (!tokenResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: tokenResult.error,
+          },
+          { status: tokenResult.error === 'Médico não encontrado' ? 404 : 400 },
+        )
+      }
+      tokenToUse = tokenResult.token
+    } else if (!tokenToUse) {
       console.warn(
-        '⚠️ API Route - Token do prescritor não fornecido, tentando com api-key/secret',
+        '⚠️ get-prescription: doctorId ou prescriberToken não fornecido, tentando com api-key/secret',
       )
     }
 
     const result = await memedService.getPrescription(
       prescriptionId,
-      prescriberToken || undefined,
+      tokenToUse || undefined,
     )
 
     if (!result.success) {

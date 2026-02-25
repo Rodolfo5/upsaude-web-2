@@ -19,7 +19,7 @@ class MemedService {
   private config: MemedConfig
 
   constructor() {
-    // Remove /v1 do final da URL se presente, pois será adicionado nos endpoints específicos
+    // Produção: api.memed.com.br | Homologação: integrations.api.memed.com.br
     let baseUrl = process.env.MEMED_API_URL || 'https://api.memed.com.br/v1'
     baseUrl = baseUrl.replace(/\/v1\/?$/, '') // Remove /v1 do final
 
@@ -342,21 +342,21 @@ class MemedService {
           prescriberData.cidade ||
           (result.data?.relationships?.cidade?.data
             ? {
-              id: result.data.relationships.cidade.data.id,
-              nome: result.data.relationships.cidade.data.attributes?.nome,
-              name: result.data.relationships.cidade.data.attributes?.nome,
-            }
+                id: result.data.relationships.cidade.data.id,
+                nome: result.data.relationships.cidade.data.attributes?.nome,
+                name: result.data.relationships.cidade.data.attributes?.nome,
+              }
             : undefined),
         especialidade:
           prescriberData.especialidade ||
           (result.data?.relationships?.especialidade?.data
             ? {
-              id: result.data.relationships.especialidade.data.id,
-              nome: result.data.relationships.especialidade.data.attributes
-                ?.nome,
-              name: result.data.relationships.especialidade.data.attributes
-                ?.nome,
-            }
+                id: result.data.relationships.especialidade.data.id,
+                nome: result.data.relationships.especialidade.data.attributes
+                  ?.nome,
+                name: result.data.relationships.especialidade.data.attributes
+                  ?.nome,
+              }
             : undefined),
         specialty:
           prescriberData.especialidade?.nome ||

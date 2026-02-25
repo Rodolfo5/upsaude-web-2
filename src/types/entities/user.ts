@@ -69,6 +69,8 @@ export interface PatientEntity extends UserEntity {
 
 export interface DoctorEntity extends UserEntity {
   state?: string
+  /** UF do CRM; no Firebase pode vir como credentialState */
+  credentialState?: string
   typeOfCredential?: string
   credential?: string
   specialty?: string

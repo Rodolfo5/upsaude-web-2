@@ -4,7 +4,10 @@ import { useEffect, useRef, useState } from 'react'
 
 import LoadingComponent from '@/components/atoms/Loading/loading'
 import { auth } from '@/config/firebase/firebase'
-import { createMedication, findMedicationsByPatientId } from '@/services/medication'
+import {
+  createMedication,
+  findMedicationsByPatientId,
+} from '@/services/medication'
 import { memedService } from '@/services/memed'
 import type { MemedMedication, MemedPrescription } from '@/services/memed/types'
 import { getPatientById } from '@/services/patient'
@@ -243,7 +246,9 @@ export function EmbeddedMemedPrescription({
     const handlePrescriptionCreated = async (eventData: unknown) => {
       // Bloquear processamento simultâneo globalmente
       if (isProcessingRef.current) {
-        console.log('⏳ Já está processando uma prescrição, ignorando evento duplicado')
+        console.log(
+          '⏳ Já está processando uma prescrição, ignorando evento duplicado',
+        )
         return
       }
 
@@ -288,15 +293,14 @@ export function EmbeddedMemedPrescription({
         }
 
         if (!eventPrescriptionId && processedUnknownPrescriptionRef.current) {
-          console.log(
-            '🔁 Evento duplicado sem ID de prescrição, ignorando.',
-          )
+          console.log('🔁 Evento duplicado sem ID de prescrição, ignorando.')
           setIsLoading(false)
           isProcessingRef.current = false
           return
         }
 
-        processingPrescriptionIdRef.current = eventPrescriptionId || '__unknown__'
+        processingPrescriptionIdRef.current =
+          eventPrescriptionId || '__unknown__'
 
         console.log('📥 Evento de prescrição recebido:', eventData)
         console.log('📥 Tipo do evento:', typeof eventData)
@@ -336,7 +340,10 @@ export function EmbeddedMemedPrescription({
               currentPatientData = patientResult.patient
               console.log('✅ Paciente encontrado:', currentPatientData.name)
             } else {
-              console.warn('⚠️ Paciente não encontrado ou erro:', patientResult.error)
+              console.warn(
+                '⚠️ Paciente não encontrado ou erro:',
+                patientResult.error,
+              )
               throw new Error(
                 `Paciente não encontrado no sistema: ${patientResult.error || 'Sem informações'}`,
               )
@@ -356,7 +363,9 @@ export function EmbeddedMemedPrescription({
           )
         }
 
-        console.log('✅ Dados do paciente validados, prosseguindo com criação de medicamentos')
+        console.log(
+          '✅ Dados do paciente validados, prosseguindo com criação de medicamentos',
+        )
 
         let prescriptionResult: {
           success: boolean
@@ -397,7 +406,13 @@ export function EmbeddedMemedPrescription({
             }
           } else if (extractedData.prescriptionId) {
             try {
-              const url = `/api/memed/get-prescription?prescriptionId=${encodeURIComponent(extractedData.prescriptionId)}${prescriberToken ? `&prescriberToken=${encodeURIComponent(prescriberToken)}` : ''}`
+              const params = new URLSearchParams({
+                prescriptionId: extractedData.prescriptionId,
+              })
+              if (doctorId) params.set('doctorId', doctorId)
+              else if (prescriberToken)
+                params.set('prescriberToken', prescriberToken)
+              const url = `/api/memed/get-prescription?${params.toString()}`
 
               const response = await fetch(url, {
                 method: 'GET',
@@ -510,7 +525,13 @@ export function EmbeddedMemedPrescription({
             // Tentar buscar novamente
             if (prescriptionResult.prescription.id) {
               try {
-                const url = `/api/memed/get-prescription?prescriptionId=${encodeURIComponent(prescriptionResult.prescription.id)}${prescriberToken ? `&prescriberToken=${encodeURIComponent(prescriberToken)}` : ''}`
+                const params = new URLSearchParams({
+                  prescriptionId: prescriptionResult.prescription.id,
+                })
+                if (doctorId) params.set('doctorId', doctorId)
+                else if (prescriberToken)
+                  params.set('prescriberToken', prescriberToken)
+                const url = `/api/memed/get-prescription?${params.toString()}`
                 const response = await fetch(url, {
                   method: 'GET',
                   headers: {
@@ -631,7 +652,9 @@ export function EmbeddedMemedPrescription({
                 }
                 return false
               })
-              .map((med) => normalizeMedicationFromAny(med as Record<string, unknown>))
+              .map((med) =>
+                normalizeMedicationFromAny(med as Record<string, unknown>),
+              )
               .filter((med) => med.nome || med.id)
             console.log(
               '📋 Medicamentos do fallback (nível raiz):',
@@ -654,12 +677,11 @@ export function EmbeddedMemedPrescription({
                 }
                 return false
               })
-              .map((med) => normalizeMedicationFromAny(med as Record<string, unknown>))
+              .map((med) =>
+                normalizeMedicationFromAny(med as Record<string, unknown>),
+              )
               .filter((med) => med.nome || med.id)
-            console.log(
-              '📋 Medicamentos do fallback (exames):',
-              medications,
-            )
+            console.log('📋 Medicamentos do fallback (exames):', medications)
           }
 
           // Tentar 2: data.attributes.medicamentos (estrutura aninhada)
@@ -680,7 +702,9 @@ export function EmbeddedMemedPrescription({
                 .filter((med: unknown) => {
                   if (typeof med === 'object' && med !== null) {
                     const medObj = med as Record<string, unknown>
-                    return isMedicationLikeItem(medObj) || !isExamLikeItem(medObj)
+                    return (
+                      isMedicationLikeItem(medObj) || !isExamLikeItem(medObj)
+                    )
                   }
                   return false
                 })
@@ -708,7 +732,9 @@ export function EmbeddedMemedPrescription({
                 .filter((med: unknown) => {
                   if (typeof med === 'object' && med !== null) {
                     const medObj = med as Record<string, unknown>
-                    return isMedicationLikeItem(medObj) || !isExamLikeItem(medObj)
+                    return (
+                      isMedicationLikeItem(medObj) || !isExamLikeItem(medObj)
+                    )
                   }
                   return false
                 })
@@ -830,7 +856,12 @@ export function EmbeddedMemedPrescription({
               })
 
               console.log('✅ Medicamento criado com sucesso:', medication.id)
-              console.log('✅ Path: users/' + finalPatientId + '/medications/' + medication.id)
+              console.log(
+                '✅ Path: users/' +
+                  finalPatientId +
+                  '/medications/' +
+                  medication.id,
+              )
               medicationIds.push(medication.id)
             } catch (medError) {
               console.error('❌ Erro ao criar medicamento:', medError)
@@ -1054,6 +1085,8 @@ export function EmbeddedMemedPrescription({
     const script = document.createElement('script')
     script.src = memedScriptUrl
     script.dataset.token = prescriberToken
+    const memedEnv = process.env.NEXT_PUBLIC_MEMED_ENV || 'integrations'
+    script.dataset.env = memedEnv
 
     const scriptTimeout = setTimeout(() => {
       if (!scriptLoadedRef.current) {
