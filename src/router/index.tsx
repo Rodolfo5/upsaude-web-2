@@ -7,6 +7,7 @@ import LoadingComponent from '@/components/atoms/Loading/loading'
 import { errorToast } from '@/hooks/useAppToast'
 import useAuth from '@/hooks/useAuth'
 import useUser from '@/hooks/useUser'
+import { getRedirectPath } from '@/lib/getRedirectPath'
 import { logout } from '@/services/firebase/auth'
 import { DoctorEntity, UserRole, UserStatus } from '@/types/entities/user'
 
@@ -58,70 +59,22 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
   }
 
   const getCorrectRedirectPath = (): string | null => {
-    if (!currentUser) return null
-
-    const qrCodePatientId = getQRCodePatientId()
-
-    if (currentUser.status === UserStatus.REJECTED) {
-      errorToast('Seu cadastro foi rejeitado. Entre em contato com o suporte.')
-      logout()
-      setUserUid('')
-      return '/login'
-    }
-
-    const isDoctor = currentUser.role === UserRole.DOCTOR
-
-    if (isDoctor && currentUser.status === UserStatus.PENDING) {
-      const needsToCompleteRegistration =
-        !currentUser.isCompleted ||
-        (currentUser.currentStep && currentUser.currentStep < 4)
-
-      if (needsToCompleteRegistration) {
-        return '/complete-registration'
-      } else {
-        // User completed registration but is pending approval
-        // If from QR Code, redirect to medical record
-        if (isFromQRCode() && qrCodePatientId) {
-          return `/medical-record/${qrCodePatientId}`
-        }
-        // If already on complete-registration (showing success), stay there
-        if (pathname === '/complete-registration') {
-          return null // Don't redirect, let them see the success screen
-        }
-        // Otherwise, logout and show message
+    const result = getRedirectPath(currentUser, pathname, {
+      onRejected: () => {
+        errorToast(
+          'Seu cadastro foi rejeitado. Entre em contato com o suporte.',
+        )
+        logout()
+        setUserUid('')
+      },
+      onPendingLogout: () => {
         errorToast('Seu cadastro está sendo analisado. Aguarde a aprovação.')
         logout()
         setUserUid('')
-        return '/login'
-      }
-    }
-
-    if (currentUser.status === UserStatus.APPROVED) {
-      // If from QR Code, redirect to medical record first
-      if (qrCodePatientId) {
-        return `/medical-record/${qrCodePatientId}`
-      }
-
-      if (currentUser.role === UserRole.DOCTOR) {
-        const hasAgendaConfiguration = currentUser.agenda != null
-
-        if (!hasAgendaConfiguration) {
-          return '/configure-agenda'
-        } else {
-          return '/dashboard'
-        }
-      } else if (currentUser.role === UserRole.ADMIN) {
-        return '/admin/home'
-      } else {
-        return '/dashboard'
-      }
-    }
-
-    if (currentUser.role === UserRole.ADMIN) {
-      return '/admin/home'
-    }
-
-    return '/login'
+      },
+    })
+    result.runSideEffects?.()
+    return result.path
   }
 
   useEffect(() => {

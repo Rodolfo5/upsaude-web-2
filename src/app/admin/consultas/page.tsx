@@ -263,7 +263,7 @@ export default function AdminConsultasPage() {
               value={statusFilter}
               onChange={setStatusFilter}
               placeholder="Selecione o status"
-              className="w-64"
+              className="w-64 hover:bg-purple-500"
             />
           </div>
 
@@ -280,7 +280,7 @@ export default function AdminConsultasPage() {
               value={formatFilter}
               onChange={setFormatFilter}
               placeholder="Selecione o formato"
-              className="w-64"
+              className="w-64 hover:bg-purple-500"
             />
           </div>
 

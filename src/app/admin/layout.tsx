@@ -33,10 +33,10 @@ const adminMenuItems = [
     label: 'Pagamentos',
     href: '/admin/pagamentos',
   },
-  {
-    label: 'Configurações',
-    href: '/admin/configuracoes',
-  },
+  // {
+  //   label: 'Configurações',
+  //   href: '/admin/configuracoes',
+  // },
 ]
 
 export default function AdminLayout({

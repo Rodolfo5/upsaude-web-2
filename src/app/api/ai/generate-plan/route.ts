@@ -438,13 +438,23 @@ export async function POST(
           .collection('activities')
           .doc()
 
+        // Montar frequência combinada para compatibilidade com a interface (ex: "3x Semana")
+        const frequencyValue = (activityData as any).frequencyValue || ''
+        const frequencyUnit = (activityData as any).frequencyUnit || ''
+        const combinedFrequency =
+          frequencyValue && frequencyUnit
+            ? `${frequencyValue}x ${frequencyUnit}`
+            : (activityData as any).frequency || ''
+
         await activityRef.set({
           id: activityRef.id,
           pillarId: biomarkersPillarId,
           goalId,
           name: activityData.name,
           description: activityData.description || '',
-          frequency: activityData.frequency || '',
+          frequency: combinedFrequency,
+          frequencyValue,
+          frequencyUnit,
           deadlineValue: activityData.deadlineValue || '',
           deadlineUnit: activityData.deadlineUnit || '',
           status: 'Ativa',

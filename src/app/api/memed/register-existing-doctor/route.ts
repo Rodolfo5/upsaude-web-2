@@ -3,13 +3,6 @@ import { NextResponse } from 'next/server'
 
 import firebaseApp from '@/config/firebase/firebase'
 
-/**
- * API para registrar médicos já existentes no sistema na Memed
- * Útil para médicos que foram aprovados mas não foram registrados na Memed
- *
- * POST /api/memed/register-existing-doctor
- * Body: { doctorId: string }
- */
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -56,10 +49,14 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verificar se tem CRM
+    // credentialState = UF do CRM. state = estado de moradia do médico (não usar para Memed).
+    const credentialStateUF = (doctorData.credentialState || '')
+      .toString()
+      .toUpperCase()
+
     if (
       !doctorData.credential ||
-      !doctorData.credentialState ||
+      !credentialStateUF ||
       doctorData.typeOfCredential !== 'CRM'
     ) {
       return NextResponse.json(
@@ -111,7 +108,7 @@ export async function POST(request: Request) {
           cpf: doctorData.cpf || '',
           birthDate: formattedBirthDate || '',
           crm: doctorData.credential,
-          crmState: doctorData.credentialState.toUpperCase(),
+          crmState: credentialStateUF,
           specialty: doctorData.specialty,
         }),
       },
@@ -161,7 +158,7 @@ export async function POST(request: Request) {
             },
             body: JSON.stringify({
               crm: doctorData.credential,
-              crmState: doctorData.credentialState.toUpperCase(),
+              crmState: credentialStateUF,
               externalId: doctorId,
               cpf: doctorData.cpf?.replace(/\D/g, ''),
             }),

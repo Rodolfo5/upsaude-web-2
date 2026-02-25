@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
@@ -570,11 +571,12 @@ export function PrescriptionModal({
       return
     }
 
-    // Cria e carrega o script da Memed conforme documentação
+    // Cria e carrega o script da Memed conforme documentação (doc.memed.com.br/docs/frontend/configuracoes)
     const script = document.createElement('script')
     script.src = memedScriptUrl
-    // Passa o token via dataset conforme documentação
     script.dataset.token = prescriberToken
+    const memedEnv = process.env.NEXT_PUBLIC_MEMED_ENV || 'integrations'
+    script.dataset.env = memedEnv
 
     // Timeout de segurança para o carregamento do script
     const scriptTimeout = setTimeout(() => {
@@ -720,7 +722,13 @@ export function PrescriptionModal({
           const prescriptionIdFromExtracted = extractedData.prescriptionId
 
           try {
-            const url = `/api/memed/get-prescription?prescriptionId=${encodeURIComponent(prescriptionIdFromExtracted)}${prescriberToken ? `&prescriberToken=${encodeURIComponent(prescriberToken)}` : ''}`
+            const params = new URLSearchParams({
+              prescriptionId: prescriptionIdFromExtracted,
+            })
+            if (doctorId) params.set('doctorId', doctorId)
+            else if (prescriberToken)
+              params.set('prescriberToken', prescriberToken)
+            const url = `/api/memed/get-prescription?${params.toString()}`
 
             const response = await fetch(url, {
               method: 'GET',

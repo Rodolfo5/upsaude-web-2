@@ -5,23 +5,29 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import ChatBubbleIcon from '@mui/icons-material/ChatBubbleOutline'
 import ChecklistIcon from '@mui/icons-material/Checklist'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
+import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
+import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft'
+import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight'
 import MedicationOutlinedIcon from '@mui/icons-material/MedicationOutlined'
-import { format, formatDistanceToNow } from 'date-fns'
+import {
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
+import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import * as React from 'react'
+import React, { useEffect } from 'react'
 
 import { Button } from '@/components/atoms/Button/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useSidebar } from '@/contexts/SidebarContext'
 import { useNotifications } from '@/hooks/useNotifications'
 import { groupNotificationsByTime } from '@/lib/notifications/groupNotificationsByTime'
 import { cn } from '@/lib/utils'
-import type { EmailNotificationEntity } from '@/types/entities/emailNotification'
-import { EmailNotificationCategory } from '@/types/entities/emailNotification'
+import type { DoctorNotificationEntity } from '@/types/entities/doctorNotification'
 
 import { NotificationsModalProps } from './types'
 
@@ -29,32 +35,52 @@ const CATEGORY_CONFIG: Record<
   string,
   { icon: React.ReactNode; bgColor: string }
 > = {
-  [EmailNotificationCategory.CHAT]: {
-    icon: <ChatBubbleIcon className="h-5 w-5 text-white" />,
-    bgColor: 'bg-[#792EBD]',
-  },
-  [EmailNotificationCategory.THERAPEUTIC_PLAN]: {
-    icon: <AssignmentIcon className="h-5 w-5 text-white" />,
-    bgColor: 'bg-[#792EBD]',
-  },
-  [EmailNotificationCategory.CONSULTATIONS]: {
-    icon: <CalendarMonthIcon className="h-5 w-5 text-white" />,
-    bgColor: 'bg-green-500',
-  },
-  [EmailNotificationCategory.PRESCRIPTIONS]: {
-    icon: <MedicationOutlinedIcon className="h-5 w-5 text-white" />,
-    bgColor: 'bg-orange-500',
-  },
-  [EmailNotificationCategory.CHECKUP]: {
-    icon: <ChecklistIcon className="h-5 w-5 text-white" />,
-    bgColor: 'bg-blue-500',
-  },
-  [EmailNotificationCategory.QUESTIONNAIRES]: {
+  'Questionários de Saúde': {
     icon: <HelpOutlineIcon className="h-5 w-5 text-white" />,
     bgColor: 'bg-[#792EBD]',
   },
-  [EmailNotificationCategory.TRIAGE]: {
+  Exames: {
+    icon: <MedicationOutlinedIcon className="h-5 w-5 text-white" />,
+    bgColor: 'bg-orange-500',
+  },
+  'Prescrição Memed': {
+    icon: <MedicationOutlinedIcon className="h-5 w-5 text-white" />,
+    bgColor: 'bg-orange-500',
+  },
+  Medicamento: {
+    icon: <MedicationOutlinedIcon className="h-5 w-5 text-white" />,
+    bgColor: 'bg-orange-500',
+  },
+  Consulta: {
+    icon: <CalendarMonthIcon className="h-5 w-5 text-white" />,
+    bgColor: 'bg-green-500',
+  },
+  'Trilhas de Saúde': {
     icon: <AssignmentIcon className="h-5 w-5 text-white" />,
+    bgColor: 'bg-[#792EBD]',
+  },
+  'Check-Up digital': {
+    icon: <ChecklistIcon className="h-5 w-5 text-white" />,
+    bgColor: 'bg-blue-500',
+  },
+  'Plano Terapêutico': {
+    icon: <AssignmentIcon className="h-5 w-5 text-white" />,
+    bgColor: 'bg-[#792EBD]',
+  },
+  'Observações Médicas': {
+    icon: <AssignmentIcon className="h-5 w-5 text-white" />,
+    bgColor: 'bg-[#792EBD]',
+  },
+  SOAP: {
+    icon: <AssignmentIcon className="h-5 w-5 text-white" />,
+    bgColor: 'bg-[#792EBD]',
+  },
+  Outros: {
+    icon: <AssignmentIcon className="h-5 w-5 text-white" />,
+    bgColor: 'bg-[#792EBD]',
+  },
+  Chat: {
+    icon: <ChatBubbleIcon className="h-5 w-5 text-white" />,
     bgColor: 'bg-[#792EBD]',
   },
 }
@@ -72,27 +98,29 @@ function NotificationItem({
   notification,
   onMarkAsRead,
 }: {
-  notification: EmailNotificationEntity
+  notification: DoctorNotificationEntity
   onMarkAsRead: (id: string) => void
 }) {
-  const config = getCategoryConfig(notification.category)
+  const config = getCategoryConfig(notification.type)
   const createdAt =
     typeof notification.createdAt === 'object'
       ? notification.createdAt
       : new Date(notification.createdAt)
-  
-  const timeStr = formatDistanceToNow(createdAt, { 
-    addSuffix: true, 
-    locale: ptBR 
+
+  const timeStr = formatDistanceToNow(createdAt, {
+    addSuffix: true,
+    locale: ptBR,
   }).replace('há cerca de ', 'Há ')
+
+  const isRead = notification.hasSeenToUsers?.includes(notification.users[0])
 
   return (
     <button
       type="button"
-      onClick={() => !notification.isRead && onMarkAsRead(notification.id)}
+      onClick={() => !isRead && onMarkAsRead(notification.id)}
       className={cn(
         'flex w-full items-start gap-4 px-6 py-5 text-left transition-colors hover:bg-gray-50',
-        !notification.isRead && 'bg-purple-50/30',
+        !isRead && 'bg-purple-50/30',
       )}
     >
       <div
@@ -107,17 +135,15 @@ function NotificationItem({
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <p className="text-sm font-semibold text-gray-900">
-              {notification.category}
+              {notification.title}
             </p>
-            {!notification.isRead && (
+            {!isRead && (
               <span className="h-2 w-2 flex-shrink-0 rounded-full bg-[#792EBD]" />
             )}
           </div>
           <span className="flex-shrink-0 text-xs text-gray-400">{timeStr}</span>
         </div>
-        <p className="text-sm text-gray-600">
-          {notification.message}
-        </p>
+        <p className="text-sm text-gray-600">{notification.content}</p>
       </div>
     </button>
   )
@@ -128,9 +154,10 @@ export function NotificationsModal({
   recipientId,
   open,
   onOpenChange,
+  align = 'center',
 }: NotificationsModalProps) {
   const [isOpen, setIsOpen] = React.useState(false)
-  
+
   const handleOpenChange = (newOpen: boolean) => {
     setIsOpen(newOpen)
     onOpenChange?.(newOpen)
@@ -146,33 +173,51 @@ export function NotificationsModal({
     markAllAsRead,
   } = useNotifications(recipientId, open ?? isOpen)
 
-  const [currentPage, setCurrentPage] = React.useState(1)
-  const itemsPerPage = 10
+  const { isExpanded } = useSidebar()
+  const effectiveAlign =
+    align === 'left' && isExpanded ? 'left-expanded' : align
 
-  const { hoje, ontem, antigas } = groupNotificationsByTime(notifications)
-  const hasUnread = notifications.some((n) => !n.isRead)
-  
-  // Pagination
-  const totalPages = Math.ceil(notifications.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const paginatedNotifications = notifications.slice(startIndex, endIndex)
+  const hasUnread = notifications.some(
+    (n) => !n.hasSeenToUsers?.includes(n.users[0]),
+  )
+
+  const table = useReactTable({
+    data: notifications,
+    columns: [],
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 5,
+      },
+    },
+  })
+
+  useEffect(() => {
+    table.setPageIndex(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter])
+
+  const paginatedNotifications = table
+    .getRowModel()
+    .rows.map((row) => row.original)
   const paginatedGroups = groupNotificationsByTime(paginatedNotifications)
+  const currentPage = table.getState().pagination.pageIndex + 1
+  const totalPages = table.getPageCount()
 
   return (
-    <Popover open={open ?? isOpen} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>
-        {children}
-      </PopoverTrigger>
-      <PopoverContent 
-        className="w-[700px] max-h-[85vh] overflow-hidden bg-white p-0 shadow-xl"
-        align="end"
-        sideOffset={8}
+    <Dialog open={open ?? isOpen} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent
+        className={cn(
+          'flex max-h-[85vh] w-[700px] flex-col overflow-hidden bg-white p-0 shadow-xl',
+          effectiveAlign === 'left' && 'left-[16%] translate-x-[-50%]',
+          effectiveAlign === 'left-expanded' && 'left-[26%] translate-x-[-50%]',
+        )}
       >
         <div className="flex flex-row items-center justify-between space-y-0 border-b border-gray-200 px-6 py-5">
-          <h2 className="text-xl font-semibold text-[#792EBD]">
-            Notificações
-          </h2>
+          <h2 className="text-xl font-semibold text-[#792EBD]">Notificações</h2>
         </div>
 
         <Tabs
@@ -215,7 +260,7 @@ export function NotificationsModal({
 
           <TabsContent
             value="all"
-            className="m-0 flex-1 overflow-y-auto data-[state=inactive]:hidden"
+            className="m-0 max-h-[500px] flex-1 overflow-y-auto data-[state=inactive]:hidden"
           >
             <NotificationList
               notifications={paginatedNotifications}
@@ -229,7 +274,7 @@ export function NotificationsModal({
           </TabsContent>
           <TabsContent
             value="unread"
-            className="m-0 flex-1 overflow-y-auto data-[state=inactive]:hidden"
+            className="m-0 max-h-[500px] flex-1 overflow-y-auto data-[state=inactive]:hidden"
           >
             <NotificationList
               notifications={paginatedNotifications}
@@ -243,7 +288,7 @@ export function NotificationsModal({
           </TabsContent>
           <TabsContent
             value="read"
-            className="m-0 flex-1 overflow-y-auto data-[state=inactive]:hidden"
+            className="m-0 max-h-[500px] flex-1 overflow-y-auto data-[state=inactive]:hidden"
           >
             <NotificationList
               notifications={paginatedNotifications}
@@ -259,67 +304,73 @@ export function NotificationsModal({
 
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 border-t border-gray-200 px-6 py-4">
-            <button
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-              className="flex h-8 w-8 items-center justify-center rounded text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
-              aria-label="Primeira página"
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 border-gray-300 bg-white p-0 text-gray-600 hover:bg-gray-50"
+              onClick={() => table.setPageIndex(0)}
+              disabled={!table.getCanPreviousPage()}
             >
-              ‹‹
-            </button>
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="flex h-8 w-8 items-center justify-center rounded text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
-              aria-label="Página anterior"
+              <span className="sr-only">Ir para primeira página</span>
+              <KeyboardDoubleArrowLeftIcon className="h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 border-gray-300 bg-white p-0 text-gray-600 hover:bg-gray-50"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
             >
-              ‹
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(
-                (page) =>
-                  page === 1 ||
-                  page === totalPages ||
-                  Math.abs(page - currentPage) <= 1,
-              )
-              .map((page, idx, arr) => (
-                <React.Fragment key={page}>
-                  {idx > 0 && arr[idx - 1] !== page - 1 && (
-                    <span className="px-2 text-gray-400">...</span>
+              <span className="sr-only">Página anterior</span>
+              <KeyboardArrowLeftIcon className="h-4 w-4" />
+            </Button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+              const isActive = page === currentPage
+              return (
+                <Button
+                  key={page}
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    'h-8 w-8 rounded-full border-none p-0',
+                    isActive
+                      ? 'bg-[#792EBD] text-white hover:bg-[#792EBD]/90'
+                      : 'bg-transparent text-gray-600 hover:bg-gray-50',
                   )}
-                  <button
-                    onClick={() => setCurrentPage(page)}
-                    className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded text-sm font-medium',
-                      currentPage === page
-                        ? 'bg-[#792EBD] text-white'
-                        : 'text-gray-600 hover:bg-gray-100',
-                    )}
-                  >
-                    {page}
-                  </button>
-                </React.Fragment>
-              ))}
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="flex h-8 w-8 items-center justify-center rounded text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
-              aria-label="Próxima página"
+                  onClick={() => table.setPageIndex(page - 1)}
+                >
+                  {page}
+                </Button>
+              )
+            })}
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 border-gray-300 bg-white p-0 text-gray-600 hover:bg-gray-50"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
             >
-              ›
-            </button>
-            <button
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-              className="flex h-8 w-8 items-center justify-center rounded text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
-              aria-label="Última página"
+              <span className="sr-only">Próxima página</span>
+              <KeyboardArrowRightIcon className="h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 border-gray-300 bg-white p-0 text-gray-600 hover:bg-gray-50"
+              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+              disabled={!table.getCanNextPage()}
             >
-              ››
-            </button>
+              <span className="sr-only">Ir para última página</span>
+              <KeyboardDoubleArrowRightIcon className="h-4 w-4" />
+            </Button>
           </div>
         )}
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -332,48 +383,18 @@ function NotificationList({
   ontem,
   antigas,
 }: {
-  notifications: EmailNotificationEntity[]
+  notifications: DoctorNotificationEntity[]
   loading: boolean
   error: string | null
   onMarkAsRead: (id: string) => void
-  hoje: EmailNotificationEntity[]
-  ontem: EmailNotificationEntity[]
-  antigas: EmailNotificationEntity[]
+  hoje: DoctorNotificationEntity[]
+  ontem: DoctorNotificationEntity[]
+  antigas: DoctorNotificationEntity[]
 }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <p className="text-sm text-gray-500">Carregando...</p>
-      </div>
-    )
-  }
-
-  if (error === 'INDEX_REQUIRED') {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 px-6 py-12">
-        <div className="rounded-lg border border-orange-200 bg-orange-50 p-6 text-center">
-          <p className="mb-2 text-lg font-semibold text-orange-900">
-            🔧 Configuração Necessária
-          </p>
-          <p className="mb-4 text-sm text-orange-800">
-            O Firestore precisa de um índice para exibir as notificações.
-          </p>
-          <div className="space-y-2 text-left text-xs text-orange-700">
-            <p className="font-semibold">Como resolver:</p>
-            <ol className="ml-4 list-decimal space-y-1">
-              <li>Abra o console do navegador (F12)</li>
-              <li>Copie o link que aparece no erro</li>
-              <li>Cole no navegador e clique em "Criar índice"</li>
-              <li>Aguarde 2-5 minutos e recarregue a página</li>
-            </ol>
-          </div>
-          <p className="mt-4 text-xs text-orange-600">
-            📚 Mais detalhes:{' '}
-            <code className="rounded bg-orange-100 px-1">
-              COMO_RESOLVER_ERRO_FIRESTORE.md
-            </code>
-          </p>
-        </div>
       </div>
     )
   }
