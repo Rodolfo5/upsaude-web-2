@@ -22,31 +22,40 @@ import { getStorage } from 'firebase/storage'
 
 /**
  * Mapeamento das variáveis de ambiente do Firebase
- * Todas essas devem estar no arquivo .env.local exceto measurementId (opcional)
+ * Todas essas devem estar no .env.local (e na Vercel: Project Settings > Environment Variables)
+ * measurementId é opcional.
+ * Nome correto: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID (aceita também MESSAGIN por compatibilidade).
  */
 const requiredEnvVars = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGIN_SENDER_ID,
+  messagingSenderId:
+    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ??
+    process.env.NEXT_PUBLIC_FIREBASE_MESSAGIN_SENDER_ID, // MESSAGIN = typo legado
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID, // Opcional - para Analytics
 }
 
-/**
- * Verifica se todas as variáveis obrigatórias estão definidas
- * measurementId é opcional porque Analytics pode não ser usado
- */
-const missingVars = Object.entries(requiredEnvVars)
-  .filter(([key, value]) => !value && key !== 'measurementId') // measurementId é opcional
-  .map(([key]) => `NEXT_PUBLIC_FIREBASE_${key.toUpperCase()}`)
+const envVarNames: Record<string, string> = {
+  apiKey: 'NEXT_PUBLIC_FIREBASE_API_KEY',
+  authDomain: 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+  projectId: 'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+  storageBucket: 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+  messagingSenderId: 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+  appId: 'NEXT_PUBLIC_FIREBASE_APP_ID',
+  measurementId: 'NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID',
+}
 
-// Se alguma variável obrigatória estiver faltando, para a execução
+const missingVars = Object.entries(requiredEnvVars)
+  .filter(([key, value]) => !value && key !== 'measurementId')
+  .map(([key]) => envVarNames[key] ?? key)
+
 if (missingVars.length > 0) {
   throw new Error(
     `🚨 Variáveis de ambiente Firebase faltando: ${missingVars.join(', ')}\n` +
-      `💡 Adicione essas variáveis no seu arquivo .env.local`,
+      `💡 Local: .env.local. Vercel: Project Settings > Environment Variables (faça novo deploy após adicionar).`,
   )
 }
 
