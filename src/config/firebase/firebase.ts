@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /**
  * 🔥 CONFIGURAÇÃO PRINCIPAL DO FIREBASE
  *
@@ -55,7 +56,7 @@ const missingVars = Object.entries(requiredEnvVars)
 if (missingVars.length > 0) {
   throw new Error(
     `🚨 Variáveis de ambiente Firebase faltando: ${missingVars.join(', ')}\n` +
-      `💡 Local: .env.local. Vercel: Project Settings > Environment Variables (faça novo deploy após adicionar).`,
+    `💡 Local: .env.local. Vercel: Project Settings > Environment Variables (faça novo deploy após adicionar).`,
   )
 }
 

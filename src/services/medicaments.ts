@@ -9,12 +9,14 @@ import {
   updateDoc,
   where,
   DocumentData,
+  QueryDocumentSnapshot,
 } from 'firebase/firestore'
 
 import firebaseApp from '@/config/firebase/firebase'
 import {
   MedicationEntity,
   MedicationStatus,
+  MedicationCreationBy,
 } from '@/types/entities/medicaments'
 import { normalizeMedication } from '@/utils/normalizeMedication'
 
@@ -83,6 +85,94 @@ export const getActiveMedicaments = async (
       errorMessage = error.message
     }
 
+    return {
+      medicaments: [],
+      error: errorMessage,
+    }
+  }
+}
+
+/**
+ * Busca medicamentos para exibição na tabela: ativos (cadastrados pelo paciente
+ * ou prescritos pelo médico) e prescrições do médico com status CREATED.
+ * @param userId - ID do usuário (paciente)
+ * @returns Promise com array de medicamentos para exibir ou erro
+ */
+export const getMedicamentsForDisplay = async (
+  userId: string,
+): Promise<MedicamentsResult> => {
+  if (!userId) {
+    return {
+      medicaments: [],
+      error: 'ID do usuário é obrigatório',
+    }
+  }
+
+  try {
+    const medicamentsRef = collection(firestore, 'users', userId, 'medications')
+
+    // 1) Medicamentos ativos (cadastrados pelo paciente ou já ativados pelo médico)
+    const qActive = query(
+      medicamentsRef,
+      where('status', '==', MedicationStatus.ACTIVE),
+      orderBy('createdAt', 'desc'),
+    )
+
+    // 2) Medicamentos prescritos pelo médico ainda com status CREATED
+    const qPrescribedCreated = query(
+      medicamentsRef,
+      where('status', '==', MedicationStatus.CREATED),
+      where('createdBy', '==', MedicationCreationBy.DOCTOR),
+      orderBy('createdAt', 'desc'),
+    )
+
+    const [activeSnapshot, prescribedSnapshot] = await Promise.all([
+      getDocs(qActive),
+      getDocs(qPrescribedCreated),
+    ])
+
+    const toEntity = (
+      snapshot: QueryDocumentSnapshot<DocumentData>,
+    ): MedicationEntity =>
+      normalizeMedication({
+        id: snapshot.id,
+        userId: (snapshot.data().userId as string) || userId,
+        ...snapshot.data(),
+      }) as MedicationEntity
+
+    const activeList = activeSnapshot.docs.map(toEntity)
+    const prescribedList = prescribedSnapshot.docs.map(toEntity)
+
+    // Unir e remover duplicatas por id (priorizar ativos)
+    const byId = new Map<string, MedicationEntity>()
+    for (const m of activeList) byId.set(m.id, m)
+    for (const m of prescribedList) if (!byId.has(m.id)) byId.set(m.id, m)
+
+    const getCreatedTime = (m: MedicationEntity): number => {
+      const c = m.createdAt
+      if (!c) return 0
+      if (typeof (c as { toDate?: () => Date }).toDate === 'function') {
+        return (c as { toDate: () => Date }).toDate().getTime()
+      }
+      if (c instanceof Date) return c.getTime()
+      return 0
+    }
+    const medicaments = Array.from(byId.values()).sort(
+      (a, b) => getCreatedTime(b) - getCreatedTime(a),
+    )
+
+    return {
+      medicaments,
+      error: null,
+    }
+  } catch (error) {
+    console.error('Erro ao buscar medicamentos para exibição:', error)
+    let errorMessage = 'Erro interno do servidor'
+    if (error instanceof FirebaseError) {
+      errorMessage = `Erro no Firebase: ${error.message}`
+    } else if (error instanceof Error) {
+      errorMessage = error.message
+    }
     return {
       medicaments: [],
       error: errorMessage,

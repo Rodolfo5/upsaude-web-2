@@ -53,6 +53,9 @@ export function MedicationsTab({ patientId, planId }: MedicationsTabProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['medications', patientId] })
+      queryClient.invalidateQueries({
+        queryKey: ['active-medicaments', patientId],
+      })
       setIsConfirmSuspendModalOpen(false)
       toast.success('Medicamento suspenso com sucesso')
     },
@@ -90,12 +93,15 @@ export function MedicationsTab({ patientId, planId }: MedicationsTabProps) {
       // Link medications to therapeutic plan
       if (medicationIds.length > 0) {
         await linkMedicationsToPlan(patientId, planId, medicationIds)
-        console.log('✅ Medicamentos vinculados ao plano')
       }
 
-      // Invalidate medications query to refresh the table
+      // Invalidate medications query to refresh the table and the patient medicaments card
       queryClient.invalidateQueries({
         queryKey: ['medications', patientId],
+        refetchType: 'active',
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['active-medicaments', patientId],
         refetchType: 'active',
       })
       queryClient.invalidateQueries({
