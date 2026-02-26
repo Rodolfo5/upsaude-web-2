@@ -93,7 +93,6 @@ export function MedicationsTab({ patientId, planId }: MedicationsTabProps) {
       // Link medications to therapeutic plan
       if (medicationIds.length > 0) {
         await linkMedicationsToPlan(patientId, planId, medicationIds)
-        console.log('✅ Medicamentos vinculados ao plano')
       }
 
       // Invalidate medications query to refresh the table and the patient medicaments card
