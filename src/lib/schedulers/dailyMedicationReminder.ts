@@ -1,9 +1,8 @@
 /**
- * Scheduler para lembrete de medicamentos do dia.
+ * Scheduler para lembrete de medicamento 30 min antes da dose.
  *
- * Roda às 5h da manhã e verifica se cada paciente tem algum medicamento
- * para tomar hoje (Uso contínuo ou Tratamento, excluindo SUSPENDED).
- * Usa interval e intervalUnit para calcular se há dose no dia.
+ * Deve ser executado de forma recorrente (ex: a cada 5 minutos),
+ * verificando doses previstas para "agora + 30 min" em janela curta.
  */
 
 import admin from 'firebase-admin'
@@ -12,6 +11,9 @@ import { getAdminApp, adminFirestore } from '@/config/firebase/firebaseAdmin'
 import { NotificationEntity } from '@/types/entities/notification'
 
 type FirestoreTimestamp = admin.firestore.Timestamp | { toDate?(): Date } | Date
+
+const THIRTY_MINUTES_MS = 30 * 60 * 1000
+const FIVE_MINUTES_MS = 5 * 60 * 1000
 
 function toDate(value: FirestoreTimestamp | undefined): Date | null {
   if (!value) return null
@@ -22,88 +24,129 @@ function toDate(value: FirestoreTimestamp | undefined): Date | null {
   return null
 }
 
+function isMedicationEligible(medication: {
+  usageClassification?: string
+  status?: string
+}): boolean {
+  const usageClassification = medication.usageClassification || ''
+  const status = medication.status || ''
+  if (status === 'SUSPENDED' || status === 'CLOSED') return false
+
+  return (
+    usageClassification === 'Uso contínuo' ||
+    usageClassification === 'Tratamento'
+  )
+}
+
+function isAfterTreatmentEnd(
+  medication: {
+    usageClassification?: string
+    endDate?: FirestoreTimestamp
+  },
+  referenceDate: Date,
+): boolean {
+  if (medication.usageClassification !== 'Tratamento' || !medication.endDate) {
+    return false
+  }
+
+  const endDate = toDate(medication.endDate)
+  if (!endDate) return false
+
+  const endOfEndDate = new Date(endDate)
+  endOfEndDate.setHours(23, 59, 59, 999)
+  return referenceDate > endOfEndDate
+}
+
 /**
- * Verifica se o medicamento tem alguma dose agendada para hoje,
- * baseado em startDate, interval e intervalUnit.
+ * Gera todas as doses do medicamento em um intervalo.
  */
-function hasDoseToday(medication: {
+function getMedicationDosesInRange(medication: {
   startDate?: FirestoreTimestamp
   createdAt?: FirestoreTimestamp
   interval?: number
   intervalUnit?: string
   endDate?: FirestoreTimestamp
   usageClassification?: string
-}): boolean {
-  if (!medication.interval || !medication.intervalUnit) return false
+}): Date[] {
+  if (!medication.interval || !medication.intervalUnit) return []
 
   const unit = medication.intervalUnit
-  if (unit !== 'Horas' && unit !== 'Dias') return false
+  if (unit !== 'Horas' && unit !== 'Dias') return []
 
   const startDate = toDate(medication.startDate) ?? toDate(medication.createdAt)
-  if (!startDate) return false
+  if (!startDate) return []
+  startDate.setSeconds(0, 0)
 
-  if (medication.usageClassification === 'Tratamento' && medication.endDate) {
-    const endDate = toDate(medication.endDate)
-    if (endDate) {
-      const today = new Date()
-      today.setHours(23, 59, 59, 999)
-      if (today > endDate) return false
+  const now = new Date()
+  const windowStart = new Date(
+    now.getTime() + THIRTY_MINUTES_MS - FIVE_MINUTES_MS,
+  )
+  const windowEnd = new Date(now.getTime() + THIRTY_MINUTES_MS)
+
+  if (isAfterTreatmentEnd(medication, windowStart)) return []
+
+  const doses: Date[] = []
+  const interval = medication.interval
+
+  if (unit === 'Dias') {
+    const doseTime = new Date(windowStart)
+    doseTime.setHours(startDate.getHours(), startDate.getMinutes(), 0, 0)
+    const diffDays = Math.floor(
+      (doseTime.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000),
+    )
+
+    if (diffDays >= 0 && diffDays % interval === 0) {
+      if (doseTime >= windowStart && doseTime <= windowEnd) {
+        doses.push(doseTime)
+      }
+    }
+
+    return doses
+  }
+
+  // Unidade em horas
+  const intervalMs = interval * 60 * 60 * 1000
+  if (intervalMs <= 0) return []
+
+  let firstDoseInWindow = new Date(startDate)
+  if (firstDoseInWindow < windowStart) {
+    const elapsed = windowStart.getTime() - firstDoseInWindow.getTime()
+    const jumps = Math.ceil(elapsed / intervalMs)
+    firstDoseInWindow = new Date(
+      firstDoseInWindow.getTime() + jumps * intervalMs,
+    )
+  }
+
+  for (
+    let current = new Date(firstDoseInWindow);
+    current <= windowEnd;
+    current = new Date(current.getTime() + intervalMs)
+  ) {
+    if (current >= windowStart) {
+      doses.push(new Date(current))
     }
   }
 
-  const today = new Date()
-  const startOfToday = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-    0,
-    0,
-    0,
-    0,
-  )
-  const endOfToday = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-    23,
-    59,
-    59,
-    999,
-  )
-
-  let currentTime = new Date(startDate)
-  const maxIterations = 1000
-  let iterations = 0
-
-  while (currentTime <= endOfToday && iterations < maxIterations) {
-    iterations++
-    if (currentTime >= startOfToday) {
-      return true
-    }
-
-    if (unit === 'Horas') {
-      currentTime = new Date(
-        currentTime.getTime() + medication.interval! * 60 * 60 * 1000,
-      )
-    } else {
-      currentTime = new Date(currentTime)
-      currentTime.setDate(currentTime.getDate() + medication.interval!)
-    }
-  }
-
-  return false
+  return doses
 }
 
 async function sendMedicationNotification(
   patientId: string,
+  medicationName: string,
+  doseTime: Date,
   tokens: string[],
   baseUrl: string,
 ): Promise<void> {
   if (tokens.length === 0) return
 
+  const formattedHour = doseTime.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+
   const notificationData: Omit<NotificationEntity, 'id' | 'createdAt'> = {
-    title: 'Medicamentos de hoje',
-    content: 'Você tem medicamentos para tomar hoje. Não esqueça!',
+    title: 'Lembrete de medicamento',
+    content: `Faltam 30 minutos para tomar ${medicationName} (${formattedHour}).`,
     type: 'Medicamento',
     users: [{ userId: patientId, tokens }],
     status: '',
@@ -112,7 +155,7 @@ async function sendMedicationNotification(
   }
 
   const url = `${baseUrl}/api/notifications`
-  await fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -125,6 +168,25 @@ async function sendMedicationNotification(
       hasSeenToUsers: notificationData.hasSeenToUsers,
     }),
   })
+
+  if (!response.ok) {
+    throw new Error(
+      `Falha ao enviar push de medicamento: status ${response.status}`,
+    )
+  }
+}
+
+function buildDoseKey(
+  patientId: string,
+  medicationId: string,
+  doseTime: Date,
+): string {
+  const yyyy = String(doseTime.getFullYear())
+  const mm = String(doseTime.getMonth() + 1).padStart(2, '0')
+  const dd = String(doseTime.getDate()).padStart(2, '0')
+  const hh = String(doseTime.getHours()).padStart(2, '0')
+  const mi = String(doseTime.getMinutes()).padStart(2, '0')
+  return `${patientId}_${medicationId}_${yyyy}${mm}${dd}${hh}${mi}`
 }
 
 export async function runDailyMedicationReminder(): Promise<{
@@ -157,6 +219,7 @@ export async function runDailyMedicationReminder(): Promise<{
       : []
 
     processed++
+    if (tokens.length === 0) continue
 
     try {
       const medicationsSnapshot = await db
@@ -165,29 +228,47 @@ export async function runDailyMedicationReminder(): Promise<{
         .collection('medications')
         .get()
 
-      let hasMedicationToday = false
-
       for (const medDoc of medicationsSnapshot.docs) {
         const data = medDoc.data()
-        const usageClassification = data.usageClassification || ''
-        const status = data.status || ''
+        if (!isMedicationEligible(data)) continue
 
-        if (status === 'SUSPENDED') continue
-        if (
-          usageClassification !== 'Uso contínuo' &&
-          usageClassification !== 'Tratamento'
-        )
-          continue
+        const dosesInWindow = getMedicationDosesInRange(data)
+        if (dosesInWindow.length === 0) continue
 
-        if (hasDoseToday(data)) {
-          hasMedicationToday = true
-          break
+        for (const doseTime of dosesInWindow) {
+          const doseKey = buildDoseKey(patientId, medDoc.id, doseTime)
+          const logRef = db
+            .collection('cronMedicationReminderLogs')
+            .doc(doseKey)
+          const logSnapshot = await logRef.get()
+
+          if (logSnapshot.exists) {
+            continue
+          }
+
+          const medicationName =
+            typeof data.name === 'string' && data.name.trim() !== ''
+              ? data.name
+              : 'seu medicamento'
+
+          await sendMedicationNotification(
+            patientId,
+            medicationName,
+            doseTime,
+            tokens,
+            baseUrl,
+          )
+
+          await logRef.set({
+            patientId,
+            medicationId: medDoc.id,
+            medicationName,
+            doseAt: doseTime,
+            sentAt: new Date(),
+          })
+
+          notified++
         }
-      }
-
-      if (hasMedicationToday && tokens.length > 0) {
-        await sendMedicationNotification(patientId, tokens, baseUrl)
-        notified++
       }
     } catch (error) {
       console.error(`Erro ao processar paciente ${patientId}:`, error)
