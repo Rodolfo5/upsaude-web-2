@@ -146,7 +146,7 @@ async function sendMedicationNotification(
 
   const notificationData: Omit<NotificationEntity, 'id' | 'createdAt'> = {
     title: 'Lembrete de medicamento',
-    content: `Faltam 30 minutos para tomar ${medicationName} (${formattedHour}).`,
+    content: `Faltam 30 minutos para tomar ${medicationName}.`,
     type: 'Medicamento',
     users: [{ userId: patientId, tokens }],
     status: '',
