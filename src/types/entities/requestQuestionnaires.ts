@@ -10,6 +10,6 @@ export interface RequestQuestionnairesEntity {
   questionnaireName: string
   text?: string
   type: RequestQuestionnairesType
-  createdAt: Timestamp
-  updatedAt: Timestamp
+  createdAt: Timestamp | Date
+  updatedAt: Timestamp | Date
 }

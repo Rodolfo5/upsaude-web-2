@@ -148,8 +148,12 @@ export async function findAllRequestQuestionnairesForPatient(
       return {
         id: docItem.id,
         ...data,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
+        createdAt: data.createdAt instanceof Timestamp
+          ? data.createdAt.toDate()
+          : data.createdAt,
+        updatedAt: data.updatedAt instanceof Timestamp
+          ? data.updatedAt.toDate()
+          : data.updatedAt,
       } as RequestQuestionnairesEntity
     })
   } catch (error) {

@@ -355,11 +355,15 @@ const AuthProvider = ({ children }: Props) => {
   const waitForUserSync = async () => {
     setLoading((prev) => ({ ...prev, onAuthUserChanged: true }))
 
-    await waitForUser((user) => {
-      if (user && !user.emailVerified) {
-        logout()
-        setUserUid('')
-      }
+    await new Promise<void>((resolve) => {
+      const unsubscribe = waitForUser((user) => {
+        unsubscribe()
+        if (user && !user.emailVerified) {
+          logout()
+          setUserUid('')
+        }
+        resolve()
+      })
     })
 
     setLoading((prev) => ({ ...prev, onAuthUserChanged: false }))

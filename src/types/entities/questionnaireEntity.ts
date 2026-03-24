@@ -2,7 +2,7 @@ import { Timestamp } from 'firebase/firestore'
 
 import { Questionnaire } from '@/constants/questionnairesOptions'
 
-import { RequestQuestionnairesType } from './requestQuestionaires'
+import { RequestQuestionnairesType } from './requestQuestionnaires'
 
 export type QuestionnaireAnswersEntity = Record<string, string>
 
