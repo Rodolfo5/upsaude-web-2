@@ -6,7 +6,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { errorToast } from '@/hooks/useAppToast'
 import useAuth from '@/hooks/useAuth'
 import { useMultiStepForm } from '@/hooks/useMultiStepForm'
-import { createUserWithEmailAndPasswordLocal } from '@/services/firebase/auth'
+import {
+  createUserWithEmailAndPasswordLocal,
+  deleteOwnAccount,
+} from '@/services/firebase/auth'
 import {
   getUserProgressFromFirestore,
   saveUserProgressToFirestore,
@@ -98,47 +101,45 @@ export function SignUpForm({ prefilledEmail }: SignUpFormProps) {
           data.password,
         )
 
-        if (error) {
-          errorToast(error)
+        if (error || !user?.uid) {
+          errorToast(error || 'Erro ao criar autenticação')
           return
         }
 
-        if (user) {
-          // Check if user is coming from QR Code flow
-          let fromQRCode = false
-          let qrCodePatientId: string | undefined
+        let fromQRCode = false
+        let qrCodePatientId: string | undefined
 
-          const callback = localStorage.getItem('medicalRecordCallback')
-          if (callback) {
-            try {
-              const url = new URL(callback)
-              const patientId = url.searchParams.get('patientId')
-              if (patientId) {
-                fromQRCode = true
-                qrCodePatientId = patientId
-              }
-            } catch (e) {
-              console.error('Error parsing QR Code callback:', e)
+        const callback = localStorage.getItem('medicalRecordCallback')
+        if (callback) {
+          try {
+            const url = new URL(callback)
+            const patientId = url.searchParams.get('patientId')
+            if (patientId) {
+              fromQRCode = true
+              qrCodePatientId = patientId
             }
+          } catch (e) {
+            console.error('Error parsing QR Code callback:', e)
           }
-
-          const docResult = await createNewUserDoc({
-            uid: user.uid,
-            email: data.email,
-            name: data.name,
-            role: UserRole.DOCTOR,
-            fromQRCode,
-            qrCodePatientId,
-          })
-
-          if (docResult.error) {
-            errorToast('Erro ao criar perfil do usuário')
-            return
-          }
-
-          setCurrentUserId(user.uid)
-          router.replace('/complete-registration')
         }
+
+        const docResult = await createNewUserDoc({
+          uid: user.uid,
+          email: data.email,
+          name: data.name,
+          role: UserRole.DOCTOR,
+          fromQRCode,
+          qrCodePatientId,
+        })
+
+        if (docResult.error) {
+          await deleteOwnAccount()
+          errorToast('Erro ao criar perfil do usuário')
+          return
+        }
+
+        setCurrentUserId(user.uid)
+        router.replace('/complete-registration')
       } catch (error) {
         console.error('Erro ao criar usuário:', error)
         errorToast('Erro ao criar usuário')

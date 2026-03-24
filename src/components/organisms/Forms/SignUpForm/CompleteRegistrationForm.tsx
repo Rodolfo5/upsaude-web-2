@@ -256,8 +256,6 @@ export function CompleteRegistrationForm() {
                   const memedIdResult = await memedIdResponse.json()
 
                   if (memedIdResult.found && memedIdResult.memedId) {
-                    // Médico encontrado na Memed, salvar memedId
-                    // Nota: Não temos o token neste caso, será buscado da API quando necessário
                     await saveUserProgressToFirestore(
                       userIdToSave,
                       {
@@ -267,14 +265,11 @@ export function CompleteRegistrationForm() {
                       4,
                       true,
                     )
-
-                    // Log estruturado para análise
                   } else {
-                    // Não conseguiu obter memedId, mas sabemos que existe
                     await saveUserProgressToFirestore(
                       userIdToSave,
                       {
-                        memedRegistered: true,
+                        memedRegistered: false,
                         memedNote:
                           'Médico já existe na Memed (não foi possível obter memedId)',
                       },
@@ -295,11 +290,10 @@ export function CompleteRegistrationForm() {
                           : 'Erro desconhecido',
                     },
                   )
-                  // Salvar como registrado mesmo assim
                   await saveUserProgressToFirestore(
                     userIdToSave,
                     {
-                      memedRegistered: true,
+                      memedRegistered: false,
                       memedNote:
                         'Médico já existe na Memed (erro ao buscar memedId)',
                     },

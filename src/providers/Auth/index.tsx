@@ -192,24 +192,24 @@ const AuthProvider = ({ children }: Props) => {
         password,
       )
 
-      if (authResult.error) {
-        throw new Error(authResult.error)
+      if (authResult.error || !authResult.user?.uid) {
+        errorToast(authResult.error || 'Erro ao criar autenticação')
+        return
       }
 
-      if (authResult.user) {
-        const docResult = await createNewUserDoc({
-          uid: authResult.user.uid,
-          email,
-          name,
-          role: UserRole.DOCTOR,
-        })
+      const docResult = await createNewUserDoc({
+        uid: authResult.user.uid,
+        email,
+        name,
+        role: UserRole.DOCTOR,
+      })
 
-        if (docResult.error) {
-          errorToast('Erro no Firestore: ' + docResult.error)
-        } else {
-          successToast('Conta criada com sucesso!')
-          router.push('/login')
-        }
+      if (docResult.error) {
+        await deleteOwnAccount()
+        errorToast('Erro ao criar perfil do usuário')
+      } else {
+        successToast('Conta criada com sucesso!')
+        router.push('/login')
       }
     } catch (error) {
       errorToast('Erro: ' + (error as Error).message)
@@ -384,11 +384,15 @@ const AuthProvider = ({ children }: Props) => {
   const waitForUserSync = async () => {
     setLoading((prev) => ({ ...prev, onAuthUserChanged: true }))
 
-    await waitForUser((user) => {
-      if (user && !user.emailVerified) {
-        logout()
-        setUserUid('')
-      }
+    await new Promise<void>((resolve) => {
+      const unsubscribe = waitForUser((user) => {
+        unsubscribe()
+        if (user && !user.emailVerified) {
+          logout()
+          setUserUid('')
+        }
+        resolve()
+      })
     })
 
     setLoading((prev) => ({ ...prev, onAuthUserChanged: false }))
