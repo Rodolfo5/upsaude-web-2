@@ -126,7 +126,7 @@ export function Navbar({ navItems }: NavbarProps) {
     <nav className="fixed top-0 z-50 flex w-full items-center border-b bg-slate-100">
       <div className="flex w-full items-center justify-between px-10 py-4">
         <Link href="/" className="font-bold">
-          <Image src="/LogoUPsaude1.png" alt="Logo" width={50} height={50} />
+          <Image src="/logoups1.png" alt="Logo" width={50} height={50} />
         </Link>
 
         <NavLinks items={navItems} pathname={pathname} />
