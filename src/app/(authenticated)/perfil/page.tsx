@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { formatDate, isDate } from 'date-fns'
-import { Edit3, Save, X, Plus, Camera } from 'lucide-react'
+import { Camera, Download, Edit3, Plus, Save, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -23,6 +23,25 @@ import { deleteOwnAccount, logout } from '@/services/firebase/auth'
 import { uploadFile } from '@/services/firebase/firebaseStorage'
 import { deleteUserDoc, updateUserDoc } from '@/services/user'
 import profileEditSchema, { ProfileEditData } from '@/validations/profileEdit'
+
+function getCredentialDocumentFileKind(url: string): 'pdf' | 'image' | 'other' {
+  const base = url.split('?')[0]
+  let path = base
+  try {
+    path = decodeURIComponent(base)
+  } catch {
+    // ignore
+  }
+  if (/\.pdf($|[?#])/i.test(path)) return 'pdf'
+  if (/\.(png|jpe?g|gif|webp|bmp|svg)($|[?#])/i.test(path)) return 'image'
+  return 'other'
+}
+
+function credentialDocumentDownloadLabel(kind: 'pdf' | 'image' | 'other') {
+  if (kind === 'pdf') return 'Baixar PDF'
+  if (kind === 'image') return 'Baixar imagem'
+  return 'Baixar arquivo'
+}
 
 export default function PerfilPage() {
   const { currentUser, refreshUser } = useUser()
@@ -414,10 +433,37 @@ export default function PerfilPage() {
                   <p className="min-w-0 flex-1 text-sm text-gray-500 sm:w-1/2">
                     Arquivo
                   </p>
-                  <div className="min-w-0 flex-1 sm:w-auto">
-                    <p className="max-w-full truncate font-medium text-gray-900 sm:max-w-48">
-                      {currentDoctor?.credentialDocument || '-'}
-                    </p>
+                  <div
+                    className={
+                      currentDoctor?.credentialDocument
+                        ? 'flex min-w-0 flex-1 justify-start sm:w-1/2'
+                        : 'min-w-0 flex-1 sm:w-1/2'
+                    }
+                  >
+                    {currentDoctor?.credentialDocument ? (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="rounded-full bg-purple-600 text-white hover:bg-purple-700"
+                        asChild
+                      >
+                        <a
+                          href={currentDoctor.credentialDocument}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                        >
+                          <Download aria-hidden />
+                          {credentialDocumentDownloadLabel(
+                            getCredentialDocumentFileKind(
+                              currentDoctor.credentialDocument,
+                            ),
+                          )}
+                        </a>
+                      </Button>
+                    ) : (
+                      <p className="font-medium text-gray-900">-</p>
+                    )}
                   </div>
                 </div>
                 <div className="h-px w-full bg-[#CAC4D0]" />
