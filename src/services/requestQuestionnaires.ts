@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore'
 
 import firebaseApp from '@/config/firebase/firebase'
+import { timestampToDate } from '@/lib/utils'
 import type {
   RequestQuestionnairesEntity,
   RequestQuestionnairesType,
@@ -115,12 +116,8 @@ export async function findRequestQuestionnaireById(
     return {
       id: docSnap.id,
       ...data,
-      createdAt: data.createdAt?.toDate
-        ? data.createdAt.toDate()
-        : data.createdAt,
-      updatedAt: data.updatedAt?.toDate
-        ? data.updatedAt.toDate()
-        : data.updatedAt,
+      createdAt: timestampToDate(data.createdAt) ?? new Date(),
+      updatedAt: timestampToDate(data.updatedAt) ?? new Date(),
     } as RequestQuestionnairesEntity
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -148,12 +145,8 @@ export async function findAllRequestQuestionnairesForPatient(
       return {
         id: docItem.id,
         ...data,
-        createdAt: data.createdAt instanceof Timestamp
-          ? data.createdAt.toDate()
-          : data.createdAt,
-        updatedAt: data.updatedAt instanceof Timestamp
-          ? data.updatedAt.toDate()
-          : data.updatedAt,
+        createdAt: timestampToDate(data.createdAt) ?? new Date(),
+        updatedAt: timestampToDate(data.updatedAt) ?? new Date(),
       } as RequestQuestionnairesEntity
     })
   } catch (error) {

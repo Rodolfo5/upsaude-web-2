@@ -15,19 +15,30 @@ export function formatCpf(cpf: string) {
   return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
 }
 
-export const timestampToDate = (data: Timestamp): Date | null => {
+export const timestampToDate = (
+  data: Timestamp | Date | string | null | undefined,
+): Date | null => {
+  if (!data) {
+    return null
+  }
+
+  if (data instanceof Date) {
+    return data
+  }
+
   if (typeof data === 'string') {
     // Converte para Date e ajusta para GMT-3 (Brasília)
     const date = new Date(data)
     // Ajusta o horário subtraindo 3 horas (em milissegundos)
     return date
-  } else {
-    if (!data || typeof data.seconds !== 'number') {
-      return null
-    }
-    const milliseconds = data.seconds * 1000 + (data.nanoseconds || 0) / 1000000
-    return new Date(milliseconds)
   }
+
+  if (typeof data.seconds !== 'number') {
+    return null
+  }
+
+  const milliseconds = data.seconds * 1000 + (data.nanoseconds || 0) / 1000000
+  return new Date(milliseconds)
 }
 
 const MEDICAL_RECORD_BASE_URL = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/medical-record-share`
