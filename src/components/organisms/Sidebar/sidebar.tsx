@@ -76,6 +76,10 @@ export default function Sidebar() {
   const { isExpanded, toggleExpanded } = useSidebar()
   const { unreadCount } = useUnreadNotifications(userUid ?? undefined)
 
+  const handleLogoutClick = () => {
+    void logoutUser()
+  }
+
   return (
     <aside
       className={cn(
@@ -230,7 +234,7 @@ export default function Sidebar() {
 
         <button
           type="button"
-          onClick={logoutUser}
+          onClick={handleLogoutClick}
           disabled={loading.logout}
           className={cn(
             'flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 transition-colors hover:bg-primary/10 hover:text-primary disabled:opacity-60',

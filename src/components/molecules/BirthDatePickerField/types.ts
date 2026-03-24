@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Control } from 'react-hook-form'
+import { Control, FieldValues, Path } from 'react-hook-form'
 
-export interface BirthDatePickerFieldProps {
-  name: string
-  control: Control<any>
+export interface BirthDatePickerFieldProps<T extends FieldValues> {
+  name: Path<T>
+  control: Control<T>
   label: string
   required?: boolean
   disabled?: boolean

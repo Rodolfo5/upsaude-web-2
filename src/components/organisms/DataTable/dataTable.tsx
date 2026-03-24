@@ -41,6 +41,7 @@ export function DataTable<TData, TValue>({
   columnFilters: externalColumnFilters,
   onColumnFiltersChange: externalOnColumnFiltersChange,
   pageSize = 10,
+  hidePagination = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [localColumnFilters, setLocalColumnFilters] =
@@ -237,7 +238,7 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Paginação */}
-      <DataTablePagination table={table} />
+      {!hidePagination && <DataTablePagination table={table} />}
     </div>
   )
 }

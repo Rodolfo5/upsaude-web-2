@@ -8,13 +8,15 @@ import {
   query,
   where,
   updateDoc,
-  setDoc,
   Timestamp,
 } from 'firebase/firestore'
 
 import firebaseApp from '@/config/firebase/firebase'
+import {
+  getApiErrorMessage,
+  postAuthenticatedJson,
+} from '@/services/api/authenticatedFetch'
 import { PatientEntity, UserRole } from '@/types/entities/user'
-import { generateRandomPassword } from '@/utils/generateRandomPassword'
 
 import { sendPatientWelcome } from './email/email'
 import { notifyPlanReevaluationRequested } from './emailNotification'
@@ -156,77 +158,57 @@ interface CreatePatientData {
 
 export const createPatient = async (
   data: CreatePatientData,
-): Promise<string> => {
-  const generatedPassword = generateRandomPassword()
-
+): Promise<{ uid: string; warnings: string[] }> => {
   try {
-    // Cria usuário no Auth usando Admin SDK via API
-    // Isso evita que a sessão atual do médico seja substituída
-    const response = await fetch('/api/createPatient', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: data.email,
-        password: generatedPassword,
-      }),
-    })
+    const { response, data: apiResult } =
+      await postAuthenticatedJson<{
+        uid?: string | null
+        password?: string | null
+        error?: string | null
+        warnings?: string[]
+      }>('/api/createPatient', data)
 
-    const authResult = await response.json()
-
-    if (!response.ok || authResult.error || !authResult.uid) {
-      throw new Error(authResult.error || 'Erro ao criar conta de autenticação')
+    if (!response.ok || !apiResult?.uid || !apiResult.password) {
+      throw new Error(
+        getApiErrorMessage(apiResult, 'Erro ao criar conta de autenticacao'),
+      )
     }
 
-    // Cria documento no Firestore usando UID do Auth como ID do documento
-    // Isso garante consistência: o ID do documento = UID do Auth
-    const patientDocRef = doc(db, USERS_COLLECTION, authResult.uid)
+    const warnings = [...(apiResult.warnings ?? [])]
 
-    const patientData = {
-      id: authResult.uid,
-      name: data.name,
-      email: data.email,
-      phoneNumber: data.phone,
-      doctorId: data.doctorId,
-      steps: data.steps,
-      role: UserRole.PATIENT,
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
-    }
-
-    await setDoc(patientDocRef, patientData)
-
-    // Verificar se o documento foi realmente criado
-    try {
-      const verifyDoc = await getDoc(patientDocRef)
-      if (verifyDoc.exists()) {
-        return authResult.uid
-      } else {
-        throw new Error('Documento do paciente não foi criado corretamente')
-      }
-    } catch (verifyError) {
-      console.error('❌ Erro ao verificar documento do paciente:', verifyError)
-      // Não bloqueia o fluxo, mas loga o erro
-    }
-
-    // Envia comunicações (sem bloquear o fluxo principal)
-    Promise.all([
+    const notificationResults = await Promise.allSettled([
       sendPatientWelcome({
         name: data.name,
         email: data.email,
-        password: generatedPassword,
+        password: apiResult.password,
       }),
       sendPatientWelcomeSMS({
         name: data.name,
         phone: data.phone,
-        password: generatedPassword,
+        password: apiResult.password,
         email: data.email,
       }),
     ])
 
-    // Retorna o UID do Auth (que é o ID do documento)
-    return authResult.uid
+    notificationResults.forEach((result) => {
+      if (result.status === 'rejected') {
+        warnings.push(
+          result.reason instanceof Error
+            ? result.reason.message
+            : 'Falha ao enviar uma notificacao de boas-vindas.',
+        )
+        return
+      }
+
+      if (result.value.error) {
+        warnings.push(result.value.error)
+      }
+    })
+
+    return {
+      uid: apiResult.uid,
+      warnings,
+    }
   } catch (err) {
     console.error('Erro ao criar paciente:', err)
 
@@ -234,9 +216,7 @@ export const createPatient = async (
       throw new Error(err.message)
     }
 
-    throw new Error(
-      err instanceof Error ? err.message : 'Erro ao criar paciente',
-    )
+    throw new Error(err instanceof Error ? err.message : 'Erro ao criar paciente')
   }
 }
 

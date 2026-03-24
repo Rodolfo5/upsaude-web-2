@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import LoadingComponent from '@/components/atoms/Loading/loading'
 import { errorToast } from '@/hooks/useAppToast'
@@ -23,6 +23,7 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
   const { currentUser, loading: userLoading, refreshUser } = useUser()
   const [isAllowed, setIsAllowed] = useState(false)
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false)
+  const isHandlingAdminPublicLogin = useRef(false)
 
   // Check if user came from QR Code (using Firebase flag)
   const isFromQRCode = (): boolean => {
@@ -77,6 +78,22 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
     return result.path
   }
 
+  const redirectAdminToAdminLogin = async () => {
+    if (isHandlingAdminPublicLogin.current) return
+
+    isHandlingAdminPublicLogin.current = true
+
+    try {
+      await logout()
+      setUserUid('')
+      errorToast('Administradores devem acessar pela pagina de login administrativo.')
+    } catch (error) {
+      console.error('Erro ao deslogar admin da rota /login:', error)
+    } finally {
+      router.replace('/admin-login')
+    }
+  }
+
   useEffect(() => {
     // Wait until auth state and user data are loaded
     if (loading.onAuthUserChanged || userLoading.fetchCurrentUser) return
@@ -86,6 +103,23 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
     if (!hasCheckedAuth && userUid && !currentUser) {
       setHasCheckedAuth(true)
       refreshUser()
+      return
+    }
+
+    const isLoginFlowInProgress =
+      loading.loginWithInternalService ||
+      loading.loginWithGoogle ||
+      loading.loginWithApple
+
+    if (
+      accessType === 'public' &&
+      pathname === '/login' &&
+      userUid &&
+      currentUser?.role === UserRole.ADMIN &&
+      !isLoginFlowInProgress
+    ) {
+      setIsAllowed(false)
+      void redirectAdminToAdminLogin()
       return
     }
 

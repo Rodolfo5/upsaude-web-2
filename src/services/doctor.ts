@@ -6,15 +6,16 @@ import {
   getDocs,
   getFirestore,
   query,
-  setDoc,
-  updateDoc,
   where,
 } from 'firebase/firestore'
 
 import firebaseApp from '@/config/firebase/firebase'
+import {
+  getApiErrorMessage,
+  postAuthenticatedJson,
+} from '@/services/api/authenticatedFetch'
 import { AgendaEntity } from '@/types/entities/agenda'
 import { DoctorEntity, UserRole } from '@/types/entities/user'
-import { generateRandomPassword } from '@/utils/generateRandomPassword'
 
 import { sendDoctorWelcome } from './email/email'
 
@@ -130,117 +131,42 @@ interface CreateDoctorData {
 
 export const createDoctor = async (
   data: CreateDoctorData,
-): Promise<{ uid: string; password: string }> => {
-  const generatedPassword = generateRandomPassword()
-
+): Promise<{ uid: string; password: string; warnings: string[] }> => {
   try {
-    // Cria usuário no Auth usando Admin SDK via API
-    const response = await fetch('/api/createDoctor', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: data.email,
-        password: generatedPassword,
-      }),
-    })
+    const { response, data: apiResult } =
+      await postAuthenticatedJson<{
+        uid?: string | null
+        password?: string | null
+        error?: string | null
+        warnings?: string[]
+      }>('/api/createDoctor', {
+        ...data,
+        birthDate: data.birthDate.toISOString(),
+      })
 
-    const authResult = await response.json()
-
-    if (!response.ok || authResult.error || !authResult.uid) {
-      throw new Error(authResult.error || 'Erro ao criar conta de autenticação')
+    if (!response.ok || !apiResult?.uid || !apiResult.password) {
+      throw new Error(
+        getApiErrorMessage(apiResult, 'Erro ao criar conta de autenticacao'),
+      )
     }
 
-    await setDoc(doc(db, USERS_COLLECTION, authResult.uid), {
+    const warnings = [...(apiResult.warnings ?? [])]
+
+    const emailResult = await sendDoctorWelcome({
       name: data.name,
       email: data.email,
-      cpf: data.cpf,
-      birthDate: data.birthDate.toISOString(),
-      state: data.state,
-      credential: data.crm,
-      credentialState: data.crmState, // Estado do CRM
-      typeOfCredential: 'CRM',
-      specialty: data.specialty,
-      role: UserRole.DOCTOR,
-      status: 'APPROVED',
-      currentStep: 2,
-      isCompleted: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      password: apiResult.password,
     })
 
-    // Integração com Memed (não bloqueia criação se falhar)
-    if (data.crm && data.crmState) {
-      try {
-        // Separa nome e sobrenome
-        const nameParts = data.name.trim().split(/\s+/)
-        const firstName = nameParts[0] || data.name
-        const surname = nameParts.slice(1).join(' ') || ''
-
-        const memedResponse = await fetch('/api/memed/register-doctor', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            externalId: authResult.uid, // Usa o UID do Firebase como external_id
-            name: firstName,
-            surname: surname || firstName, // Se não tiver sobrenome, usa o nome
-            email: data.email,
-            cpf: data.cpf,
-            birthDate: data.birthDate.toISOString(),
-            crm: data.crm,
-            crmState: data.crmState,
-            // phone, gender, cityId, specialtyId podem ser adicionados depois
-          }),
-        })
-
-        const memedResult = await memedResponse.json()
-
-        if (memedResult.success && memedResult.memedId) {
-          // Atualizar documento com memedId e token se disponível
-          const updateData: {
-            memedId: string
-            memedRegistered: boolean
-            updatedAt: Date
-            token?: string
-          } = {
-            memedId: memedResult.memedId,
-            memedRegistered: true,
-            updatedAt: new Date(),
-          }
-
-          // Salva o token do prescritor se retornado
-          if (memedResult.prescriberToken) {
-            updateData.token = memedResult.prescriberToken
-          }
-
-          await updateDoc(doc(db, USERS_COLLECTION, authResult.uid), updateData)
-
-          // Log de sucesso da integração MEMED destacando o memedId
-        } else {
-          console.warn(
-            'Médico criado, mas falha ao registrar na Memed:',
-            memedResult.error,
-          )
-        }
-      } catch (error) {
-        console.error('Erro na integração Memed (não bloqueia criação):', error)
-        // Não bloqueia a criação do médico se Memed falhar
-      }
+    if (emailResult.error) {
+      warnings.push(emailResult.error)
     }
 
-    // Envia comunicações (sem bloquear o fluxo principal)
-    Promise.all([
-      sendDoctorWelcome({
-        name: data.name,
-        email: data.email,
-        password: generatedPassword,
-      }),
-    ])
-
-    return { uid: authResult.uid, password: generatedPassword }
+    return {
+      uid: apiResult.uid,
+      password: apiResult.password,
+      warnings,
+    }
   } catch (err) {
     console.error('Erro ao criar médico:', err)
 

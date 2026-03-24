@@ -7,7 +7,13 @@ import axios, { AxiosError } from 'axios'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
-import { initAdmin } from '@/config/firebase/firebaseAdmin'
+import {
+  findUserDocumentByAnyId,
+  forbiddenRouteResponse,
+  isAdminOrSamePatientRouteUser,
+  requireAuthenticatedRouteUser,
+} from '@/lib/server/routeAuth'
+import { UserRole } from '@/types/entities/user'
 // Schema de validação para os dados que chegam do mobile/frontend.
 const createCardSchema = z.object({
   // Dados do endereço (usado para billing address e para criar customer se necessário)
@@ -46,11 +52,15 @@ const getPagarmeAuthHeader = (): string => {
 }
 
 export async function POST(req: Request) {
-  // Inicializa o Firebase Admin
-  const adminApp = await initAdmin()
-  const adminDb = adminApp.firestore()
-
   try {
+    const authResult = await requireAuthenticatedRouteUser(req)
+
+    if ('response' in authResult) {
+      return authResult.response
+    }
+
+    const { user, db: adminDb } = authResult
+
     // 1. RECEBER E VALIDAR DADOS
     const body = await req.json()
     const validation = createCardSchema.safeParse(body)
@@ -66,17 +76,30 @@ export async function POST(req: Request) {
     const { userId } = data
 
     // 2. BUSCAR USUÁRIO NO FIRESTORE
-    const userDocRef = adminDb.collection('users').doc(userId)
-    const userDoc = await userDocRef.get()
+    if (!isAdminOrSamePatientRouteUser(user, userId)) {
+      return forbiddenRouteResponse(
+        'Voce nao tem permissao para cadastrar cartao para este usuario.',
+      )
+    }
 
-    if (!userDoc.exists) {
+    const userDoc = await findUserDocumentByAnyId(adminDb, userId)
+
+    if (!userDoc?.exists) {
       return NextResponse.json(
         { error: 'Usuário não encontrado.' },
         { status: 404 },
       )
     }
 
+    const userDocRef = userDoc.ref
     const userData = userDoc.data()
+
+    if (userData?.role !== UserRole.PATIENT) {
+      return forbiddenRouteResponse(
+        'Apenas pacientes podem ter cartoes cadastrados por esta rota.',
+      )
+    }
+
     let pagarmeCustomerId = userData?.pagarmeCustomerId
 
     // 3. CRIAR CUSTOMER NO PAGAR.ME SE NÃO EXISTIR

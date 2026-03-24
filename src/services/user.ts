@@ -42,6 +42,10 @@ import {
 
 import firebaseApp from '@/config/firebase/firebase'
 import { getAgenda } from '@/services/firestore/user'
+import {
+  getApiErrorMessage,
+  getAuthenticatedHeaders,
+} from '@/services/api/authenticatedFetch'
 import { DoctorEntity, UserRole, UserStatus } from '@/types/entities/user'
 
 // ====================================================================
@@ -78,6 +82,13 @@ interface UserResult {
 interface UsersResult {
   users: DoctorEntity[] // Array de usuários (vazio se erro)
   error: string | null // Erro ou null se sucesso
+}
+
+export interface PaginatedUsersResult {
+  users: DoctorEntity[]
+  error: string | null
+  nextCursor: string | null
+  hasNextPage: boolean
 }
 
 /**
@@ -304,11 +315,9 @@ export const getAllUsers = async (): Promise<UsersResult> => {
 
     const users: DoctorEntity[] = []
 
-    // 🔄 Transformar cada documento e buscar agenda
+    // 🔄 Transformar cada documento sem fazer N+1 na subcoleção de agenda
     for (const docSnapshot of querySnapshot.docs) {
       const data = docSnapshot.data()
-
-      const { settings: agenda } = await getAgenda(docSnapshot.id)
 
       users.push({
         id: docSnapshot.id,
@@ -319,7 +328,6 @@ export const getAllUsers = async (): Promise<UsersResult> => {
         createdAt: data.createdAt?.toDate(),
         updatedAt: data.updatedAt?.toDate(),
         ...data,
-        agenda: agenda || undefined,
       })
     }
 
@@ -329,6 +337,79 @@ export const getAllUsers = async (): Promise<UsersResult> => {
     return {
       users: [], // 📦 Array vazio em caso de erro
       error: error instanceof Error ? error.message : 'Erro ao buscar usuários',
+    }
+  }
+}
+
+export const getAdminUsersPage = async ({
+  cursor,
+  limit = 10,
+  role,
+  includeAgenda = false,
+}: {
+  cursor?: string | null
+  limit?: number
+  role?: UserRole
+  includeAgenda?: boolean
+} = {}): Promise<PaginatedUsersResult> => {
+  try {
+    const params = new URLSearchParams()
+    params.set('limit', String(limit))
+
+    if (cursor) {
+      params.set('cursor', cursor)
+    }
+
+    if (role) {
+      params.set('role', role)
+    }
+
+    if (includeAgenda) {
+      params.set('includeAgenda', 'true')
+    }
+
+    const response = await fetch(`/api/admin/users?${params.toString()}`, {
+      method: 'GET',
+      headers: await getAuthenticatedHeaders(),
+      cache: 'no-store',
+    })
+
+    const data = (await response.json().catch(() => null)) as
+      | {
+          users?: DoctorEntity[]
+          nextCursor?: string | null
+          hasNextPage?: boolean
+          error?: string | null
+          message?: string | null
+        }
+      | null
+
+    if (!response.ok) {
+      return {
+        users: [],
+        error: getApiErrorMessage(data, 'Erro ao buscar usuarios.'),
+        nextCursor: null,
+        hasNextPage: false,
+      }
+    }
+
+    return {
+      users: Array.isArray(data?.users) ? data.users : [],
+      error: null,
+      nextCursor: data?.nextCursor ?? null,
+      hasNextPage: Boolean(data?.hasNextPage),
+    }
+  } catch (error) {
+    console.error('Erro ao buscar usuarios paginados:', error)
+
+    return {
+      users: [],
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Erro ao buscar usuarios paginados',
+      nextCursor: null,
+      hasNextPage: false,
     }
   }
 }

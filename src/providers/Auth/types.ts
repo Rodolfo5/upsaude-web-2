@@ -64,7 +64,7 @@ export interface AuthContextType {
    * Login com email/senha
    * Verifica email verificado automaticamente
    */
-  loginWithInternalService: (email: string, password: string) => void
+  loginWithInternalService: (email: string, password: string) => Promise<void>
 
   /**
    * Login com Google
@@ -92,17 +92,17 @@ export interface AuthContextType {
    * Envia email de recuperação de senha
    * Sempre mostra sucesso por segurança
    */
-  forgotPassword: (email: string) => void
+  forgotPassword: (email: string) => Promise<void>
 
   /**
    * Logout completo
    * Limpa estado + redireciona
    */
-  logoutUser: () => void
+  logoutUser: (redirectPath?: string) => Promise<void>
 
   /**
    * Deleta conta atual (IRREVERSÍVEL)
    * Remove Firestore + Auth + limpa estado
    */
-  deleteUser: () => void
+  deleteUser: () => Promise<void>
 }

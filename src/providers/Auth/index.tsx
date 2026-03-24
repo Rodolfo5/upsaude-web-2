@@ -69,6 +69,15 @@ const AuthProvider = ({ children }: Props) => {
   const [loadingState, setLoading] = useState(initialLoadingObject)
   const router = useRouter()
 
+  const redirectAdminToAdminLogin = async () => {
+    await logout()
+    setUserUid('')
+    errorToast(
+      'Administradores devem acessar pela pagina de login administrativo.',
+    )
+    router.replace('/admin-login')
+  }
+
   const loading = useMemo(
     () => ({
       onAuthUserChanged: loadingState.onAuthUserChanged,
@@ -144,6 +153,14 @@ const AuthProvider = ({ children }: Props) => {
     )
 
     if (user) {
+      const { user: userData } = await getUserDoc(user.uid)
+
+      if (userData?.role === UserRole.ADMIN) {
+        await redirectAdminToAdminLogin()
+        setLoading((prev) => ({ ...prev, loginWithInternalService: false }))
+        return
+      }
+
       successToast('Bem vindo de volta!')
       setUserUid(user.uid)
     } else {
@@ -217,6 +234,12 @@ const AuthProvider = ({ children }: Props) => {
       // Verificar se usuário já existe no Firestore
       const { user: userData, error: userError } = await getUserDoc(user.uid)
 
+      if (userData?.role === UserRole.ADMIN) {
+        await redirectAdminToAdminLogin()
+        setLoading((prev) => ({ ...prev, loginWithGoogle: false }))
+        return
+      }
+
       // Se não existe no Firestore, criar documento inicial
       if (!userData || userError) {
         await createNewUserDoc({
@@ -255,6 +278,12 @@ const AuthProvider = ({ children }: Props) => {
     if (user) {
       // Verificar se usuário já existe no Firestore
       const { user: userData, error: userError } = await getUserDoc(user.uid)
+
+      if (userData?.role === UserRole.ADMIN) {
+        await redirectAdminToAdminLogin()
+        setLoading((prev) => ({ ...prev, loginWithApple: false }))
+        return
+      }
 
       // Se não existe no Firestore, criar documento inicial
       if (!userData || userError) {
@@ -337,12 +366,12 @@ const AuthProvider = ({ children }: Props) => {
    * - Limpa estado local
    * - Redireciona para login (não usado para admin, veja Navbar)
    */
-  const logoutUser = async () => {
+  const logoutUser = async (redirectPath = '/login') => {
     setLoading((prev) => ({ ...prev, logout: true }))
 
     await logout()
     setUserUid('')
-    router.push('/login')
+    router.push(redirectPath)
 
     setLoading((prev) => ({ ...prev, logout: false }))
   }

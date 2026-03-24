@@ -1,6 +1,6 @@
 'use client'
 
-import { useController } from 'react-hook-form'
+import { FieldValues, useController } from 'react-hook-form'
 
 import { BirthDatePicker } from '@/components/atoms/BirthDatePicker/birthDatePicker'
 import { FormErrorLabel } from '@atoms/FormError/formError'
@@ -8,7 +8,7 @@ import { Label } from '@atoms/Label/label'
 
 import { BirthDatePickerFieldProps } from './types'
 
-export default function BirthDatePickerField({
+export default function BirthDatePickerField<T extends FieldValues>({
   name,
   control,
   label,
@@ -16,7 +16,7 @@ export default function BirthDatePickerField({
   placeholder,
   className,
   disabled,
-}: BirthDatePickerFieldProps) {
+}: BirthDatePickerFieldProps<T>) {
   const {
     field: { value, onChange },
     fieldState: { error },

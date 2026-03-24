@@ -1,15 +1,33 @@
-import axios from 'axios' // Importando o axios
-// A importação do firestore está aqui conforme seu código, mas a lógica está comentada.
+import axios, { AxiosError } from 'axios'
 import { NextResponse } from 'next/server'
 
-import { initAdmin } from '@/config/firebase/firebaseAdmin'
+import {
+  findUserDocumentByAnyId,
+  forbiddenRouteResponse,
+  isAdminOrSamePatientRouteUser,
+  requireAuthenticatedRouteUser,
+} from '@/lib/server/routeAuth'
+import { UserRole } from '@/types/entities/user'
+
+const getPagarmeAuthHeader = (): string => {
+  const secretKey = process.env.PAGARME_SECRET_KEY
+  if (!secretKey) {
+    throw new Error('A chave secreta do Pagar.me nao esta configurada.')
+  }
+  const base64Key = Buffer.from(`${secretKey}:`).toString('base64')
+  return `Basic ${base64Key}`
+}
 
 export async function POST(request: Request) {
   try {
-    const adminApp = await initAdmin()
-    const adminDb = adminApp.firestore()
+    const authResult = await requireAuthenticatedRouteUser(request)
 
-    // Validação básica dos dados recebidos
+    if ('response' in authResult) {
+      return authResult.response
+    }
+
+    const { user, db: adminDb } = authResult
+    const body = await request.json()
     const {
       email,
       phone,
@@ -24,7 +42,21 @@ export async function POST(request: Request) {
       date,
       hour,
       format,
-    } = await request.json()
+    } = body as {
+      email?: string
+      phone?: string
+      documentType?: string
+      documentNumber?: string
+      userName?: string
+      userId?: string
+      pagarmeCustomerId?: string
+      budgetTotal?: number
+      protocolNumber?: string
+      doctorId?: string
+      date?: string | Date
+      hour?: string
+      format?: string
+    }
 
     if (
       !email ||
@@ -33,7 +65,6 @@ export async function POST(request: Request) {
       !documentNumber ||
       !userName ||
       !userId ||
-      !pagarmeCustomerId ||
       !budgetTotal ||
       !protocolNumber ||
       !doctorId ||
@@ -42,51 +73,98 @@ export async function POST(request: Request) {
       !format
     ) {
       return NextResponse.json(
-        { success: false, message: 'Dados obrigatórios ausentes.' },
+        { success: false, message: 'Dados obrigatorios ausentes.' },
         { status: 400 },
       )
     }
 
-    // Validação do telefone
-    // const cleanPhone = phone.replace(/\D/g, "");
-    // if (
-    //   cleanPhone.length < 10 ||
-    //   cleanPhone === "00000000000" ||
-    //   /^0+$/.test(cleanPhone)
-    // ) {
-    //   return NextResponse.json(
-    //     {
-    //       success: false,
-    //       message: "Telefone inválido. Por favor, insira um número válido."
-    //     },
-    //     { status: 400 }
-    //   );
-    // }
+    const consultationQuery = await adminDb
+      .collection('consultations')
+      .where('protocolNumber', '==', protocolNumber)
+      .limit(1)
+      .get()
 
-    // Busca a chave secreta do Pagar.me
-    // Helper para autenticação segura no Pagar.me
-    const getPagarmeAuthHeader = (): string => {
-      const secretKey = process.env.PAGARME_SECRET_KEY
-      if (!secretKey) {
-        throw new Error(
-          'A chave secreta do Pagar.me (sk_test_...) não está configurada.',
-        )
-      }
-      const base64Key = Buffer.from(`${secretKey}:`).toString('base64')
-      return `Basic ${base64Key}`
+    if (consultationQuery.empty) {
+      return NextResponse.json(
+        { success: false, message: 'Consulta nao encontrada.' },
+        { status: 404 },
+      )
     }
 
-    // Codifica a chave para autenticação Basic
-    const encodedKey = getPagarmeAuthHeader()
+    const consultationData = consultationQuery.docs[0].data()
+    const resolvedUserId = consultationData?.patientId || userId
+    const resolvedDoctorId = consultationData?.doctorId || doctorId
+    const resolvedDate = consultationData?.date?.toDate
+      ? consultationData.date.toDate()
+      : consultationData?.date || date
+    const resolvedHour = consultationData?.hour || hour
+    const resolvedFormat = consultationData?.format || format
 
-    const budgetTotalInCents = Math.floor(budgetTotal * 100)
-    // Monta o payload para o Pagar.me
+    if (userId !== resolvedUserId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'O usuario informado nao corresponde ao dono da consulta.',
+        },
+        { status: 400 },
+      )
+    }
+
+    if (doctorId !== resolvedDoctorId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'O profissional informado nao corresponde ao profissional da consulta.',
+        },
+        { status: 400 },
+      )
+    }
+
+    if (!isAdminOrSamePatientRouteUser(user, resolvedUserId)) {
+      return forbiddenRouteResponse(
+        'Voce nao tem permissao para criar o pagamento desta consulta.',
+      )
+    }
+
+    const userDoc = await findUserDocumentByAnyId(adminDb, resolvedUserId)
+
+    if (!userDoc?.exists) {
+      return NextResponse.json(
+        { success: false, message: 'Usuario nao encontrado.' },
+        { status: 404 },
+      )
+    }
+
+    const userData = userDoc.data()
+
+    if (userData?.role !== UserRole.PATIENT) {
+      return forbiddenRouteResponse(
+        'Apenas pacientes podem gerar pagamentos por esta rota.',
+      )
+    }
+
+    const resolvedPagarmeCustomerId =
+      userData?.pagarmeCustomerId || pagarmeCustomerId
+
+    if (!resolvedPagarmeCustomerId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'Usuario nao possui customerId cadastrado para gerar pagamento.',
+        },
+        { status: 400 },
+      )
+    }
+
+    const budgetTotalInCents = Math.floor(Number(budgetTotal) * 100)
     const payload = {
       is_building: false,
       payment_settings: {
         credit_card_settings: {
           operation_type: 'auth_and_capture',
-          statement_descriptor: 'Up Saúde',
+          statement_descriptor: 'Up Saude',
           installments: [
             { number: 1, total: budgetTotalInCents },
             { number: 2, total: budgetTotalInCents },
@@ -99,11 +177,11 @@ export async function POST(request: Request) {
         boleto_settings: {
           due_in: 3,
           instructions:
-            'Pague até a data de vencimento. Após o vencimento, reemitir o boleto.',
+            'Pague ate a data de vencimento. Apos o vencimento, reemitir o boleto.',
         },
         pix_settings: { expires_in: 1800 },
         accepted_payment_methods: ['credit_card', 'pix', 'boleto'],
-        statement_descriptor: 'Up Saúde',
+        statement_descriptor: 'Up Saude',
       },
       cart_settings: {
         items: [
@@ -117,39 +195,52 @@ export async function POST(request: Request) {
       type: 'order',
       name: `Pagamento Consulta ${protocolNumber}`,
       customer_settings: {
-        customer_id: pagarmeCustomerId,
+        customer_id: resolvedPagarmeCustomerId,
       },
     }
 
-    // Faz a requisição para criar o link de pagamento
-    const options = {
-      method: 'POST',
-      url: 'https://api.pagar.me/core/v5/paymentlinks',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        authorization: encodedKey,
-      },
-      data: payload,
-    }
+    let paymentLink: { id: string; url: string; customer_settings: { customer_id: string } }
 
-    let paymentLink
     try {
-      const response = await axios.request(options)
+      const response = await axios.request({
+        method: 'POST',
+        url: 'https://api.pagar.me/core/v5/paymentlinks',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: getPagarmeAuthHeader(),
+        },
+        data: payload,
+      })
 
-      paymentLink = response.data
+      paymentLink = response.data as {
+        id: string
+        url: string
+        customer_settings: { customer_id: string }
+      }
     } catch (err: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const errorTyped = err as any
+      const axiosError = err as AxiosError<{
+        message?: string
+        errors?: Array<{ message?: string }>
+      }>
 
-      const msg =
-        axios.isAxiosError && axios.isAxiosError(errorTyped)
-          ? errorTyped.response?.data?.message ||
-            errorTyped.response?.data?.errors?.[0]?.message ||
-            `Erro ${errorTyped.response?.status}: ${errorTyped.response?.statusText}`
-          : 'Erro desconhecido ao criar link de pagamento.'
+      if (axios.isAxiosError(axiosError)) {
+        const message =
+          axiosError.response?.data?.message ||
+          axiosError.response?.data?.errors?.[0]?.message ||
+          `Erro ${axiosError.response?.status}: ${axiosError.response?.statusText}`
+
+        return NextResponse.json(
+          { success: false, message, debug: axiosError.response?.data },
+          { status: 502 },
+        )
+      }
+
       return NextResponse.json(
-        { success: false, message: msg, debug: errorTyped.response?.data },
+        {
+          success: false,
+          message: 'Erro desconhecido ao criar link de pagamento.',
+        },
         { status: 502 },
       )
     }
@@ -157,23 +248,22 @@ export async function POST(request: Request) {
     const linkId = paymentLink.id
     const customerId = paymentLink.customer_settings.customer_id
 
-    // Salva o pagamento no Firestore
     try {
       await adminDb.collection('instantPayments').doc(linkId).set({
         id: linkId,
         protocolNumber,
         pagarmeLinkId: linkId,
-        userId,
+        userId: resolvedUserId,
         pagarmeCustomerId: customerId,
         paymentStatus: 'PENDING',
         valueInCents: budgetTotalInCents,
-        doctorId,
-        date,
-        hour,
-        format,
+        doctorId: resolvedDoctorId,
+        date: resolvedDate,
+        hour: resolvedHour,
+        format: resolvedFormat,
         createdAt: new Date(),
       })
-    } catch (err) {
+    } catch {
       return NextResponse.json(
         {
           success: false,
@@ -183,16 +273,13 @@ export async function POST(request: Request) {
       )
     }
 
-    // Retorna a URL de checkout para o frontend
     return NextResponse.json({
       success: true,
       paymentLinkId: linkId,
       checkoutUrl: paymentLink.url,
-
       customerId,
     })
   } catch (error) {
-    // Erro inesperado
     const message =
       error instanceof Error ? error.message : 'Erro interno do servidor.'
     return NextResponse.json({ success: false, message }, { status: 500 })

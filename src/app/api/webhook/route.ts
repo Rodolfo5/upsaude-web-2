@@ -3,22 +3,44 @@
 import { NextResponse, NextRequest } from 'next/server'
 
 import { initAdmin } from '@/config/firebase/firebaseAdmin'
+import {
+  getPagarmeWebhookSignatureHeader,
+  verifyPagarmeWebhookSignature,
+} from '@/lib/server/pagarmeWebhook'
 import { notifyConsultationScheduled } from '@/services/emailNotification'
 
 export async function POST(request: NextRequest) {
   try {
     // 1. Inicializa o Firebase Admin
-    const adminApp = await initAdmin()
-    const adminDb = adminApp.firestore()
 
     // 2. Lê o corpo da requisição como texto e a assinatura do cabeçalho
     const rawBody = await request.text()
+    const signatureHeader = getPagarmeWebhookSignatureHeader(request)
 
     // 3. Valida se o corpo não está vazio
     if (!rawBody) {
       console.error('Webhook recebido sem dados')
       return NextResponse.json({ error: 'No data received' }, { status: 400 })
     }
+
+    if (!signatureHeader) {
+      console.error('Webhook recebido sem assinatura do Pagar.me')
+      return NextResponse.json(
+        { error: 'Missing webhook signature' },
+        { status: 401 },
+      )
+    }
+
+    if (!verifyPagarmeWebhookSignature(rawBody, signatureHeader)) {
+      console.error('Assinatura invalida no webhook do Pagar.me')
+      return NextResponse.json(
+        { error: 'Invalid webhook signature' },
+        { status: 401 },
+      )
+    }
+
+    const adminApp = await initAdmin()
+    const adminDb = adminApp.firestore()
 
     let event
     try {
