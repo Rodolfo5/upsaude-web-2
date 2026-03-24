@@ -1,57 +1,62 @@
-/**
- * Endpoint para envio de notificações por email.
- *
- * Este endpoint facilita o envio de emails de notificação com template padrão.
- *
- * @param request - A requisição HTTP contendo os dados da notificação.
- * @returns Uma resposta JSON indicando sucesso ou erro.
- */
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 
+import {
+  forbiddenRouteResponse,
+  hasRouteUserRole,
+  requireAuthenticatedRouteUser,
+} from '@/lib/server/routeAuth'
 import { EmailService } from '@/services/email/sendpulse'
+import { UserRole } from '@/types/entities/user'
+
+const notificationSchema = z.object({
+  to: z.string().email(),
+  subject: z.string().min(1),
+  title: z.string().min(1),
+  message: z.string().min(1),
+  name: z.string().optional(),
+  actionUrl: z.string().optional(),
+  actionText: z.string().optional(),
+})
 
 export async function POST(request: Request) {
   try {
-    const data: {
-      to: string
-      subject: string
-      title: string
-      message: string
-      name?: string
-      actionUrl?: string
-      actionText?: string
-    } = await request.json()
+    const authResult = await requireAuthenticatedRouteUser(request)
 
-    // Valida campos obrigatórios
-    if (!data.to || !data.subject || !data.title || !data.message) {
+    if ('response' in authResult) {
+      return authResult.response
+    }
+
+    const { user } = authResult
+
+    if (!hasRouteUserRole(user, [UserRole.ADMIN, UserRole.DOCTOR])) {
+      return forbiddenRouteResponse(
+        'Voce nao tem permissao para enviar notificacoes por email.',
+      )
+    }
+
+    const parsedBody = notificationSchema.safeParse(await request.json())
+
+    if (!parsedBody.success) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Campos obrigatórios faltando',
-          message: 'to, subject, title e message são obrigatórios',
+          error: 'Campos obrigatorios faltando',
+          details: parsedBody.error.flatten(),
         },
         { status: 400 },
       )
     }
 
-    // Envia a notificação usando o EmailService
-    await EmailService.sendNotification({
-      to: data.to,
-      subject: data.subject,
-      title: data.title,
-      message: data.message,
-      name: data.name,
-      actionUrl: data.actionUrl,
-      actionText: data.actionText,
-    })
+    await EmailService.sendNotification(parsedBody.data)
 
     return NextResponse.json({
       success: true,
       error: null,
-      message: 'Notificação enviada com sucesso',
+      message: 'Notificacao enviada com sucesso',
     })
   } catch (error) {
-    console.error('Erro ao enviar notificação:', error)
+    console.error('Erro ao enviar notificacao:', error)
 
     const errorMessage =
       error instanceof Error ? error.message : 'Erro desconhecido'
@@ -59,7 +64,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Não foi possível enviar a notificação',
+        error: 'Nao foi possivel enviar a notificacao',
         message: errorMessage,
       },
       { status: 500 },

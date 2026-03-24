@@ -18,4 +18,5 @@ export interface DataTableProps<TData, TValue> {
       | ((old: ColumnFiltersState) => ColumnFiltersState),
   ) => void
   pageSize?: number
+  hidePagination?: boolean
 }

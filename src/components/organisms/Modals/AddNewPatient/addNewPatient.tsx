@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useCreatePatient } from '@/hooks/queries/useCreatePatient'
-import { successToast } from '@/hooks/useAppToast'
+import { errorToast, successToast, warningToast } from '@/hooks/useAppToast'
 import useUser from '@/hooks/useUser'
 import emailSchema from '@/validations/email'
 import nameSchema from '@/validations/name'
@@ -47,24 +47,31 @@ export function AddNewPatientForm({
 
   const onSubmit = async (data: AddPatientFormData) => {
     if (!currentUser?.id) {
-      successToast('Erro: Usuário não logado')
+      errorToast('Erro: Usuário não logado')
       return
     }
 
     try {
-      await mutateAsync({
+      const result = await mutateAsync({
         ...data,
         doctorId: currentUser.id,
         steps: 'step1',
       })
 
       successToast('Paciente cadastrado com sucesso!')
+
+      if (result.warnings.length > 0) {
+        warningToast(
+          `Paciente criado, mas houve falhas nas notificacoes: ${result.warnings.join(' | ')}`,
+        )
+      }
+
       reset()
     } catch (error: unknown) {
       console.error('Erro ao criar paciente:', error)
       const errorMessage =
         error instanceof Error ? error.message : 'Erro desconhecido'
-      successToast(`Erro ao cadastrar paciente: ${errorMessage}`)
+      errorToast(`Erro ao cadastrar paciente: ${errorMessage}`)
     }
   }
 

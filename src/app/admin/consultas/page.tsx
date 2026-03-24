@@ -16,6 +16,7 @@ import useAllConsultations, {
   getAllConsultationsQueryKey,
 } from '@/hooks/queries/useAllConsultations'
 import { useAppToast } from '@/hooks/useAppToast'
+import { getAuthenticatedJsonHeaders } from '@/services/api/authenticatedFetch'
 import { cancelConsultation, updateConsultation } from '@/services/consultation'
 import { sendNotification } from '@/services/notification/notification'
 import { getPatientsByIds } from '@/services/patient'
@@ -153,7 +154,7 @@ export default function AdminConsultasPage() {
       try {
         await fetch('/api/cancel-charge', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: await getAuthenticatedJsonHeaders(),
           body: JSON.stringify({
             protocolNumber: selectedConsultation.protocolNumber ?? '',
           }),

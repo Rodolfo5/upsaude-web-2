@@ -1,10 +1,15 @@
 // app/api/recurrency-payment/route.ts
 import axios, { AxiosError } from 'axios'
 import { NextResponse } from 'next/server'
-import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 
-import { initAdmin } from '@/config/firebase/firebaseAdmin'
+import {
+  findUserDocumentByAnyId,
+  forbiddenRouteResponse,
+  isAdminOrSamePatientRouteUser,
+  requireAuthenticatedRouteUser,
+} from '@/lib/server/routeAuth'
+import { UserRole } from '@/types/entities/user'
 
 const recurrencySchema = z.object({
   userId: z.string().min(1, 'ID do usuário é obrigatório'),
@@ -71,10 +76,14 @@ async function createMonthlyPlan(name: string, amountInCents: number) {
 }
 
 export async function POST(req: Request) {
-  const adminApp = await initAdmin()
-  const adminDb = adminApp.firestore()
-
   try {
+    const authResult = await requireAuthenticatedRouteUser(req)
+
+    if ('response' in authResult) {
+      return authResult.response
+    }
+
+    const { user, db: adminDb } = authResult
     const body = await req.json()
     const validation = recurrencySchema.safeParse(body)
 
@@ -94,17 +103,30 @@ export async function POST(req: Request) {
     } = validation.data
 
     // 1. Buscar usuário
-    const userRef = adminDb.collection('users').doc(userId)
-    const userDoc = await userRef.get()
+    if (!isAdminOrSamePatientRouteUser(user, userId)) {
+      return forbiddenRouteResponse(
+        'Voce nao tem permissao para criar assinatura para este usuario.',
+      )
+    }
 
-    if (!userDoc.exists) {
+    const userDoc = await findUserDocumentByAnyId(adminDb, userId)
+
+    if (!userDoc?.exists) {
       return NextResponse.json(
         { error: 'Usuário não encontrado' },
         { status: 404 },
       )
     }
 
+    const userRef = userDoc.ref
     const userData = userDoc.data()
+
+    if (userData?.role !== UserRole.PATIENT) {
+      return forbiddenRouteResponse(
+        'Apenas pacientes podem ter assinaturas criadas por esta rota.',
+      )
+    }
+
     const pagarmeCustomerId = userData?.pagarmeCustomerId
     const hasFirstSubscription = userData?.hasFirstSubscription || false
 

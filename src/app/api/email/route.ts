@@ -1,59 +1,56 @@
-/**
- * Endpoint para envio de emails utilizando o SendPulse e React Email.
- *
- * Este endpoint recebe uma requisição POST com os dados necessários para enviar um email.
- * Ele utiliza o SendPulse para enviar o email e o React Email para renderizar o HTML do template.
- *
- * @param request - A requisição HTTP contendo os dados do email.
- * @returns Uma resposta JSON indicando sucesso ou erro.
- *
- * @example
- * ```typescript
- * const response = await fetch('/api/email', {
- *   method: 'POST',
- *   body: JSON.stringify({
- *     email: 'jose@souv.tech',
- *     subject: 'Bem-vindo ao Upsaude!',
- *     data: {
- *       email: 'jose@souv.tech',
- *       password: 'senha123',
- *       name: 'José Silva',
- *     },
- *     template: 'patient-welcome',
- *   }),
- * });
- *
- * const result = await response.json();
- * if (result.error) {
- *   console.error('Erro ao enviar email:', result.error);
- * } else {
- *   console.log('Email enviado com sucesso!');
- * }
- * ```
- */
 import { render } from '@react-email/components'
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 
 import { createSendPulseClient } from '@/lib/sendpulse'
+import {
+  forbiddenRouteResponse,
+  hasRouteUserRole,
+  requireAuthenticatedRouteUser,
+} from '@/lib/server/routeAuth'
+import { UserRole } from '@/types/entities/user'
 
 import DoctorWelcomeEmail from './template/doctor-welcome'
 import TemplateEmail from './template/email'
 import PatientWelcomeEmail from './template/patient-welcome'
 
+const emailSchema = z.object({
+  email: z.string().email(),
+  subject: z.string().min(1),
+  template: z.string().optional(),
+  data: z.object({
+    email: z.string().email(),
+    password: z.string().optional(),
+    name: z.string().optional(),
+  }),
+})
+
 export async function POST(request: Request) {
   try {
-    const data: {
-      email: string
-      data: {
-        email: string
-        password?: string
-        name?: string
-      }
-      subject: string
-      template?: string
-    } = await request.json()
+    const authResult = await requireAuthenticatedRouteUser(request)
 
-    // Renderiza o template HTML baseado no tipo especificado
+    if ('response' in authResult) {
+      return authResult.response
+    }
+
+    const { user } = authResult
+
+    if (!hasRouteUserRole(user, [UserRole.ADMIN, UserRole.DOCTOR])) {
+      return forbiddenRouteResponse(
+        'Voce nao tem permissao para enviar emails por esta rota.',
+      )
+    }
+
+    const parsedBody = emailSchema.safeParse(await request.json())
+
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        { success: false, error: parsedBody.error.flatten() },
+        { status: 400 },
+      )
+    }
+
+    const data = parsedBody.data
     let emailHTML: string
 
     if (data.template === 'patient-welcome') {
@@ -81,7 +78,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Cria o cliente SendPulse e envia o email
     const sendPulseClient = createSendPulseClient()
 
     await sendPulseClient.sendEmail({
@@ -109,7 +105,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Não foi possível enviar o email',
+        error: 'Nao foi possivel enviar o email',
         message: errorMessage,
       },
       { status: 500 },

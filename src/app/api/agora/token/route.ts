@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 /**
- * 🎥 API DE GERAÇÃO DE TOKEN RTC (AGORA)
+ * API de geração de token RTC (Agora).
  *
  * Fluxo suportado:
  * - Host solicita token para iniciar a chamada
@@ -9,111 +9,137 @@
  * Validações principais:
  * - Verifica presença das variáveis de ambiente
  * - Confirma existência da chamada no Firestore
- * - Garante que apenas o host ou convidados aprovados recebam token
+ * - Confirma a identidade real do usuário via Firebase ID token
+ * - Garante que apenas o médico host ou o paciente aprovado recebam token
  */
 
 import { RtcRole, RtcTokenBuilder } from 'agora-token'
 import { NextResponse } from 'next/server'
 
-import { getAdminApp, adminFirestore } from '@/config/firebase/firebaseAdmin'
-
-// ====================================================================
-// ⚙️ CONFIGURAÇÃO
-// ====================================================================
+import {
+  AgoraTokenRole,
+  generateAgoraNumericUid,
+} from '@/lib/agora/generateUid'
+import {
+  hasRouteUserRole,
+  isSameRouteUser,
+  requireAuthenticatedRouteUser,
+} from '@/lib/server/routeAuth'
+import { UserRole } from '@/types/entities/user'
 
 const rawAppId = process.env.NEXT_PUBLIC_AGORA_APP_ID
 const rawAppCertificate = process.env.NEXT_PUBLIC_AGORA_APP_CERTIFICATE
 
-if (!rawAppId || !rawAppCertificate) {
+if (false && (!rawAppId || !rawAppCertificate)) {
   throw new Error(
-    '🚨 Variáveis de ambiente do Agora faltando: NEXT_PUBLIC_AGORA_APP_ID e NEXT_PUBLIC_AGORA_APP_CERTIFICATE',
+    'Variáveis de ambiente do Agora faltando: NEXT_PUBLIC_AGORA_APP_ID e NEXT_PUBLIC_AGORA_APP_CERTIFICATE',
   )
 }
 
-const AGORA_APP_ID: string = rawAppId
-const AGORA_APP_CERTIFICATE: string = rawAppCertificate
-
-// Tempo padrão (1h) para expiração do token e privilégios
+const AGORA_APP_ID = rawAppId ?? ''
+const AGORA_APP_CERTIFICATE = rawAppCertificate ?? ''
 const TOKEN_EXPIRATION_SECONDS = 60 * 60
-
-// ====================================================================
-// 📋 TIPOS
-// ====================================================================
-
-type TokenRole = 'host' | 'guest'
 
 interface GenerateTokenPayload {
   callId: string
-  channelName: string
-  uid: string | number // Aceita string ou número para compatibilidade
-  userId: string
-  role: TokenRole
+  channelName?: string
+  uid?: string | number
+  userId?: string
+  role: AgoraTokenRole
   requestId?: string
-  consultationId?: string // Se presente, usa subcollection de consultas
+  consultationId?: string
 }
 
 interface TokenResponse {
   token: string | null
   error: string | null
+  uid?: number | null
+  channelName?: string | null
 }
 
-// ====================================================================
-// 🔎 VALIDAÇÃO AUXILIAR
-// ====================================================================
-
-function isTokenRole(value: unknown): value is TokenRole {
+function isTokenRole(value: unknown): value is AgoraTokenRole {
   return value === 'host' || value === 'guest'
 }
 
-// Função auxiliar para adicionar headers CORS
 function addCorsHeaders<T>(response: NextResponse<T>): NextResponse<T> {
   response.headers.set('Access-Control-Allow-Origin', '*')
   response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type')
+  response.headers.set(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization',
+  )
   return response
 }
 
-// ====================================================================
-// 🚀 HANDLER PRINCIPAL
-// ====================================================================
+function normalizeRequestedUid(uid: string | number | undefined) {
+  if (uid === undefined || uid === null) {
+    return null
+  }
+
+  const parsedUid =
+    typeof uid === 'number' ? uid : Number.parseInt(String(uid), 10)
+
+  return Number.isFinite(parsedUid) ? parsedUid : null
+}
 
 export async function POST(
   request: Request,
 ): Promise<NextResponse<TokenResponse>> {
   try {
-    const payload = (await request.json()) as Partial<GenerateTokenPayload>
+    if (!AGORA_APP_ID || !AGORA_APP_CERTIFICATE) {
+      console.error(
+        'Variaveis de ambiente do Agora faltando: NEXT_PUBLIC_AGORA_APP_ID e NEXT_PUBLIC_AGORA_APP_CERTIFICATE',
+      )
 
-    const { callId, channelName, uid, userId, role, requestId } = payload
-
-    if (
-      !callId ||
-      !channelName ||
-      !uid ||
-      !userId ||
-      !role ||
-      !isTokenRole(role)
-    ) {
       return addCorsHeaders(
         NextResponse.json(
           {
             token: null,
-            error:
-              'Dados inválidos. Informe callId, channelName, userId, uid e role (host ou guest).',
+            error: 'Configuracao do Agora indisponivel no servidor.',
+          },
+          { status: 500 },
+        ),
+      )
+    }
+
+    const authResult = await requireAuthenticatedRouteUser(request)
+
+    if ('response' in authResult) {
+      return addCorsHeaders(
+        authResult.response as NextResponse<TokenResponse>,
+      )
+    }
+
+    const { user, db } = authResult
+    const payload = (await request.json()) as Partial<GenerateTokenPayload>
+
+    const {
+      callId,
+      channelName,
+      uid,
+      userId,
+      role,
+      requestId,
+      consultationId,
+    } = payload
+
+    if (!callId || !role || !isTokenRole(role)) {
+      return addCorsHeaders(
+        NextResponse.json(
+          {
+            token: null,
+            error: 'Dados inválidos. Informe callId e role (host ou guest).',
           },
           { status: 400 },
         ),
       )
     }
 
-    await getAdminApp()
-    const db = adminFirestore()
-
-    // Determinar se é uma chamada de consulta ou teste
-    const isConsultationCall = !!payload.consultationId
+    const isConsultationCall = Boolean(consultationId)
     const callDocRef = isConsultationCall
       ? db
         .collection('consultations')
-        .doc(payload.consultationId!)
+        .doc(consultationId!)
         .collection('videoCalls')
         .doc(callId)
       : db.collection('testVideoCalls').doc(callId)
@@ -134,6 +160,7 @@ export async function POST(
 
     const callData = callSnapshot.data() as {
       hostId: string
+      channelName: string
       patientId?: string
       status?: string
     }
@@ -150,61 +177,80 @@ export async function POST(
       )
     }
 
+    if (channelName && channelName !== callData.channelName) {
+      return addCorsHeaders(
+        NextResponse.json(
+          {
+            token: null,
+            error: 'O channelName informado não corresponde à chamada ativa.',
+          },
+          { status: 400 },
+        ),
+      )
+    }
+
+    let resolvedIdentityId: string
+
     if (role === 'host') {
-      if (callData.hostId !== userId) {
+      if (
+        !hasRouteUserRole(user, [UserRole.DOCTOR]) ||
+        !isSameRouteUser(user, callData.hostId)
+      ) {
         return addCorsHeaders(
           NextResponse.json(
             {
               token: null,
-              error: 'Apenas o host pode solicitar token com role=host.',
+              error: 'Apenas o médico host pode solicitar token com role=host.',
             },
             { status: 403 },
           ),
         )
       }
+
+      resolvedIdentityId = callData.hostId
     } else {
-      // Para chamadas de consulta, o paciente precisa ter request aprovado
+      if (!requestId) {
+        return addCorsHeaders(
+          NextResponse.json(
+            {
+              token: null,
+              error: 'requestId é obrigatório para convidados.',
+            },
+            { status: 400 },
+          ),
+        )
+      }
+
+      const requestDoc = await callDocRef.collection('requests').doc(requestId).get()
+
+      if (!requestDoc.exists) {
+        return addCorsHeaders(
+          NextResponse.json(
+            {
+              token: null,
+              error: 'Solicitação de entrada não encontrada.',
+            },
+            { status: 404 },
+          ),
+        )
+      }
+
       if (isConsultationCall) {
-        if (!requestId) {
-          return addCorsHeaders(
-            NextResponse.json(
-              {
-                token: null,
-                error: 'requestId é obrigatório para convidados.',
-              },
-              { status: 400 },
-            ),
-          )
-        }
-
-        const requestDoc = await callDocRef
-          .collection('requests')
-          .doc(requestId)
-          .get()
-
-        if (!requestDoc.exists) {
-          return addCorsHeaders(
-            NextResponse.json(
-              {
-                token: null,
-                error: 'Solicitação de entrada não encontrada.',
-              },
-              { status: 404 },
-            ),
-          )
-        }
-
         const requestData = requestDoc.data() as {
           patientId: string
           status: 'pending' | 'accepted' | 'denied'
         }
 
-        if (requestData.patientId !== userId) {
+        if (
+          requestData.patientId !== callData.patientId ||
+          !hasRouteUserRole(user, [UserRole.PATIENT]) ||
+          !isSameRouteUser(user, requestData.patientId)
+        ) {
           return addCorsHeaders(
             NextResponse.json(
               {
                 token: null,
-                error: 'Solicitante não autorizado.',
+                error: 'Paciente não autorizado para esta chamada.',
               },
               { status: 403 },
             ),
@@ -223,43 +269,18 @@ export async function POST(
             ),
           )
         }
+
+        resolvedIdentityId = requestData.patientId
       } else {
-        // Para testVideoCalls, ainda usa o sistema de requests
-        if (!requestId) {
-          return addCorsHeaders(
-            NextResponse.json(
-              {
-                token: null,
-                error: 'requestId é obrigatório para convidados.',
-              },
-              { status: 400 },
-            ),
-          )
-        }
-
-        const requestDoc = await callDocRef
-          .collection('requests')
-          .doc(requestId)
-          .get()
-
-        if (!requestDoc.exists) {
-          return addCorsHeaders(
-            NextResponse.json(
-              {
-                token: null,
-                error: 'Solicitação de entrada não encontrada.',
-              },
-              { status: 404 },
-            ),
-          )
-        }
-
         const requestData = requestDoc.data() as {
           doctorId: string
           status: 'pending' | 'accepted' | 'denied'
         }
 
-        if (requestData.doctorId !== userId) {
+        if (
+          !hasRouteUserRole(user, [UserRole.DOCTOR]) ||
+          !isSameRouteUser(user, requestData.doctorId)
+        ) {
           return addCorsHeaders(
             NextResponse.json(
               {
@@ -283,42 +304,54 @@ export async function POST(
             ),
           )
         }
+
+        resolvedIdentityId = requestData.doctorId
       }
+    }
+
+    if (userId && userId !== resolvedIdentityId) {
+      return addCorsHeaders(
+        NextResponse.json(
+          {
+            token: null,
+            error: 'O userId informado não corresponde ao usuário autenticado.',
+          },
+          { status: 400 },
+        ),
+      )
+    }
+
+    const numericUid = generateAgoraNumericUid({
+      userId: resolvedIdentityId,
+      consultationId,
+      callId,
+      role,
+      requestId: role === 'guest' ? requestId : undefined,
+    })
+
+    const requestedUid = normalizeRequestedUid(uid)
+
+    if (requestedUid !== null && requestedUid !== numericUid) {
+      return addCorsHeaders(
+        NextResponse.json(
+          {
+            token: null,
+            error: 'O uid informado não corresponde à identidade autenticada.',
+          },
+          { status: 400 },
+        ),
+      )
     }
 
     const currentTimestamp = Math.floor(Date.now() / 1000)
     const expirationTimestamp = currentTimestamp + TOKEN_EXPIRATION_SECONDS
 
-    const agoraRole = RtcRole.PUBLISHER
-
-    // Converter UID para número se for string numérica ou usar diretamente se já for número
-    let numericUid: number
-    if (typeof uid === 'string') {
-      // Se for string numérica, converter para número
-      const parsed = parseInt(uid, 10)
-      if (!isNaN(parsed) && parsed.toString() === uid) {
-        numericUid = parsed
-      } else {
-        // Se for string não numérica, gerar hash numérico
-        let hash = 0
-        for (let i = 0; i < uid.length; i++) {
-          const char = uid.charCodeAt(i)
-          hash = (hash << 5) - hash + char
-          hash = hash & hash // Convert to 32-bit integer
-        }
-        numericUid = Math.max(10000, Math.abs(hash) % 2147483647)
-      }
-    } else {
-      numericUid = uid
-    }
-
-    // Usar buildTokenWithUid para UIDs numéricos (recomendado pelo Agora)
     const token = RtcTokenBuilder.buildTokenWithUid(
       AGORA_APP_ID,
       AGORA_APP_CERTIFICATE,
-      channelName,
+      callData.channelName,
       numericUid,
-      agoraRole,
+      RtcRole.PUBLISHER,
       TOKEN_EXPIRATION_SECONDS,
       expirationTimestamp,
     )
@@ -328,6 +361,8 @@ export async function POST(
         {
           token,
           error: null,
+          uid: numericUid,
+          channelName: callData.channelName,
         },
         { status: 200 },
       ),
@@ -346,14 +381,13 @@ export async function POST(
   }
 }
 
-// Handler OPTIONS para CORS preflight
 export async function OPTIONS(): Promise<NextResponse> {
   return new NextResponse(null, {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   })
 }

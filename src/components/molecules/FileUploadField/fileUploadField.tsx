@@ -3,7 +3,7 @@
 
 import { Upload, X, FileText, Image as ImageIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
-import { Control, Controller } from 'react-hook-form'
+import { Control, Controller, FieldValues, Path } from 'react-hook-form'
 
 import { Button } from '@/components/atoms/Button/button'
 import { FormErrorLabel } from '@/components/atoms/FormError/formError'
@@ -11,9 +11,9 @@ import { Label } from '@/components/atoms/Label/label'
 import { errorToast, successToast } from '@/hooks/useAppToast'
 import { uploadImage, uploadFile } from '@/services/firebase/firebaseStorage'
 
-interface FileUploadFieldProps {
-  name: string
-  control: Control<any>
+interface FileUploadFieldProps<T extends FieldValues> {
+  name: Path<T>
+  control: Control<T>
   label: string
   accept?: string
   maxSize?: number
@@ -25,7 +25,7 @@ interface FileUploadFieldProps {
   disabled?: boolean
 }
 
-export default function FileUploadField({
+export default function FileUploadField<T extends FieldValues>({
   name,
   control,
   label,
@@ -36,7 +36,7 @@ export default function FileUploadField({
   helpText,
   required = false,
   disabled = false,
-}: FileUploadFieldProps) {
+}: FileUploadFieldProps<T>) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [dragActive, setDragActive] = useState(false)
   const [isUploading, setIsUploading] = useState(false)

@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog'
 import { useCreateDoctor } from '@/hooks/queries/useCreateDoctor'
 import { useMemedValidateCrm } from '@/hooks/queries/useMemedValidateCrm'
-import { errorToast, successToast } from '@/hooks/useAppToast'
+import { errorToast, successToast, warningToast } from '@/hooks/useAppToast'
 import birthDateSchema from '@/validations/birthDate'
 import cpfSchema from '@/validations/cpf'
 import emailSchema from '@/validations/email'
@@ -175,13 +175,20 @@ export function CreateDoctorModal({
     }
 
     try {
-      const { password } = await mutateAsync({
+      const { password, warnings } = await mutateAsync({
         ...data,
         crm: data.crm.replace(/\D/g, ''),
         crmState: data.crmState.toUpperCase(),
       })
+
       setGeneratedPassword(password)
       successToast('Médico criado com sucesso!')
+
+      if (warnings.length > 0) {
+        warningToast(
+          `Medico criado com alertas: ${warnings.join(' | ')}`,
+        )
+      }
     } catch (error) {
       console.error('Erro ao criar médico:', error)
       errorToast(

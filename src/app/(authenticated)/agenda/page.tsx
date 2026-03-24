@@ -337,18 +337,6 @@ export default function AgendaPage() {
 
     setIsCancelling(true)
     try {
-      try {
-        await fetch('/api/cancel-charge', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            protocolNumber: selectedConsultation.protocolNumber ?? '',
-          }),
-        })
-      } catch {
-        // ignora erro do refund e segue com o cancelamento
-      }
-
       const result = await cancelConsultation(selectedConsultation.id)
 
       if (result.success) {

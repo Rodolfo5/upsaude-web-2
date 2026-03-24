@@ -1,36 +1,34 @@
-/**
- * Função para enviar um convite por email utilizando a API interna.
- *
- * Esta função faz uma requisição POST para o endpoint `/api/email` com os dados necessários
- * para enviar um email de convite. Caso ocorra um erro, ele será capturado e retornado.
- *
- * @param email - O endereço de email do destinatário.
- * @param subject - O assunto do email.
- * @param data - Dados adicionais para o email, incluindo:
- *   - email: O email do destinatário.
- *   - password: A senha gerada ou associada ao destinatário.
- *
- * @returns Um objeto contendo:
- *   - `error`: `null` se o envio foi bem-sucedido, ou uma mensagem de erro se falhou.
- *
- * @example
- * ```typescript
- * const response = await sendInvite({
- *   email: 'jose@souv.tech',
- *   subject: 'Bem-vindo ao Diabetopedia!',
- *   data: {
- *     email: 'jose@souv.tech',
- *     password: 'senha123',
- *   },
- * });
- *
- * if (response.error) {
- *   console.error('Erro ao enviar email:', response.error);
- * } else {
- *   console.log('Email enviado com sucesso!');
- * }
- * ```
- */
+import {
+  getApiErrorMessage,
+  postAuthenticatedJson,
+} from '@/services/api/authenticatedFetch'
+
+const sendAuthenticatedRequest = async (
+  url: string,
+  payload: Record<string, unknown>,
+  fallbackMessage: string,
+) => {
+  try {
+    const { response, data } = await postAuthenticatedJson<{
+      error?: string
+      message?: string
+    }>(url, payload)
+
+    if (!response.ok) {
+      return {
+        error: getApiErrorMessage(data, fallbackMessage),
+      }
+    }
+
+    return { error: null }
+  } catch (error) {
+    console.error(error)
+    return {
+      error: error instanceof Error ? error.message : fallbackMessage,
+    }
+  }
+}
+
 export const sendInvite = async ({
   email,
   subject,
@@ -42,50 +40,17 @@ export const sendInvite = async ({
     email: string
     password: string
   }
-}) => {
-  return await fetch('/api/email', {
-    method: 'post',
-    body: JSON.stringify({
+}) =>
+  sendAuthenticatedRequest(
+    '/api/email',
+    {
       email,
       subject,
       data: { ...data },
-    }),
-  })
-    .then(() => ({ error: null }))
-    .catch((err: string) => {
-      console.error(err)
-      return {
-        error: err,
-      }
-    })
-}
+    },
+    'Nao foi possivel enviar o email de convite.',
+  )
 
-/**
- * Função para enviar um email de boas-vindas ao paciente quando a conta for criada.
- *
- * Esta função faz uma requisição POST para o endpoint `/api/email` com os dados necessários
- * para enviar um email de boas-vindas. Caso ocorra um erro, ele será capturado e retornado.
- *
- * @param name - O nome do paciente.
- * @param email - O endereço de email do destinatário.
- *
- * @returns Um objeto contendo:
- *   - `error`: `null` se o envio foi bem-sucedido, ou uma mensagem de erro se falhou.
- *
- * @example
- * ```typescript
- * const response = await sendPatientWelcome({
- *   name: 'João Silva',
- *   email: 'joao@example.com',
- * });
- *
- * if (response.error) {
- *   console.error('Erro ao enviar email:', response.error);
- * } else {
- *   console.log('Email enviado com sucesso!');
- * }
- * ```
- */
 export const sendPatientWelcome = async ({
   name,
   email,
@@ -94,10 +59,10 @@ export const sendPatientWelcome = async ({
   name: string
   email: string
   password: string
-}) => {
-  return await fetch('/api/email', {
-    method: 'post',
-    body: JSON.stringify({
+}) =>
+  sendAuthenticatedRequest(
+    '/api/email',
+    {
       email,
       subject: 'Bem-vindo ao Upsaude!',
       data: {
@@ -106,16 +71,9 @@ export const sendPatientWelcome = async ({
         password,
       },
       template: 'patient-welcome',
-    }),
-  })
-    .then(() => ({ error: null }))
-    .catch((err: string) => {
-      console.error(err)
-      return {
-        error: err,
-      }
-    })
-}
+    },
+    'Nao foi possivel enviar o email de boas-vindas do paciente.',
+  )
 
 export const sendDoctorWelcome = async ({
   name,
@@ -125,10 +83,10 @@ export const sendDoctorWelcome = async ({
   name: string
   email: string
   password: string
-}) => {
-  return await fetch('/api/email', {
-    method: 'post',
-    body: JSON.stringify({
+}) =>
+  sendAuthenticatedRequest(
+    '/api/email',
+    {
       email,
       subject: 'Bem-vindo ao Upsaude!',
       data: {
@@ -137,44 +95,10 @@ export const sendDoctorWelcome = async ({
         password,
       },
       template: 'doctor-welcome',
-    }),
-  })
-    .then(() => ({ error: null }))
-    .catch((err: string) => {
-      console.error(err)
-      return {
-        error: err,
-      }
-    })
-}
+    },
+    'Nao foi possivel enviar o email de boas-vindas do profissional.',
+  )
 
-/**
- * Função para enviar um email de notificação personalizado.
- *
- * Esta função permite enviar emails de notificação com conteúdo personalizado.
- *
- * @param to - O endereço de email do destinatário.
- * @param subject - O assunto do email.
- * @param title - O título principal do email.
- * @param message - A mensagem do email.
- * @param name - O nome do destinatário (opcional).
- * @param actionUrl - URL para ação (opcional).
- * @param actionText - Texto do botão de ação (opcional).
- *
- * @returns Um objeto contendo:
- *   - `error`: `null` se o envio foi bem-sucedido, ou uma mensagem de erro se falhou.
- *
- * @example
- * ```typescript
- * const response = await sendNotification({
- *   to: 'usuario@example.com',
- *   subject: 'Nova Consulta Agendada',
- *   title: 'Consulta Confirmada',
- *   message: 'Sua consulta foi agendada para 15/02/2026 às 14:00',
- *   name: 'João Silva',
- * });
- * ```
- */
 export const sendNotification = async ({
   to,
   subject,
@@ -191,10 +115,10 @@ export const sendNotification = async ({
   name?: string
   actionUrl?: string
   actionText?: string
-}) => {
-  return await fetch('/api/email/notification', {
-    method: 'post',
-    body: JSON.stringify({
+}) =>
+  sendAuthenticatedRequest(
+    '/api/email/notification',
+    {
       to,
       subject,
       title,
@@ -202,13 +126,6 @@ export const sendNotification = async ({
       name,
       actionUrl,
       actionText,
-    }),
-  })
-    .then(() => ({ error: null }))
-    .catch((err: string) => {
-      console.error(err)
-      return {
-        error: err,
-      }
-    })
-}
+    },
+    'Nao foi possivel enviar a notificacao por email.',
+  )

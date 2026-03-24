@@ -8,13 +8,13 @@ import { useState } from 'react'
 import { ConfirmationModal } from '@/components/organisms/Modals/ConfirmationModal/confirmationModal'
 import { Button } from '@/components/ui/button'
 import { useDeleteUser } from '@/hooks/queries/useDeleteUser'
-import { PatientEntity, UserRole } from '@/types/entities/user'
+import { UserEntity, UserRole } from '@/types/entities/user'
 
 const SortableHeader = ({
   column,
   title,
 }: {
-  column: Column<PatientEntity, unknown>
+  column: Column<UserEntity, unknown>
   title: string
 }) => {
   return (
@@ -36,6 +36,7 @@ const DeleteUser = ({ patientId }: { patientId: string }) => {
     deleteUser(patientId)
     setIsDeleteUserOpen(false)
   }
+
   return (
     <div>
       <DeleteIcon onClick={() => setIsDeleteUserOpen(true)} />
@@ -51,7 +52,7 @@ const DeleteUser = ({ patientId }: { patientId: string }) => {
   )
 }
 
-export const usersColumns: ColumnDef<PatientEntity>[] = [
+export const usersColumns: ColumnDef<UserEntity>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => <SortableHeader column={column} title="Nome" />,

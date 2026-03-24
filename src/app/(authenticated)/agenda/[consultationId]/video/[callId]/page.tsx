@@ -59,7 +59,9 @@ import useDoctor from '@/hooks/useDoctor'
 import { usePatient } from '@/hooks/usePatient'
 import useUser from '@/hooks/useUser'
 import { useVideoCallRecorder } from '@/hooks/useVideoCallRecorder'
+import { generateAgoraNumericUid } from '@/lib/agora/generateUid'
 import { cn } from '@/lib/utils'
+import { getAuthenticatedJsonHeaders } from '@/services/api/authenticatedFetch'
 import { updateConsultation } from '@/services/consultation'
 import {
   getVideoCall,
@@ -124,56 +126,21 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
 
   const isHostRole = roleParam === 'host'
 
-  // Função para converter userId em UID numérico do Agora
-  // Usa hash simples para garantir consistência e compatibilidade com mobile
-  const generateNumericUid = useCallback(
-    (
-      userId: string,
-      consultationId: string,
-      callId: string,
-      role: 'host' | 'guest',
-      requestId?: string,
-    ): number => {
-      // Cria uma string única baseada nos parâmetros
-      const uniqueString =
-        role === 'host'
-          ? `${userId}-${consultationId}-${callId}-host`
-          : `${userId}-${consultationId}-${requestId || callId}-guest`
-
-      // Hash simples para converter string em número
-      let hash = 0
-      for (let i = 0; i < uniqueString.length; i++) {
-        const char = uniqueString.charCodeAt(i)
-        hash = (hash << 5) - hash + char
-        hash = hash & hash // Convert to 32-bit integer
-      }
-
-      // Garantir que seja positivo e dentro do range válido do Agora (0 a 2^32-1)
-      // Usar Math.abs e módulo para garantir número positivo
-      const numericUid = Math.abs(hash) % 2147483647 // 2^31 - 1 (máximo seguro para Agora)
-
-      // Garantir que seja pelo menos 10000 para evitar conflitos com UIDs muito baixos
-      return Math.max(10000, numericUid)
-    },
-    [],
-  )
-
   const agoraUid = useMemo(() => {
     if (!currentUser?.id) return null
-    return generateNumericUid(
-      currentUser.id,
+    return generateAgoraNumericUid({
+      userId: currentUser.id,
       consultationId,
       callId,
-      roleParam,
-      requestIdParam || undefined,
-    )
+      role: roleParam,
+      requestId: requestIdParam || undefined,
+    })
   }, [
     consultationId,
     callId,
     currentUser?.id,
     requestIdParam,
     roleParam,
-    generateNumericUid,
   ])
 
   const [callData, setCallData] = useState<VideoCall | null>(null)
@@ -938,14 +905,9 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
       try {
         const response = await fetch('/api/agora/token', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: await getAuthenticatedJsonHeaders(),
           body: JSON.stringify({
             callId,
-            channelName,
-            userId: currentUser.id,
-            uid: numericUidForRequest,
             role,
             consultationId,
             requestId: role === 'guest' ? requestIdParam : undefined,
@@ -955,6 +917,8 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
         const data = (await response.json()) as {
           token?: string
           error?: string
+          uid?: number
+          channelName?: string
         }
 
         if (!response.ok || !data.token) {
@@ -965,7 +929,12 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
         clientRef.current = client
         handleAgoraEvents(client)
 
-        await client.join(APP_ID, channelName, data.token, numericUidForRequest)
+        await client.join(
+          APP_ID,
+          data.channelName || channelName,
+          data.token,
+          data.uid ?? numericUidForRequest,
+        )
 
         const tracks = await AgoraRTC.createMicrophoneAndCameraTracks()
         const [audioTrack, videoTrack] = tracks
