@@ -28,12 +28,35 @@ interface RequestQuestionnaireResult {
   error: string | null
 }
 
+interface RequestQuestionnaireFirestoreData
+  extends Omit<RequestQuestionnairesEntity, 'id' | 'createdAt' | 'updatedAt'> {
+  createdAt?: Timestamp | Date | string | null
+  updatedAt?: Timestamp | Date | string | null
+}
+
 export interface CreateRequestQuestionnaireData {
   doctorId: string
   patientIds: string[]
   questionnaireName: string
   text?: string
   type: RequestQuestionnairesType
+}
+
+function mapRequestQuestionnaireData(
+  id: string,
+  data: RequestQuestionnaireFirestoreData,
+): RequestQuestionnairesEntity {
+  return {
+    id,
+    doctorId: data.doctorId,
+    patientIds: data.patientIds,
+    patientsWhoResponded: data.patientsWhoResponded,
+    questionnaireName: data.questionnaireName,
+    text: data.text,
+    type: data.type,
+    createdAt: timestampToDate(data.createdAt) ?? new Date(),
+    updatedAt: timestampToDate(data.updatedAt) ?? new Date(),
+  }
 }
 
 export const createRequestQuestionnaire = async (
@@ -112,13 +135,8 @@ export async function findRequestQuestionnaireById(
 
     if (!docSnap.exists()) return null
 
-    const data = docSnap.data() as Omit<RequestQuestionnairesEntity, 'id'>
-    return {
-      id: docSnap.id,
-      ...data,
-      createdAt: timestampToDate(data.createdAt) ?? new Date(),
-      updatedAt: timestampToDate(data.updatedAt) ?? new Date(),
-    } as RequestQuestionnairesEntity
+    const data = docSnap.data() as RequestQuestionnaireFirestoreData
+    return mapRequestQuestionnaireData(docSnap.id, data)
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('[findRequestQuestionnaireById] error', error)
@@ -140,20 +158,12 @@ export async function findAllRequestQuestionnairesForPatient(
 
     if (snapshot.empty) return []
 
-    return snapshot.docs.map((docItem) => {
-      const data = docItem.data() as Omit<RequestQuestionnairesEntity, 'id'>
-      return {
-        id: docItem.id,
-        ...data,
-<<<<<<< Updated upstream
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
-=======
-        createdAt: timestampToDate(data.createdAt) ?? new Date(),
-        updatedAt: timestampToDate(data.updatedAt) ?? new Date(),
->>>>>>> Stashed changes
-      } as RequestQuestionnairesEntity
-    })
+    return snapshot.docs.map((docItem) =>
+      mapRequestQuestionnaireData(
+        docItem.id,
+        docItem.data() as RequestQuestionnaireFirestoreData,
+      ),
+    )
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('[findAllRequestQuestionnairesForPatient] error', error)
