@@ -145,13 +145,8 @@ export async function findAllRequestQuestionnairesForPatient(
       return {
         id: docItem.id,
         ...data,
-<<<<<<< Updated upstream
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
-=======
         createdAt: timestampToDate(data.createdAt) ?? new Date(),
         updatedAt: timestampToDate(data.updatedAt) ?? new Date(),
->>>>>>> Stashed changes
       } as RequestQuestionnairesEntity
     })
   } catch (error) {

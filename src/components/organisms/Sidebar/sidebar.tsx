@@ -95,7 +95,7 @@ export default function Sidebar() {
         {isExpanded ? (
           <div className="flex flex-1 items-center justify-center">
             <Image
-              src="/LogoUPsaude1.png"
+              src="/logoups1.png"
               alt="Upsaúde Logo"
               width={100}
               height={40}
@@ -106,7 +106,7 @@ export default function Sidebar() {
         ) : (
           <div className="flex items-center justify-center">
             <Image
-              src="/LogoUPsaude1.png"
+              src="/logoups1.png"
               alt="Upsaúde Logo"
               width={40}
               height={40}
