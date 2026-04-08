@@ -5,7 +5,10 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 const SHA1_SIGNATURE_LENGTH = 40
 
 const normalizeSignature = (signatureHeader: string) =>
-  signatureHeader.trim().replace(/^sha1=/i, '').toLowerCase()
+  signatureHeader
+    .trim()
+    .replace(/^sha1=/i, '')
+    .toLowerCase()
 
 export const getPagarmeWebhookSignatureHeader = (request: Request) =>
   request.headers.get('x-hub-signature')

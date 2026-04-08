@@ -35,8 +35,12 @@ async function getConsultationsForReminder(
 ): Promise<Array<{ id: string; doctorId: string; date: Date; hour: string }>> {
   const hours = HOURS_MAP[timeframe]
   const now = new Date()
-  const windowStart = new Date(now.getTime() + hours * 60 * 60 * 1000 - 30 * 60 * 1000)
-  const windowEnd = new Date(now.getTime() + hours * 60 * 60 * 1000 + 30 * 60 * 1000)
+  const windowStart = new Date(
+    now.getTime() + hours * 60 * 60 * 1000 - 30 * 60 * 1000,
+  )
+  const windowEnd = new Date(
+    now.getTime() + hours * 60 * 60 * 1000 + 30 * 60 * 1000,
+  )
 
   const consultationsRef = collection(db, COLLECTION_NAME)
   const q = query(
@@ -46,7 +50,12 @@ async function getConsultationsForReminder(
   )
 
   const snapshot = await getDocs(q)
-  const result: Array<{ id: string; doctorId: string; date: Date; hour: string }> = []
+  const result: Array<{
+    id: string
+    doctorId: string
+    date: Date
+    hour: string
+  }> = []
 
   snapshot.docs.forEach((docSnap) => {
     const data = docSnap.data()
@@ -84,11 +93,14 @@ export async function processConsultationReminders(
     try {
       const dateTimeStr =
         consultation.hour && consultation.date
-          ? `${consultation.hour}, ${consultation.date.toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-            })}`
+          ? `${consultation.hour}, ${consultation.date.toLocaleDateString(
+              'pt-BR',
+              {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              },
+            )}`
           : consultation.date?.toLocaleDateString('pt-BR') || ''
 
       await notifyConsultationReminder(

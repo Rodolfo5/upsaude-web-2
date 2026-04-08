@@ -68,8 +68,7 @@ export async function runDailyMedicationAdherenceDoctorReminder(): Promise<{
     const patientId = patientDoc.id
     const patientData = patientDoc.data()
     const doctorId = patientData.doctorId as string | undefined
-    const patientName =
-      (patientData.name as string | undefined) || 'Paciente'
+    const patientName = (patientData.name as string | undefined) || 'Paciente'
 
     processed++
 
@@ -137,4 +136,3 @@ export async function runDailyMedicationAdherenceDoctorReminder(): Promise<{
 
   return { processed, notified, errors }
 }
-

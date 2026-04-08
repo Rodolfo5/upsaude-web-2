@@ -12,7 +12,6 @@ function getBaseTemplate(
   message: string,
   actionUrl?: string,
   actionText?: string,
-  metadata?: Record<string, unknown>,
 ): string {
   const actionHtml =
     actionUrl && actionText

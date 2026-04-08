@@ -10,4 +10,3 @@ export interface TrainingPrescriptionModalProps {
   prescription?: TrainingPrescriptionEntity | null
   onSuccess?: () => void
 }
-

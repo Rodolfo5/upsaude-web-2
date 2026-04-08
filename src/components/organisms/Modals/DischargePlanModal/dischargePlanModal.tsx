@@ -1,7 +1,7 @@
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined'
+import { useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'
 import { useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/atoms/Button/button'
 import {
@@ -59,7 +59,7 @@ export function DischargePlanModal({
       successToast(
         'Paciente recebeu alta com sucesso! Novo checkup foi solicitado.',
       )
-      
+
       // Invalidar queries para atualizar a UI
       queryClient.invalidateQueries({
         queryKey: ['therapeutic-plans', patientId],
@@ -73,7 +73,7 @@ export function DischargePlanModal({
       queryClient.invalidateQueries({
         queryKey: ['health-checkups', patientId],
       })
-      
+
       setShowSuccess(true)
     } catch (error) {
       console.error('Erro ao dar alta ao paciente:', error)

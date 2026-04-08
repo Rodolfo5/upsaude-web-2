@@ -1,13 +1,13 @@
 'use client'
 
-import { Controller, FieldValues } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 
 import { CurrencyInput } from '@/components/atoms/CurrencyInput/currencyInput'
 import { CurrencyInputFieldProps } from '@/components/atoms/CurrencyInput/types'
 import { FormErrorLabel } from '@/components/atoms/FormError/formError'
 import { Label } from '@/components/atoms/Label/label'
 
-const CurrencyInputField = <T extends FieldValues>({
+const CurrencyInputField = ({
   control,
   name,
   label,

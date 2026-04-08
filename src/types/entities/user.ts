@@ -1,4 +1,4 @@
-import { AgendaEntity } from "./agenda"
+import { AgendaEntity } from './agenda'
 
 export enum UserRole {
   ADMIN = 'ADMIN',

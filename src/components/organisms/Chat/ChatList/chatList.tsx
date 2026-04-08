@@ -6,17 +6,17 @@ import { ChatListItem } from '../ChatListItem/chatListItem'
 
 import { ChatListProps } from './types'
 
-export function ChatList({
-  chats,
-  isLoading,
-  selectedChatId,
-  searchText,
-  patientNameMap,
-  patientDataMap,
-  onSelectChat,
-  onToggleBlocked,
-  onOpenAddChat,
-}: ChatListProps) {
+export function ChatList(props: ChatListProps) {
+  const {
+    chats,
+    isLoading,
+    selectedChatId,
+    searchText,
+    patientDataMap,
+    onSelectChat,
+    onToggleBlocked,
+    onOpenAddChat,
+  } = props
   return (
     <div className="flex-1 overflow-y-auto bg-white" style={{ minHeight: 0 }}>
       {isLoading ? (

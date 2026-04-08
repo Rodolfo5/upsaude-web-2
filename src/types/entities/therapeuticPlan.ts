@@ -33,4 +33,3 @@ export interface TherapeuticPlanEntity {
   aiGeneratedAt?: Date | string
   dischargedAt?: Date | string // Data em que o paciente recebeu alta do plano
 }
-

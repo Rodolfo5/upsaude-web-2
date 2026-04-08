@@ -1,6 +1,8 @@
+import type { Control, FieldValues } from 'react-hook-form'
+
 export interface ShiftConfigurationProps {
   shiftName: string
-  control: any
+  control: Control<FieldValues>
   disabled?: boolean
   activeDay: string
   index: number

@@ -118,7 +118,10 @@ function isLifestyleOrBiomarkerActivityForToday(
   }
 }
 
-function isActivityForToday(pillarType: string, activity: ActivityData): boolean {
+function isActivityForToday(
+  pillarType: string,
+  activity: ActivityData,
+): boolean {
   if (pillarType === 'Saúde Mental') {
     return isMentalHealthActivityForToday(activity)
   }
@@ -196,8 +199,7 @@ export async function runDailyTherapeuticPlanAdherenceDoctorReminder(): Promise<
     const patientId = patientDoc.id
     const patientData = patientDoc.data()
     const doctorId = patientData.doctorId as string | undefined
-    const patientName =
-      (patientData.name as string | undefined) || 'Paciente'
+    const patientName = (patientData.name as string | undefined) || 'Paciente'
 
     processed++
 
@@ -312,4 +314,3 @@ export async function runDailyTherapeuticPlanAdherenceDoctorReminder(): Promise<
 
   return { processed, notified, errors }
 }
-

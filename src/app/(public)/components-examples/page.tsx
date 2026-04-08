@@ -130,11 +130,7 @@ export default function ComponentsExampls() {
           maskType="cellphone"
           placeholder="(99) 99999-9999"
         />
-        <InputMask
-          name="address.cep"
-          maskType="cep"
-          placeholder="00000-000"
-        />
+        <InputMask name="address.cep" maskType="cep" placeholder="00000-000" />
         <InputMask
           name="company.document"
           maskType="cnpj"

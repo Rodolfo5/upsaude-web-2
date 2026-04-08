@@ -11,8 +11,9 @@ import {
 import { TrackEntity } from '@/types/entities/healthPillar'
 
 import { errorToast, successToast } from '../useAppToast'
-import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 import useDoctor from '../useDoctor'
+
+import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 
 /**
  * Hook para buscar uma trilha específica por ID

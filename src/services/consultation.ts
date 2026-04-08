@@ -245,7 +245,7 @@ export function subscribeToDoctorConsultationsByDate(
   date: Date,
   onUpdate: (consultations: ConsultationEntity[]) => void,
 ): () => void {
-  if (!doctorId) return () => { }
+  if (!doctorId) return () => {}
   const consultationsRef = collection(db, COLLECTION_NAME)
   const targetDayStart = startOfDay(date).getTime()
   const q = query(consultationsRef, where('doctorId', '==', doctorId))
@@ -674,10 +674,10 @@ export const cancelConsultation = async (
     const dateTimeStr =
       hour && date
         ? `${hour}, ${date.toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        })}`
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })}`
         : date?.toLocaleDateString('pt-BR') || 'data não informada'
 
     await updateDoc(consultationRef, {

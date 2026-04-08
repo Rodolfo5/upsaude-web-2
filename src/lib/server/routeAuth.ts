@@ -57,8 +57,8 @@ export const isSameRouteUser = (
 ) =>
   Boolean(
     targetUserId &&
-      typeof targetUserId === 'string' &&
-      user.userIds.includes(targetUserId),
+    typeof targetUserId === 'string' &&
+    user.userIds.includes(targetUserId),
   )
 
 export const isAdminOrSameRouteUser = (
@@ -77,7 +77,7 @@ export async function findUserDocumentByAnyId(
   db: FirebaseFirestore.Firestore,
   userId: string,
 ) {
-  let userDoc = await db.collection('users').doc(userId).get()
+  const userDoc = await db.collection('users').doc(userId).get()
 
   if (userDoc.exists) {
     return userDoc

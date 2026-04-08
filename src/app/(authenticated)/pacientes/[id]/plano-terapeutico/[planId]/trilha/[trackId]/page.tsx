@@ -128,9 +128,8 @@ export default function TrackPage({ params }: Props) {
       if (!patientId || !planId || planId === 'new') return
 
       try {
-        const { collection, getDocs, getFirestore } = await import(
-          'firebase/firestore'
-        )
+        const { collection, getDocs, getFirestore } =
+          await import('firebase/firestore')
         const firestore = getFirestore(firebaseApp)
 
         const pillarsRef = collection(

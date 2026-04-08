@@ -94,7 +94,8 @@ export async function notifyQuestionnaireNotAnswered(
     recipientEmail: recipient.email,
     recipientName: recipient.name,
     title: 'Questionário pendente de resposta',
-    message: 'Um questionário solicitado ao paciente está pendente de resposta.',
+    message:
+      'Um questionário solicitado ao paciente está pendente de resposta.',
     eventId: questionnaireId,
     eventHash,
     metadata: { patientId, questionnaireId },

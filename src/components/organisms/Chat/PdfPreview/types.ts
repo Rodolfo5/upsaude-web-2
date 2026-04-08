@@ -3,4 +3,3 @@ export interface PdfPreviewProps {
   fileSize: number
   onRemove: () => void
 }
-

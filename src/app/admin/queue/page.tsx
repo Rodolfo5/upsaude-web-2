@@ -21,7 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getSpecialtyLabel } from '@/utils/specialtyHelpers'
 import {
   getAverageConsultationDuration,
   getAverageOnlineWaitingTime,
@@ -31,6 +30,7 @@ import {
 import { getAllUsers } from '@/services/user'
 import type { ConsultationEntity } from '@/types/entities/consultation'
 import type { DoctorEntity } from '@/types/entities/user'
+import { getSpecialtyLabel } from '@/utils/specialtyHelpers'
 
 type SpecialtyRow = {
   specialtyValue: string

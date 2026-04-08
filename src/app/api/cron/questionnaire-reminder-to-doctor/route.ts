@@ -25,7 +25,10 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('Erro ao executar lembrete de questionários para médico:', error)
+    console.error(
+      'Erro ao executar lembrete de questionários para médico:',
+      error,
+    )
     const message = error instanceof Error ? error.message : 'Erro desconhecido'
     return NextResponse.json(
       { success: false, error: message },

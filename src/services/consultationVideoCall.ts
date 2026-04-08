@@ -479,4 +479,3 @@ export const updateSoapField = async (
     }
   }
 }
-

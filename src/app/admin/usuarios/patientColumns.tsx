@@ -261,8 +261,10 @@ export const patientColumns: ColumnDef<PatientEntity>[] = [
     header: 'Criado em',
     cell: ({ row }) => {
       const date = row.original.createdAt
-      const dateStr = timestampToDate(date as any)
-      return dateStr ? new Date(dateStr).toLocaleDateString('pt-BR') : '-'
+      const dateObj = timestampToDate(
+        date as unknown as Parameters<typeof timestampToDate>[0],
+      )
+      return dateObj ? dateObj.toLocaleDateString('pt-BR') : '-'
     },
   },
   {

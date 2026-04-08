@@ -29,7 +29,10 @@ export function MessageInput({
     const file = e.target.files?.[0]
     if (file) {
       // Validar que é PDF
-      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      if (
+        file.type !== 'application/pdf' &&
+        !file.name.toLowerCase().endsWith('.pdf')
+      ) {
         alert('Apenas arquivos PDF são permitidos')
         return
       }

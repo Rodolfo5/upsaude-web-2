@@ -10,7 +10,8 @@ import SignInFormSchema, { SignInFormData } from '@/validations/signIn'
 import { Button } from '@atoms/Button/button'
 import useAuth from '@hooks/useAuth'
 export function LoginForm() {
-  const { loginWithInternalService, loginWithGoogle, loginWithApple, loading } = useAuth()
+  const { loginWithInternalService, loginWithGoogle, loginWithApple, loading } =
+    useAuth()
   const router = useRouter()
   const {
     handleSubmit,

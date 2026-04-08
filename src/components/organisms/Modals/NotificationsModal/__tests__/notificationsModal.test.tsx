@@ -9,7 +9,10 @@ import { describe, expect, it } from 'vitest'
 
 import { groupNotificationsByTime } from '@/lib/notifications/groupNotificationsByTime'
 import type { EmailNotificationEntity } from '@/types/entities/emailNotification'
-import { EmailNotificationCategory, EmailNotificationStatus } from '@/types/entities/emailNotification'
+import {
+  EmailNotificationCategory,
+  EmailNotificationStatus,
+} from '@/types/entities/emailNotification'
 
 function createNotification(
   overrides: Partial<EmailNotificationEntity> & { id: string; createdAt: Date },

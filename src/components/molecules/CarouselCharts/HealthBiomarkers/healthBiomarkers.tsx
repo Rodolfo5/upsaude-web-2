@@ -35,16 +35,13 @@ export function useHealthBiomarkersCarousel(
     [],
   )
   const [heartRateData, setHeartRateData] = useState<HeartRateEntity[]>([])
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       if (!patientId) {
-        setIsLoading(false)
         return
       }
       try {
-        setIsLoading(true)
         const [bloodPressure, glycemia, oximetry, temperature, heartRate] =
           await Promise.all([
             getAllBloodPressureData(patientId),
@@ -60,8 +57,6 @@ export function useHealthBiomarkersCarousel(
         setHeartRateData(heartRate)
       } catch (error) {
         console.error('Erro ao buscar dados de biomarcadores de saúde:', error)
-      } finally {
-        setIsLoading(false)
       }
     }
     fetchData()

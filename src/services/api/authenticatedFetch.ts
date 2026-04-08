@@ -1,9 +1,13 @@
-import { auth } from '@/config/firebase/firebase'
+import { auth, firebaseEnv } from '@/config/firebase/firebase'
 
 export async function getAuthenticatedHeaders(
   headers?: HeadersInit,
 ): Promise<Headers> {
   const nextHeaders = new Headers(headers)
+  if (!firebaseEnv.isConfigured || !auth) {
+    return nextHeaders
+  }
+
   const currentUser = auth.currentUser
 
   if (currentUser) {

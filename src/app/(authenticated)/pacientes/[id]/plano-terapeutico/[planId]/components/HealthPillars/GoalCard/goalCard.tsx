@@ -17,7 +17,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useActivitiesByPillar } from '@/hooks/queries/useHealthPillarActivities'
 import { useUpdateGoal } from '@/hooks/queries/useHealthPillarGoals'
 import { GoalEntity, MentalHealthGoalType } from '@/types/entities/healthPillar'
 
@@ -107,19 +106,7 @@ export function GoalCard({
   editTooltip,
 }: GoalCardProps) {
   const { mutateAsync: updateGoal } = useUpdateGoal()
-  const { data: allActivities = [] } = useActivitiesByPillar(
-    patientId,
-    planId,
-    pillarId,
-  )
   const [isUpdating, setIsUpdating] = useState(false)
-
-  // Check if all activities for this custom goal are completed
-  const goalActivities = allActivities.filter((a) => a.goalId === goal.id)
-
-  const allActivitiesCompleted =
-    goalActivities.length > 0 &&
-    goalActivities.every((a) => a.status === 'Realizada')
 
   const handleToggle = async (checked: boolean) => {
     setIsUpdating(true)

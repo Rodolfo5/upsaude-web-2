@@ -24,6 +24,8 @@ type PatientWithType = PatientEntity & {
   isNotAdheringToMedication?: boolean
 }
 
+type TimestampLike = { seconds: number; nanoseconds?: number }
+
 function ViewDetailsButton({ patientId }: { patientId: string }) {
   const router = useRouter()
 
@@ -189,7 +191,9 @@ export const patientsColumns: ColumnDef<PatientWithType>[] = [
     cell: ({ row }) => {
       const birthDate = row.original.birthDate
       if (!birthDate) return '-'
-      const dateObj = timestampToDate(birthDate as any)
+      const dateObj = timestampToDate(
+        birthDate as unknown as TimestampLike | Date | string,
+      )
 
       const age = dateObj
         ? new Date().getFullYear() - new Date(dateObj).getFullYear()

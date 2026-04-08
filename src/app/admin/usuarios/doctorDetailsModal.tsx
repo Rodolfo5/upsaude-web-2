@@ -14,7 +14,6 @@ import InputField from '@/components/molecules/InputField/inputField'
 import ProfileImageField from '@/components/molecules/ProfileImageField/profileImageField'
 import { SelectField } from '@/components/molecules/SelectField/selectField'
 import { brazilianStates } from '@/components/organisms/Forms/SignUpForm/Step2/step2'
-import { getSpecialtiesForCredential } from '@/utils/specialtyHelpers'
 import {
   Dialog,
   DialogContent,
@@ -27,6 +26,7 @@ import { getAllUsersQueryKey } from '@/hooks/queries/useAllUsers'
 import { errorToast, successToast } from '@/hooks/useAppToast'
 import { updateUserDoc } from '@/services/user'
 import { DoctorEntity } from '@/types/entities/user'
+import { getSpecialtiesForCredential } from '@/utils/specialtyHelpers'
 import cpfSchema from '@/validations/cpf'
 import nameSchema from '@/validations/name'
 

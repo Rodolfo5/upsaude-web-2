@@ -359,7 +359,10 @@ export const uploadAudioFile = async (
     console.error('Erro ao fazer upload do áudio:', error)
     return {
       url: null,
-      error: error instanceof Error ? error.message : 'Erro ao fazer upload do áudio',
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Erro ao fazer upload do áudio',
     }
   }
 }

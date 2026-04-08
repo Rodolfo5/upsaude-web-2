@@ -9,8 +9,9 @@ import {
 import { ExerciseEntity } from '@/types/entities/healthPillar'
 
 import { errorToast, successToast } from '../useAppToast'
-import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 import useDoctor from '../useDoctor'
+
+import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 
 export const useExercisesByTrack = (
   patientId: string,

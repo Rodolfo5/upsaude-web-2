@@ -18,7 +18,7 @@ export function AdminLoginForm() {
   const { setUserUid, logoutUser } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  
+
   const {
     handleSubmit,
     control,
@@ -127,4 +127,3 @@ export function AdminLoginForm() {
     </div>
   )
 }
-

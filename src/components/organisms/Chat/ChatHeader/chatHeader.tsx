@@ -42,7 +42,9 @@ export function ChatHeader({
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <h3 className="truncate font-semibold text-gray-900">{patientName}</h3>
+          <h3 className="truncate font-semibold text-gray-900">
+            {patientName}
+          </h3>
         </div>
       </div>
     </div>

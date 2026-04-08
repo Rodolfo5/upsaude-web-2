@@ -9,15 +9,6 @@ import {
 } from '@/components/ui/chart'
 import { HeartRateEntity } from '@/types/entities/biomarkers'
 
-const data = [
-  { label: '01', value: 70 },
-  { label: '07', value: 145 },
-  { label: '14', value: 100 },
-  { label: '21', value: 180 },
-  { label: '25', value: 110 },
-  { label: '31', value: 130 },
-]
-
 const chartConfig = {
   value: {
     label: 'Frequência Cardíaca',

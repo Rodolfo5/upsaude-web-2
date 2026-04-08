@@ -86,9 +86,7 @@ export async function runHealthCheckupReminderToDoctor(): Promise<HealthCheckupR
       byDoctor.get(item.doctorId)!.push(item.patientId)
     }
 
-    const allPatientIds = [
-      ...new Set([...byDoctor.values()].flat()),
-    ]
+    const allPatientIds = [...new Set([...byDoctor.values()].flat())]
     const patientNamesMap = await getPatientNames(db, allPatientIds)
 
     for (const [doctorId, patientIds] of byDoctor.entries()) {

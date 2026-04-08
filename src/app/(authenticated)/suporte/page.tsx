@@ -12,7 +12,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
-import useUser from '@/hooks/useUser'
 import useDoctor from '@/hooks/useDoctor'
 
 export default function SuportePage() {

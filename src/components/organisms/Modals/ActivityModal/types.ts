@@ -17,4 +17,3 @@ export interface ActivityModalProps {
   defaultActivityName?: string
   onSuccess?: () => void
 }
-

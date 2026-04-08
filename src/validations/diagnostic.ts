@@ -8,7 +8,10 @@ export const diagnosticSchema = z.object({
   cid: z
     .string()
     .min(1, 'O código CID é obrigatório')
-    .regex(/^[A-Z0-9.-]+$/i, 'CID deve conter apenas letras, números, pontos e hífens'),
+    .regex(
+      /^[A-Z0-9.-]+$/i,
+      'CID deve conter apenas letras, números, pontos e hífens',
+    ),
   category: z.enum(['Agudo', 'Crônico', 'Recorrente', 'Suspeita'], {
     required_error: 'A categoria é obrigatória',
   }),
@@ -20,4 +23,3 @@ export const diagnosticSchema = z.object({
 export type DiagnosticFormData = z.infer<typeof diagnosticSchema>
 
 export default diagnosticSchema
-

@@ -1,5 +1,17 @@
 import { Timestamp } from 'firebase/firestore'
 
+export enum MedicationStatus {
+  CREATED = 'CREATED',
+  ACTIVE = 'ACTIVE',
+  CLOSED = 'CLOSED',
+  SUSPENDED = 'SUSPENDED',
+}
+
+export enum MedicationCreationBy {
+  PATIENT = 'PATIENT',
+  DOCTOR = 'DOCTOR',
+}
+
 export interface MedicationEntity {
   id: string
   userId: string
@@ -38,16 +50,4 @@ export interface MedicationEntity {
   methodOfMeasurement?: string
   createdAt: Timestamp
   updatedAt: Timestamp
-}
-
-export enum MedicationStatus {
-  CREATED = 'CREATED',
-  ACTIVE = 'ACTIVE',
-  CLOSED = 'CLOSED',
-  SUSPENDED = 'SUSPENDED'
-}
-
-export enum MedicationCreationBy {
-  PATIENT = 'PATIENT',
-  DOCTOR = 'DOCTOR'
 }

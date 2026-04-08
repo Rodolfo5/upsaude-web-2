@@ -5,7 +5,6 @@ import { z } from 'zod'
 
 import { Button } from '@/components/atoms/Button/button'
 import FileUploadField from '@/components/molecules/FileUploadField/fileUploadField'
-import InputField from '@/components/molecules/InputField/inputField'
 import { SelectField } from '@/components/molecules/SelectField/selectField'
 import TextareaField from '@/components/molecules/TextareaField/textareaField'
 import {
@@ -56,21 +55,22 @@ export function CreateActivityStyleModal({
   const { mutateAsync: createActivity, isPending: isCreating } =
     useCreateActivity()
 
-  const { control, handleSubmit, reset, setValue, watch } =
-    useForm<ActivityStyleFormData & { activitySelect?: string }>({
-      resolver: zodResolver(
-        activityStyleSchema.extend({
-          activitySelect: z.string().optional(),
-        }),
-      ),
-      defaultValues: {
-        name: '',
-        description: '',
-        steps: '',
-        image: '',
-        activitySelect: '',
-      },
-    })
+  const { control, handleSubmit, reset, setValue, watch } = useForm<
+    ActivityStyleFormData & { activitySelect?: string }
+  >({
+    resolver: zodResolver(
+      activityStyleSchema.extend({
+        activitySelect: z.string().optional(),
+      }),
+    ),
+    defaultValues: {
+      name: '',
+      description: '',
+      steps: '',
+      image: '',
+      activitySelect: '',
+    },
+  })
 
   const selectedActivityName = watch('activitySelect')
 

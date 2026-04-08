@@ -96,7 +96,8 @@ export async function POST(
           {
             uid: null,
             password: null,
-            error: 'doctorId e obrigatorio para cadastro de paciente pelo admin.',
+            error:
+              'doctorId e obrigatorio para cadastro de paciente pelo admin.',
             success: false,
           },
           { status: 400 },

@@ -112,9 +112,7 @@ export async function POST(
       updatedAt: now,
     })
 
-    console.log(
-      `Novo checkup ${checkupId} criado para o paciente ${patientId}`,
-    )
+    console.log(`Novo checkup ${checkupId} criado para o paciente ${patientId}`)
 
     return NextResponse.json({
       success: true,

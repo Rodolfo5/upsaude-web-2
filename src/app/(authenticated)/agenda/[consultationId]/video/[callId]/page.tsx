@@ -48,7 +48,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { firestore } from '@/config/firebase/firebase'
-import { getAllSpecialties } from '@/utils/specialtyHelpers'
 import {
   useCurrentTherapeuticPlan,
   useHasDischargedPlan,
@@ -73,6 +72,7 @@ import {
   createRequestConsultation,
   type CreateRequestConsultationData,
 } from '@/services/requestConsultations'
+import { getAllSpecialties } from '@/utils/specialtyHelpers'
 import RequestConsultationsSchema, {
   RequestConsultationsData,
 } from '@/validations/requestConsultations'
@@ -135,13 +135,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
       role: roleParam,
       requestId: requestIdParam || undefined,
     })
-  }, [
-    consultationId,
-    callId,
-    currentUser?.id,
-    requestIdParam,
-    roleParam,
-  ])
+  }, [consultationId, callId, currentUser?.id, requestIdParam, roleParam])
 
   const [callData, setCallData] = useState<VideoCall | null>(null)
   const [loading, setLoading] = useState(true)
@@ -1999,7 +1993,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
                       <Button
                         variant="outline"
                         onClick={() => setIsDischargeModalOpen(true)}
-                        className="border-green-500 text-green-600 hover:bg-green-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="border-green-500 text-green-600 hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-60"
                         disabled={!canDischarge}
                         title={
                           hasDischargedPlan
@@ -2196,7 +2190,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
             doctorId={currentUser?.id ?? ''}
             patientId={callData.patientId}
             consultationId={consultationId}
-            onSuccess={() => { }}
+            onSuccess={() => {}}
           />
           {currentDoctor && currentPlan && (
             <DischargePlanModal

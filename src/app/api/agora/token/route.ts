@@ -30,12 +30,6 @@ import { UserRole } from '@/types/entities/user'
 const rawAppId = process.env.NEXT_PUBLIC_AGORA_APP_ID
 const rawAppCertificate = process.env.NEXT_PUBLIC_AGORA_APP_CERTIFICATE
 
-if (false && (!rawAppId || !rawAppCertificate)) {
-  throw new Error(
-    'Variáveis de ambiente do Agora faltando: NEXT_PUBLIC_AGORA_APP_ID e NEXT_PUBLIC_AGORA_APP_CERTIFICATE',
-  )
-}
-
 const AGORA_APP_ID = rawAppId ?? ''
 const AGORA_APP_CERTIFICATE = rawAppCertificate ?? ''
 const TOKEN_EXPIRATION_SECONDS = 60 * 60
@@ -105,9 +99,7 @@ export async function POST(
     const authResult = await requireAuthenticatedRouteUser(request)
 
     if ('response' in authResult) {
-      return addCorsHeaders(
-        authResult.response as NextResponse<TokenResponse>,
-      )
+      return addCorsHeaders(authResult.response as NextResponse<TokenResponse>)
     }
 
     const { user, db } = authResult
@@ -138,10 +130,10 @@ export async function POST(
     const isConsultationCall = Boolean(consultationId)
     const callDocRef = isConsultationCall
       ? db
-        .collection('consultations')
-        .doc(consultationId!)
-        .collection('videoCalls')
-        .doc(callId)
+          .collection('consultations')
+          .doc(consultationId!)
+          .collection('videoCalls')
+          .doc(callId)
       : db.collection('testVideoCalls').doc(callId)
 
     const callSnapshot = await callDocRef.get()
@@ -221,7 +213,10 @@ export async function POST(
         )
       }
 
-      const requestDoc = await callDocRef.collection('requests').doc(requestId).get()
+      const requestDoc = await callDocRef
+        .collection('requests')
+        .doc(requestId)
+        .get()
 
       if (!requestDoc.exists) {
         return addCorsHeaders(

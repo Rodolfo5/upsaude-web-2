@@ -160,13 +160,12 @@ export const createPatient = async (
   data: CreatePatientData,
 ): Promise<{ uid: string; warnings: string[] }> => {
   try {
-    const { response, data: apiResult } =
-      await postAuthenticatedJson<{
-        uid?: string | null
-        password?: string | null
-        error?: string | null
-        warnings?: string[]
-      }>('/api/createPatient', data)
+    const { response, data: apiResult } = await postAuthenticatedJson<{
+      uid?: string | null
+      password?: string | null
+      error?: string | null
+      warnings?: string[]
+    }>('/api/createPatient', data)
 
     if (!response.ok || !apiResult?.uid || !apiResult.password) {
       throw new Error(
@@ -216,7 +215,9 @@ export const createPatient = async (
       throw new Error(err.message)
     }
 
-    throw new Error(err instanceof Error ? err.message : 'Erro ao criar paciente')
+    throw new Error(
+      err instanceof Error ? err.message : 'Erro ao criar paciente',
+    )
   }
 }
 

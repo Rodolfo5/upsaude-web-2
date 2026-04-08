@@ -7,7 +7,11 @@
 
 import { createSendPulseClient } from '@/lib/sendpulse'
 import type { SendEmailParams, SendPulseEmailResponse } from '@/lib/sendpulse'
-import { isValidEmail, normalizeEmail, validateEmails } from '@/utils/emailValidator'
+import {
+  isValidEmail,
+  normalizeEmail,
+  validateEmails,
+} from '@/utils/emailValidator'
 
 /**
  * Erro de validação de email
@@ -43,10 +47,9 @@ export async function sendEmailWithValidation(
     const normalizedEmail = normalizeEmail(recipient.email)
 
     if (!isValidEmail(normalizedEmail)) {
-      throw new EmailValidationError(
-        `Email inválido: ${recipient.email}`,
-        [recipient.email],
-      )
+      throw new EmailValidationError(`Email inválido: ${recipient.email}`, [
+        recipient.email,
+      ])
     }
 
     return {
@@ -179,7 +182,8 @@ export async function sendEmailWithRetry(
     try {
       return await sendEmailWithValidation(params)
     } catch (error) {
-      lastError = error instanceof Error ? error : new Error('Erro desconhecido')
+      lastError =
+        error instanceof Error ? error : new Error('Erro desconhecido')
 
       // Não tenta novamente se for erro de validação
       if (error instanceof EmailValidationError) {
@@ -195,7 +199,5 @@ export async function sendEmailWithRetry(
     }
   }
 
-  throw new Error(
-    `Falha após ${maxRetries} tentativas: ${lastError?.message}`,
-  )
+  throw new Error(`Falha após ${maxRetries} tentativas: ${lastError?.message}`)
 }

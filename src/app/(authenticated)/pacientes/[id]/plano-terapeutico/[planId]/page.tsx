@@ -349,7 +349,7 @@ export default function TherapeuticPlanPage({ params }: Props) {
   const isPatientDoctor = currentDoctor?.id === patient?.doctorId
   const hasPendingAiItems = Boolean(
     existingPlan?.aiGeneratedItems?.pending &&
-      existingPlan.aiGeneratedItems.pending > 0,
+    existingPlan.aiGeneratedItems.pending > 0,
   )
 
   if (isLoadingPlan && !isNewPlan) {

@@ -86,7 +86,9 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
     try {
       await logout()
       setUserUid('')
-      errorToast('Administradores devem acessar pela pagina de login administrativo.')
+      errorToast(
+        'Administradores devem acessar pela pagina de login administrativo.',
+      )
     } catch (error) {
       console.error('Erro ao deslogar admin da rota /login:', error)
     } finally {
@@ -119,7 +121,7 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
       !isLoginFlowInProgress
     ) {
       setIsAllowed(false)
-      void redirectAdminToAdminLogin()
+      redirectAdminToAdminLogin().catch(() => undefined)
       return
     }
 

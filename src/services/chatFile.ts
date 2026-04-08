@@ -13,7 +13,10 @@ export const uploadChatFile = async (
   chatId: string,
 ): Promise<UploadResult> => {
   // Validar que é PDF
-  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+  if (
+    file.type !== 'application/pdf' &&
+    !file.name.toLowerCase().endsWith('.pdf')
+  ) {
     return {
       url: null,
       error: 'Apenas arquivos PDF são permitidos',
@@ -37,8 +40,9 @@ export const uploadChatFile = async (
     return {
       url: null,
       error:
-        error instanceof Error ? error.message : 'Erro ao fazer upload do arquivo',
+        error instanceof Error
+          ? error.message
+          : 'Erro ao fazer upload do arquivo',
     }
   }
 }
-

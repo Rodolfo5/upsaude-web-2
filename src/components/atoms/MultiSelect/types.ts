@@ -1,3 +1,5 @@
+import type { Control, FieldValues } from 'react-hook-form'
+
 export interface MultiSelectProps {
   value?: string[]
   onChange?: (values: string[]) => void
@@ -7,7 +9,7 @@ export interface MultiSelectProps {
 }
 
 export interface MultiSelectFieldProps {
-  control: any
+  control: Control<FieldValues>
   name: string
   label?: string
   required?: boolean

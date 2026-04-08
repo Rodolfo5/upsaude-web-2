@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { sendMessage } from '@/services/message'
 
-import { errorToast, successToast } from '../useAppToast'
+import { errorToast } from '../useAppToast'
 
 export const useSendMessage = () => {
   const queryClient = useQueryClient()

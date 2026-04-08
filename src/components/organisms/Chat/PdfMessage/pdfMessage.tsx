@@ -1,4 +1,5 @@
 import { PictureAsPdf } from '@mui/icons-material'
+
 import { cn } from '@/lib/utils'
 import { formatMessageTime } from '@/utils/chat/formatMessageDate'
 
@@ -18,9 +19,7 @@ export function PdfMessage({
     <div
       className={cn(
         'max-w-[70%] cursor-pointer rounded-lg px-4 py-2 transition-colors hover:opacity-90',
-        isOwnMessage
-          ? 'bg-purple-600 text-white'
-          : 'bg-gray-200 text-gray-900',
+        isOwnMessage ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-900',
       )}
       onClick={handleOpenPdf}
       role="button"
@@ -68,4 +67,3 @@ export function PdfMessage({
     </div>
   )
 }
-

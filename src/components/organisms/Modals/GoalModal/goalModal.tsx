@@ -129,7 +129,8 @@ export function GoalModal({
             type: isMentalHealth ? (data.type as any) : undefined,
             name: isMentalHealth ? undefined : data.name,
             customTitle: data.type === 'Outros' ? data.customTitle : undefined,
-            desiredParameter: data.type !== 'Outros' ? data.desiredParameter : undefined,
+            desiredParameter:
+              data.type !== 'Outros' ? data.desiredParameter : undefined,
             status: data.status,
           },
         })
@@ -142,7 +143,8 @@ export function GoalModal({
             type: isMentalHealth ? (data.type as any) : undefined,
             name: isMentalHealth ? undefined : data.name,
             customTitle: data.type === 'Outros' ? data.customTitle : undefined,
-            desiredParameter: data.type !== 'Outros' ? data.desiredParameter : undefined,
+            desiredParameter:
+              data.type !== 'Outros' ? data.desiredParameter : undefined,
             status: data.status,
             doctorId: currentUser?.id || '',
           },

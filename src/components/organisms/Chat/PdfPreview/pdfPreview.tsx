@@ -33,4 +33,3 @@ export function PdfPreview({ fileName, fileSize, onRemove }: PdfPreviewProps) {
     </div>
   )
 }
-

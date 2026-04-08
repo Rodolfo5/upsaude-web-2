@@ -72,7 +72,7 @@ export function InviteDoctorModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md bg-white">
+      <DialogContent className="bg-white sm:max-w-md">
         <DialogHeader className="items-start text-left">
           <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100">
             <Mail className="h-6 w-6 text-purple-600" />

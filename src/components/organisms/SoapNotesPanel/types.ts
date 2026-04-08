@@ -10,5 +10,3 @@ export interface SoapNotesPanelProps {
   updateLocalData: (field: SoapFieldKey, value: string) => void
   patientId?: string | null
 }
-
-

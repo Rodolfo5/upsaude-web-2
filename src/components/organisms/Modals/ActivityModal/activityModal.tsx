@@ -105,9 +105,10 @@ export function ActivityModal({
 
   const goalOptions = goals.map((goal) => ({
     value: goal.id,
-    label: goal.type === 'Outros' 
-      ? goal.customTitle || 'Meta Customizada' 
-      : goal.type || goal.name || 'Meta',
+    label:
+      goal.type === 'Outros'
+        ? goal.customTitle || 'Meta Customizada'
+        : goal.type || goal.name || 'Meta',
   }))
 
   const isLifestylePillar = pillarType === 'Estilo de Vida'

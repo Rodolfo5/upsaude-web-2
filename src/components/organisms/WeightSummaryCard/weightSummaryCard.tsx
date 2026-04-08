@@ -64,8 +64,7 @@ export function WeightSummaryCard({
     ? Math.max(...weightHistory.map((w) => w.weight))
     : currentWeight
   const avgWeight = weightHistory.length
-    ? weightHistory.reduce((sum, w) => sum + w.weight, 0) /
-      weightHistory.length
+    ? weightHistory.reduce((sum, w) => sum + w.weight, 0) / weightHistory.length
     : currentWeight
 
   const chartData = weightHistory.slice(-7).map((item) => ({

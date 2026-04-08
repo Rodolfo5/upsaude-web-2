@@ -186,7 +186,9 @@ export class EmailService {
                         ${params.message}
                       </p>
                       
-                      ${params.actionUrl && params.actionText ? `
+                      ${
+                        params.actionUrl && params.actionText
+                          ? `
                       <table width="100%" cellpadding="0" cellspacing="0">
                         <tr>
                           <td align="center" style="padding: 20px 0;">
@@ -196,7 +198,9 @@ export class EmailService {
                           </td>
                         </tr>
                       </table>
-                      ` : ''}
+                      `
+                          : ''
+                      }
                       
                       <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 20px 0 0 0;">
                         Atenciosamente,<br>

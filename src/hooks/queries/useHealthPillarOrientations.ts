@@ -9,11 +9,12 @@ import {
   updateOrientation,
 } from '@/services/healthPillarOrientation'
 import { OrientationEntity } from '@/types/entities/healthPillar'
+import { getOrientationAdjustmentTitle } from '@/utils/therapeuticPlanAdjustments'
 
 import { errorToast, successToast } from '../useAppToast'
-import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 import useDoctor from '../useDoctor'
-import { getOrientationAdjustmentTitle } from '@/utils/therapeuticPlanAdjustments'
+
+import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 
 /**
  * Hook para buscar uma orientação específica por ID

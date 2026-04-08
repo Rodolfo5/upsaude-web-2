@@ -136,8 +136,7 @@ export function OrientationDetailsModal({
 
           <div className="border-t pt-4">
             <p className="text-xs text-gray-500">
-              Criado por{' '}
-              {formatDate(orientation.createdAt)}
+              Criado por {formatDate(orientation.createdAt)}
             </p>
           </div>
         </div>

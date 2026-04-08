@@ -18,7 +18,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useFindDoctorById } from '@/hooks/queries/useFindDoctorById'
 import {
   useUpdateActivity,
   useDeleteActivity,
@@ -144,8 +143,6 @@ export function ActivityCard({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [showMore, setShowMore] = useState(false)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
-  const { data: doctor } = useFindDoctorById(activity.doctorId)
-
   // Verificar se é recomendação de exercício
   const isExerciseRecommendation = activity.name === 'Recomendação de exercício'
 
@@ -416,12 +413,6 @@ export function ActivityCard({
   }
 
   if (isExerciseRecommendation) {
-    const approvalDate = activity.updatedAt || activity.createdAt
-    const approvalText = activity.aiGenerated
-      ? `Criado por IA${
-          doctor?.name ? ` e aprovado por Dr. ${doctor.name}` : ''
-        } em ${formatDate(approvalDate)}`
-      : `Criado em ${formatDate(activity.createdAt)}`
     const exerciseFrequency = formatExerciseFrequency(activity)
     const intensityLabel = activity.intensity
       ? `Intensidade ${activity.intensity.toLowerCase()}`

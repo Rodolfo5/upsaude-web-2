@@ -4,4 +4,3 @@ export interface PdfMessageProps {
   isOwnMessage: boolean
   createdAt: { toDate?: () => Date } | Date
 }
-

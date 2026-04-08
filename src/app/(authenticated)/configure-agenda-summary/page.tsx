@@ -1,7 +1,5 @@
 'use client'
 
-import Image from 'next/image'
-
 import { AgendaSummaryForm } from '@/components/organisms/Forms/AgendaSummaryForm/agendaSummaryForm'
 
 export default function ConfigureAgendaSummary() {

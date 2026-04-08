@@ -29,19 +29,14 @@ export function mapMemedToMedication(
 ): Partial<MedicationEntity> {
   // Extrair posologia/instrução do medicamento
   const posologia =
-    (memedMed.posologia as string) ||
-    (memedMed.instrucoes as string) ||
-    ''
+    (memedMed.posologia as string) || (memedMed.instrucoes as string) || ''
 
   // Extrair forma farmacêutica
   const pharmaceuticalForm =
-    memedMed.forma_farmaceutica ||
-    (memedMed.apresentacao as string) ||
-    ''
+    memedMed.forma_farmaceutica || (memedMed.apresentacao as string) || ''
 
   // Extrair classificação de uso (receituário)
-  const usageClassification =
-    memedMed.receituario || 'Simples'
+  const usageClassification = memedMed.receituario || 'Simples'
 
   return {
     userId: patientId,

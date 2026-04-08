@@ -63,7 +63,8 @@ export async function getFreshPrescriberToken(
   }
 
   const doctorExistsInMemed =
-    !!(doctor.memedId || doctor.memedRegistered) || !!(doctor.credential && credentialStateUF)
+    !!(doctor.memedId || doctor.memedRegistered) ||
+    !!(doctor.credential && credentialStateUF)
 
   let result = await memedService.getPrescriberToken({
     identifier: finalIdentifier,

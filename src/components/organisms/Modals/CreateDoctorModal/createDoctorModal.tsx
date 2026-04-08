@@ -185,9 +185,7 @@ export function CreateDoctorModal({
       successToast('Médico criado com sucesso!')
 
       if (warnings.length > 0) {
-        warningToast(
-          `Medico criado com alertas: ${warnings.join(' | ')}`,
-        )
+        warningToast(`Medico criado com alertas: ${warnings.join(' | ')}`)
       }
     } catch (error) {
       console.error('Erro ao criar médico:', error)

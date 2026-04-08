@@ -8,15 +8,10 @@ import {
 } from '@/services/therapeuticPlanAdjustment'
 import { TherapeuticPlanAdjustmentEntity } from '@/types/entities/therapeuticPlanAdjustment'
 
-import { errorToast } from '../useAppToast'
-
 /**
  * Hook para buscar ajustes terapêuticos de um paciente com paginação
  */
-export const useAdjustments = (
-  patientId: string,
-  pageSize: number = 3,
-) => {
+export const useAdjustments = (patientId: string, pageSize: number = 3) => {
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [allAdjustments, setAllAdjustments] = useState<
@@ -83,11 +78,15 @@ export const useAllAdjustments = (patientId: string) => {
       let hasMore = true
 
       while (hasMore) {
-        const result = await getAdjustmentsByPatient(patientId, 50, lastDoc || undefined)
+        const result = await getAdjustmentsByPatient(
+          patientId,
+          50,
+          lastDoc || undefined,
+        )
         allAdjustments = [...allAdjustments, ...result.adjustments]
         lastDoc = result.lastDoc
         hasMore = result.hasMore
-        
+
         // Limite de segurança para evitar loops infinitos
         if (allAdjustments.length > 1000) {
           break

@@ -152,7 +152,7 @@ export const subscribeMessages = (
   onError?: (error: Error) => void,
 ): (() => void) => {
   if (!chatId) {
-    return () => { }
+    return () => {}
   }
 
   try {
@@ -194,7 +194,7 @@ export const subscribeMessages = (
           : new Error('Erro ao criar subscription de mensagens'),
       )
     }
-    return () => { }
+    return () => {}
   }
 }
 
@@ -271,7 +271,7 @@ export const subscribeLastMessage = (
   onError?: (error: Error) => void,
 ): (() => void) => {
   if (!chatId) {
-    return () => { }
+    return () => {}
   }
 
   try {
@@ -319,6 +319,6 @@ export const subscribeLastMessage = (
           : new Error('Erro ao criar subscription da última mensagem'),
       )
     }
-    return () => { }
+    return () => {}
   }
 }

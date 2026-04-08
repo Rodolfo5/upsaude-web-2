@@ -10,8 +10,9 @@ import {
 import { DiagnosticEntity } from '@/types/entities/diagnostic'
 
 import { errorToast, successToast } from '../useAppToast'
-import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 import useDoctor from '../useDoctor'
+
+import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 
 /**
  * Hook para buscar todos os diagnósticos de um plano terapêutico
@@ -178,4 +179,3 @@ export const useDeleteDiagnostic = () => {
     },
   })
 }
-

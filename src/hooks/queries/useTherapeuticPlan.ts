@@ -9,8 +9,9 @@ import {
 import { TherapeuticPlanEntity } from '@/types/entities/therapeuticPlan'
 
 import { errorToast, successToast } from '../useAppToast'
-import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 import useDoctor from '../useDoctor'
+
+import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 
 /**
  * Hook para buscar um plano terapêutico específico
@@ -160,4 +161,3 @@ export const useUpdateTherapeuticPlan = () => {
     },
   })
 }
-

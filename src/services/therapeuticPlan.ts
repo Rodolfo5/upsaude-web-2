@@ -304,9 +304,9 @@ export async function linkMedicationsToPlan(
   const currentData = planDoc.data()
   const currentMedications = (currentData.medications as
     | {
-      medicationIds?: string[]
-      lastUpdated?: Date
-    }
+        medicationIds?: string[]
+        lastUpdated?: Date
+      }
     | undefined) || { medicationIds: [] }
 
   const existingIds = currentMedications.medicationIds || []
@@ -343,9 +343,9 @@ export async function unlinkMedicationsFromPlan(
   const currentData = planDoc.data()
   const currentMedications = (currentData.medications as
     | {
-      medicationIds?: string[]
-      lastUpdated?: Date
-    }
+        medicationIds?: string[]
+        lastUpdated?: Date
+      }
     | undefined) || { medicationIds: [] }
 
   const existingIds = currentMedications.medicationIds || []

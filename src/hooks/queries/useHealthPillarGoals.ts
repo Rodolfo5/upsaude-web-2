@@ -13,8 +13,9 @@ import {
 } from '@/utils/therapeuticPlanAdjustments'
 
 import { errorToast, successToast } from '../useAppToast'
-import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 import useDoctor from '../useDoctor'
+
+import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 
 /**
  * Hook para buscar todas as metas de um pilar
@@ -56,7 +57,12 @@ export const useCreateGoal = () => {
     onSuccess: async (_, variables) => {
       successToast('Meta criada com sucesso!')
       queryClient.invalidateQueries({
-        queryKey: ['goals', variables.patientId, variables.planId, variables.pillarId],
+        queryKey: [
+          'goals',
+          variables.patientId,
+          variables.planId,
+          variables.pillarId,
+        ],
       })
 
       // Registrar ajuste
@@ -110,7 +116,12 @@ export const useUpdateGoal = () => {
     onSuccess: async (_, variables) => {
       successToast('Meta atualizada com sucesso!')
       queryClient.invalidateQueries({
-        queryKey: ['goals', variables.patientId, variables.planId, variables.pillarId],
+        queryKey: [
+          'goals',
+          variables.patientId,
+          variables.planId,
+          variables.pillarId,
+        ],
       })
 
       // Registrar ajuste
@@ -160,7 +171,12 @@ export const useDeleteGoal = () => {
     onSuccess: (_, variables) => {
       successToast('Meta removida com sucesso!')
       queryClient.invalidateQueries({
-        queryKey: ['goals', variables.patientId, variables.planId, variables.pillarId],
+        queryKey: [
+          'goals',
+          variables.patientId,
+          variables.planId,
+          variables.pillarId,
+        ],
       })
     },
     onError: (error: Error) => {
@@ -168,4 +184,3 @@ export const useDeleteGoal = () => {
     },
   })
 }
-

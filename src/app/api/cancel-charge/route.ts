@@ -13,7 +13,10 @@ import { UserRole } from '@/types/entities/user'
 const bodySchema = z
   .object({
     chargeId: z.string().min(1, 'chargeId e obrigatorio').optional(),
-    protocolNumber: z.string().min(1, 'protocolNumber e obrigatorio').optional(),
+    protocolNumber: z
+      .string()
+      .min(1, 'protocolNumber e obrigatorio')
+      .optional(),
   })
   .refine((data) => Boolean(data.chargeId || data.protocolNumber), {
     message: 'Informe chargeId ou protocolNumber.',
@@ -73,15 +76,15 @@ export async function POST(request: Request) {
 
     const paymentQuery = protocolNumber
       ? await adminDb
-        .collection('instantPayments')
-        .where('protocolNumber', '==', protocolNumber)
-        .limit(1)
-        .get()
+          .collection('instantPayments')
+          .where('protocolNumber', '==', protocolNumber)
+          .limit(1)
+          .get()
       : await adminDb
-        .collection('instantPayments')
-        .where('pagarmeChargeId', '==', chargeId!)
-        .limit(1)
-        .get()
+          .collection('instantPayments')
+          .where('pagarmeChargeId', '==', chargeId!)
+          .limit(1)
+          .get()
 
     if (paymentQuery.empty) {
       return NextResponse.json(

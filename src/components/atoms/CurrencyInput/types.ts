@@ -1,3 +1,5 @@
+import type { Control, FieldValues } from 'react-hook-form'
+
 export interface CurrencyInputProps {
   value?: number
   onChange?: (value: number) => void
@@ -6,7 +8,7 @@ export interface CurrencyInputProps {
 }
 
 export interface CurrencyInputFieldProps {
-  control: any
+  control: Control<FieldValues>
   name: string
   label?: string
   required?: boolean

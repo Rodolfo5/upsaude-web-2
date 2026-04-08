@@ -103,7 +103,7 @@ export async function POST(
       )
     }
 
-    const checkupData = checkupSnap.data() as any
+    const checkupData = checkupSnap.data() as admin.firestore.DocumentData
     const checkup: HealthCheckupEntity = {
       ...checkupData,
       id: checkupSnap.id,
@@ -439,12 +439,21 @@ export async function POST(
           .doc()
 
         // Montar frequência combinada para compatibilidade com a interface (ex: "3x Semana")
-        const frequencyValue = (activityData as any).frequencyValue || ''
-        const frequencyUnit = (activityData as any).frequencyUnit || ''
+        const activityRecord = activityData as Record<string, unknown>
+        const frequencyValue =
+          typeof activityRecord.frequencyValue === 'string'
+            ? activityRecord.frequencyValue
+            : ''
+        const frequencyUnit =
+          typeof activityRecord.frequencyUnit === 'string'
+            ? activityRecord.frequencyUnit
+            : ''
         const combinedFrequency =
           frequencyValue && frequencyUnit
             ? `${frequencyValue}x ${frequencyUnit}`
-            : (activityData as any).frequency || ''
+            : typeof activityRecord.frequency === 'string'
+              ? activityRecord.frequency
+              : ''
 
         await activityRef.set({
           id: activityRef.id,

@@ -16,4 +16,3 @@ export interface TrackModalProps {
   defaultGoalId?: string
   onSuccess?: () => void
 }
-

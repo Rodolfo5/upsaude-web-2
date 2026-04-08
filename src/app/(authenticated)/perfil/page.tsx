@@ -14,7 +14,6 @@ import { ConfirmationModal } from '@/components/organisms/Modals/ConfirmationMod
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { getSpecialtiesForCredential, getSpecialtyLabel } from '@/utils/specialtyHelpers'
 import { useAppToast } from '@/hooks/useAppToast'
 import useDoctor from '@/hooks/useDoctor'
 import useUser from '@/hooks/useUser'
@@ -22,6 +21,10 @@ import { formatCpf, formatcep, timestampToDate } from '@/lib/utils'
 import { deleteOwnAccount, logout } from '@/services/firebase/auth'
 import { uploadFile } from '@/services/firebase/firebaseStorage'
 import { deleteUserDoc, updateUserDoc } from '@/services/user'
+import {
+  getSpecialtiesForCredential,
+  getSpecialtyLabel,
+} from '@/utils/specialtyHelpers'
 import profileEditSchema, { ProfileEditData } from '@/validations/profileEdit'
 
 function getCredentialDocumentFileKind(url: string): 'pdf' | 'image' | 'other' {
@@ -268,7 +271,9 @@ export default function PerfilPage() {
 
             <div className="flex-1 text-white">
               <h2 className="mb-2 text-2xl font-bold">{currentDoctor.name}</h2>
-              <p className="text-purple-100">{getSpecialtyLabel(currentDoctor?.specialty)}</p>
+              <p className="text-purple-100">
+                {getSpecialtyLabel(currentDoctor?.specialty)}
+              </p>
               <p className="text-sm text-purple-200">
                 {currentDoctor.credential}
               </p>

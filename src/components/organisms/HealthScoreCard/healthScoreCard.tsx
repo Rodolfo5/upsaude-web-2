@@ -38,9 +38,9 @@ export default function HealthScoreCard({
   // Para o cálculo do score, usar MODERATE como fallback se não houver classificação
   const riskClassificationForInput = hasRiskClassification
     ? (String(latestRisk).toUpperCase().replace(/\s+/g, '') as
-      | 'LOW'
-      | 'MODERATE'
-      | 'HIGH')
+        | 'LOW'
+        | 'MODERATE'
+        | 'HIGH')
     : ('MODERATE' as 'LOW' | 'MODERATE' | 'HIGH')
 
   // Usar apenas o score do paciente

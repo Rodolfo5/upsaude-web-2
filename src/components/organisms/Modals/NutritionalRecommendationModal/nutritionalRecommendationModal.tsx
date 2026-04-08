@@ -61,15 +61,14 @@ export function NutritionalRecommendationModal({
 
   const isEditing = !!orientation
 
-  const { control, handleSubmit, reset } = useForm<NutritionalRecommendationFormData>(
-    {
+  const { control, handleSubmit, reset } =
+    useForm<NutritionalRecommendationFormData>({
       resolver: zodResolver(nutritionalRecommendationSchema),
       defaultValues: {
         title: '',
         description: '',
       },
-    },
-  )
+    })
 
   useEffect(() => {
     if (orientation && isOpen) {
@@ -179,4 +178,3 @@ export function NutritionalRecommendationModal({
     </Dialog>
   )
 }
-

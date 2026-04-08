@@ -32,6 +32,15 @@ export interface EmailRecipient {
 }
 
 /**
+ * Anexo de email
+ */
+export interface EmailAttachment {
+  name: string
+  content: string // Base64 encoded
+  type: string
+}
+
+/**
  * Dados para envio de email
  */
 export interface SendEmailParams {
@@ -43,15 +52,6 @@ export interface SendEmailParams {
   cc?: EmailRecipient[]
   replyTo?: string
   attachments?: EmailAttachment[]
-}
-
-/**
- * Anexo de email
- */
-export interface EmailAttachment {
-  name: string
-  content: string // Base64 encoded
-  type: string
 }
 
 /**

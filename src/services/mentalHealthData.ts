@@ -7,6 +7,7 @@ import {
 } from 'firebase/firestore'
 
 import firebaseApp from '@/config/firebase/firebase'
+import { parseDateFromId } from '@/lib/parseDataFromId'
 import { HumorEntity, SleepTimeEntity } from '@/types/entities/healthPillar'
 import { QuestionnaireEntity } from '@/types/entities/questionnaireEntity'
 
@@ -14,7 +15,6 @@ import { getHealthPillar } from './healthPillar'
 import { getAllGoalsByPillar } from './healthPillarGoal'
 import { findAllQuestionnairesByPatient } from './questionnaires'
 import { getAllTherapeuticPlansByPatient } from './therapeuticPlan'
-import { parseDateFromId } from '@/lib/parseDataFromId'
 
 const firestore = getFirestore(firebaseApp)
 

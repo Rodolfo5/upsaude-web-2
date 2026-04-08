@@ -116,7 +116,7 @@ export default function MenuRecommendationPage({ params }: Props) {
     },
   })
 
-  const [inlineMealForm, setInlineMealForm] = useState<{
+  const [, setInlineMealForm] = useState<{
     mealId: string | null
     mealType: string
     dayOfWeek: string

@@ -17,4 +17,3 @@ export interface OrientationModalProps {
   defaultArea?: string
   onSuccess?: () => void
 }
-

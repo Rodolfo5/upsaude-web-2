@@ -54,9 +54,10 @@ export function OrientationModal({
 
   const goalOptions = goals.map((goal) => ({
     value: goal.id,
-    label: goal.type === 'Outros' 
-      ? goal.customTitle || 'Meta Customizada' 
-      : goal.type || goal.name || 'Meta',
+    label:
+      goal.type === 'Outros'
+        ? goal.customTitle || 'Meta Customizada'
+        : goal.type || goal.name || 'Meta',
   }))
 
   const formSchema = orientationSchema

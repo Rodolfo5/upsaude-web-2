@@ -9,4 +9,3 @@ export interface CreateActivityStyleModalProps {
   goalId: string
   onSuccess?: (activity: ActivityEntity) => void
 }
-

@@ -11,8 +11,7 @@ export type SelectOption = {
 }
 
 export interface SelectFieldProps<T extends FieldValues>
-  extends UseControllerProps<T>,
-    VariantProps<typeof selectVariants> {
+  extends UseControllerProps<T>, VariantProps<typeof selectVariants> {
   options: SelectOption[]
   placeholder?: string
   emptyPlaceholder?: string

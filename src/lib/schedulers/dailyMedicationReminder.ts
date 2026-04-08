@@ -139,11 +139,6 @@ async function sendMedicationNotification(
 ): Promise<void> {
   if (tokens.length === 0) return
 
-  const formattedHour = doseTime.toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-
   const notificationData: Omit<NotificationEntity, 'id' | 'createdAt'> = {
     title: 'Lembrete de medicamento',
     content: `Faltam 30 minutos para tomar ${medicationName}.`,

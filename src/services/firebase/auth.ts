@@ -21,7 +21,6 @@
 import {
   createUserWithEmailAndPassword,
   deleteUser,
-  getAuth,
   GoogleAuthProvider,
   OAuthProvider,
   sendEmailVerification,
@@ -33,17 +32,10 @@ import {
   User,
 } from 'firebase/auth'
 
-import firebaseApp from '@/config/firebase/firebase'
+import { auth, firebaseEnv } from '@/config/firebase/firebase'
 
-// ====================================================================
-// 🔧 CONFIGURAÇÃO E INSTÂNCIAS
-// ====================================================================
-
-/**
- * Instância do Firebase Authentication
- * Conectada à configuração principal do Firebase
- */
-const auth = getAuth(firebaseApp)
+const getFirebaseNotConfiguredError = () =>
+  firebaseEnv.errorMessage ?? 'Firebase não configurado'
 
 // ====================================================================
 // 📋 INTERFACES DE TIPOS
@@ -92,6 +84,10 @@ interface ErrorResult {
  * ```
  */
 export const waitForUser = (callback: (user: User | null) => void) => {
+  if (!firebaseEnv.isConfigured || !auth) {
+    callback(null)
+    return () => undefined
+  }
   return auth.onAuthStateChanged(callback)
 }
 
@@ -105,6 +101,7 @@ export const waitForUser = (callback: (user: User | null) => void) => {
  * aguardar o carregamento completo.
  */
 export const getCurrentUser = (): User | null => {
+  if (!firebaseEnv.isConfigured || !auth) return null
   return auth.currentUser
 }
 
@@ -114,6 +111,7 @@ export const getCurrentUser = (): User | null => {
  * @returns true se usuário está logado, false caso contrário
  */
 export const isUserLoggedIn = (): boolean => {
+  if (!firebaseEnv.isConfigured || !auth) return false
   return !!auth.currentUser
 }
 
@@ -126,6 +124,7 @@ export const isUserLoggedIn = (): boolean => {
  */
 // Caso não seja necessário verificação de email, esta linha pode ser removida
 export const isEmailVerified = (): boolean => {
+  if (!firebaseEnv.isConfigured || !auth) return false
   return auth.currentUser?.emailVerified ?? false
 }
 
@@ -151,6 +150,12 @@ export const createUserWithEmailAndPasswordLocal = async (
   email: string,
   password: string,
 ): Promise<AuthResult> => {
+  if (!firebaseEnv.isConfigured || !auth) {
+    return {
+      user: null,
+      error: getFirebaseNotConfiguredError(),
+    }
+  }
   try {
     // 🔥 Cria conta no Firebase Auth
     const userCred = await createUserWithEmailAndPassword(auth, email, password)
@@ -181,6 +186,12 @@ export const createUserWithEmailAndPasswordNoVerify = async (
   email: string,
   password: string,
 ): Promise<AuthResult> => {
+  if (!firebaseEnv.isConfigured || !auth) {
+    return {
+      user: null,
+      error: getFirebaseNotConfiguredError(),
+    }
+  }
   try {
     // 🔥 Cria conta no Firebase Auth
     const userCred = await createUserWithEmailAndPassword(auth, email, password)
@@ -211,6 +222,12 @@ export const signInWithEmailAndPasswordLocal = async (
   email: string,
   password: string,
 ): Promise<AuthResult> => {
+  if (!firebaseEnv.isConfigured || !auth) {
+    return {
+      user: null,
+      error: getFirebaseNotConfiguredError(),
+    }
+  }
   try {
     const userCred = await signInWithEmailAndPassword(auth, email, password)
     return {
@@ -232,6 +249,7 @@ export const signInWithEmailAndPasswordLocal = async (
  * Não há necessidade de tratamento de erro
  */
 export const logout = async (): Promise<void> => {
+  if (!firebaseEnv.isConfigured || !auth) return
   await signOut(auth)
 }
 
@@ -249,6 +267,9 @@ export const logout = async (): Promise<void> => {
  * Sempre retorna sucesso para emails válidos
  */
 export const recoverPassword = async (email: string): Promise<ErrorResult> => {
+  if (!firebaseEnv.isConfigured || !auth) {
+    return { error: getFirebaseNotConfiguredError() }
+  }
   try {
     // 🏠 URL para redirecionamento após reset
     const loginUrl = process.env.NEXT_PUBLIC_LOGIN_URL || window.location.origin
@@ -276,6 +297,9 @@ export const recoverPassword = async (email: string): Promise<ErrorResult> => {
  */
 // Caso não seja necessário verificação de email, esta linha pode ser removida
 export const resendEmailVerification = async (): Promise<ErrorResult> => {
+  if (!firebaseEnv.isConfigured || !auth) {
+    return { error: getFirebaseNotConfiguredError() }
+  }
   if (!auth.currentUser) {
     return { error: 'Nenhum usuário logado' }
   }
@@ -311,6 +335,9 @@ export const resendEmailVerification = async (): Promise<ErrorResult> => {
 export const updatePassword = async (
   password: string,
 ): Promise<ErrorResult> => {
+  if (!firebaseEnv.isConfigured || !auth) {
+    return { error: getFirebaseNotConfiguredError() }
+  }
   if (!auth.currentUser) {
     return { error: 'Nenhum usuário logado' }
   }
@@ -340,6 +367,9 @@ export const updatePassword = async (
  * Dados no Firestore devem ser deletados separadamente
  */
 export const deleteOwnAccount = async (): Promise<ErrorResult> => {
+  if (!firebaseEnv.isConfigured || !auth) {
+    return { error: getFirebaseNotConfiguredError() }
+  }
   if (!auth.currentUser) {
     return { error: 'Nenhum usuário logado' }
   }
@@ -372,6 +402,12 @@ export const deleteOwnAccount = async (): Promise<ErrorResult> => {
  * Verificar no Firestore se precisa completar cadastro
  */
 export const signInWithGoogle = async (): Promise<AuthResult> => {
+  if (!firebaseEnv.isConfigured || !auth) {
+    return {
+      user: null,
+      error: getFirebaseNotConfiguredError(),
+    }
+  }
   try {
     const provider = new GoogleAuthProvider()
     // Adiciona escopo para obter informações extras se necessário
@@ -418,6 +454,12 @@ export const signInWithGoogle = async (): Promise<AuthResult> => {
  * Verificar no Firestore se precisa completar cadastro
  */
 export const signInWithApple = async (): Promise<AuthResult> => {
+  if (!firebaseEnv.isConfigured || !auth) {
+    return {
+      user: null,
+      error: getFirebaseNotConfiguredError(),
+    }
+  }
   try {
     const provider = new OAuthProvider('apple.com')
     // Adiciona escopos para obter informações do usuário

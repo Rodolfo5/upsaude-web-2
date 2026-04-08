@@ -133,16 +133,15 @@ export const createDoctor = async (
   data: CreateDoctorData,
 ): Promise<{ uid: string; password: string; warnings: string[] }> => {
   try {
-    const { response, data: apiResult } =
-      await postAuthenticatedJson<{
-        uid?: string | null
-        password?: string | null
-        error?: string | null
-        warnings?: string[]
-      }>('/api/createDoctor', {
-        ...data,
-        birthDate: data.birthDate.toISOString(),
-      })
+    const { response, data: apiResult } = await postAuthenticatedJson<{
+      uid?: string | null
+      password?: string | null
+      error?: string | null
+      warnings?: string[]
+    }>('/api/createDoctor', {
+      ...data,
+      birthDate: data.birthDate.toISOString(),
+    })
 
     if (!response.ok || !apiResult?.uid || !apiResult.password) {
       throw new Error(

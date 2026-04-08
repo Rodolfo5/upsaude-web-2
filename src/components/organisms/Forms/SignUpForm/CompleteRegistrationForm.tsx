@@ -8,7 +8,6 @@ import { useMemedRegisterDoctor } from '@/hooks/queries/useMemedRegisterDoctor'
 import { errorToast } from '@/hooks/useAppToast'
 import useAuth from '@/hooks/useAuth'
 import { useMultiStepForm } from '@/hooks/useMultiStepForm'
-import useUser from '@/hooks/useUser'
 import { checkCrmInUse } from '@/services/doctor'
 import {
   getUserProgressFromFirestore,
@@ -30,7 +29,6 @@ type CompleteRegistrationData = SignUpStep2Data &
 
 export function CompleteRegistrationForm() {
   const { userUid, loading: authLoading } = useAuth()
-  const { refreshUser } = useUser()
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFormSubmitted, setIsFormSubmitted] = useState(false)

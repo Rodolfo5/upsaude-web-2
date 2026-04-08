@@ -19,9 +19,9 @@ export function isExamLikeItem(item: Record<string, unknown>): boolean {
   const tipo = typeof item.tipo === 'string' ? item.tipo.toLowerCase() : ''
   const hasExamCodes = Boolean(
     (item.exames_sus_codigo && item.exames_sus_codigo !== '') ||
-      (item.exames_tuss_codigo && item.exames_tuss_codigo !== '') ||
-      (item.codigo_sus && item.codigo_sus !== '') ||
-      (item.codigo_tuss && item.codigo_tuss !== ''),
+    (item.exames_tuss_codigo && item.exames_tuss_codigo !== '') ||
+    (item.codigo_sus && item.codigo_sus !== '') ||
+    (item.codigo_tuss && item.codigo_tuss !== ''),
   )
 
   return tipo === 'exame' || id.startsWith('e') || hasExamCodes
@@ -41,17 +41,13 @@ export function isExamLikeItem(item: Record<string, unknown>): boolean {
  * - forma_farmaceutica (ex: "Comprimido", "Cápsula")
  * - tipo medicamentoso (ex: "alopático", "fitoterápico", "manipulado", "homeopático")
  */
-export function isDefinitelyMedication(
-  item: Record<string, unknown>,
-): boolean {
+export function isDefinitelyMedication(item: Record<string, unknown>): boolean {
   const hasTarja = Boolean(item.tarja && item.tarja !== '')
-  const hasReceituario = Boolean(
-    item.receituario && item.receituario !== '',
-  )
+  const hasReceituario = Boolean(item.receituario && item.receituario !== '')
   const hasFabricante = Boolean(item.fabricante || item.fabricante_id)
   const hasFormaFarmaceutica = Boolean(
     (item.forma_farmaceutica && item.forma_farmaceutica !== '') ||
-      (item.pharmaceutical_form && item.pharmaceutical_form !== ''),
+    (item.pharmaceutical_form && item.pharmaceutical_form !== ''),
   )
 
   // Tipos de medicamentos conhecidos da Memed

@@ -522,9 +522,7 @@ export function extractDoctorDataFromPrescription(
   // Estrutura nova normalizada: rawData.prescriber
   const prescriber = rawData.prescriber as Record<string, unknown> | undefined
   if (prescriber?.name) {
-    const council = prescriber.council as
-      | Record<string, unknown>
-      | undefined
+    const council = prescriber.council as Record<string, unknown> | undefined
     const doctorData: {
       nome_medico?: string
       cidade_medico?: string
@@ -742,14 +740,13 @@ export function cleanPrescriptionRawData(
 
   // 3. Verificar array 'procedimentos' separado
   if (Array.isArray(rawData.procedimentos)) {
-    const procedimentos = rawData.procedimentos as Array<Record<string, unknown>>
+    const procedimentos = rawData.procedimentos as Array<
+      Record<string, unknown>
+    >
     procedimentos.forEach((proc) => {
       allProcsRefs.push({
         id: proc.id,
-        name:
-          (proc.nome as string) ||
-          (proc.name as string) ||
-          '',
+        name: (proc.nome as string) || (proc.name as string) || '',
       })
     })
   }

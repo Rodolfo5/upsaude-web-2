@@ -5,14 +5,14 @@ export enum UserProfile {
   ADOLESCENT = 'ADOLESCENT', // 12-17 anos
   ADULT = 'ADULT', // 18-59 anos, não gestante
   PREGNANT = 'PREGNANT', // Feminino + 12-55 anos + gestante
-  ELDERLY = 'ELDERLY' // 60+ anos
+  ELDERLY = 'ELDERLY', // 60+ anos
 }
 
 export enum CheckupStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   ABANDONED = 'ABANDONED',
-  REQUESTED = 'REQUESTED'
+  REQUESTED = 'REQUESTED',
 }
 
 // Identificação de perfil (primeira tela)

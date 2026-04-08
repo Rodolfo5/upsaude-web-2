@@ -1,6 +1,5 @@
 'use client'
 
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -14,11 +13,7 @@ import { Card } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { useExercisesByTrack } from '@/hooks/queries/useHealthPillarExercises'
 import { useUpdateTrack } from '@/hooks/queries/useHealthPillarTracks'
-import {
-  TrackEntity,
-  GoalEntity,
-  ExerciseEntity,
-} from '@/types/entities/healthPillar'
+import { GoalEntity, TrackEntity } from '@/types/entities/healthPillar'
 
 interface TrackCardProps {
   track: TrackEntity

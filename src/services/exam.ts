@@ -442,9 +442,7 @@ export async function createExam(
 
       const verifySnap = await getDoc(verifyRef)
 
-      if (verifySnap.exists()) {
-        const verifiedData = verifySnap.data()
-      } else {
+      if (!verifySnap.exists()) {
         // Tentar listar todos os documentos na subcoleção para debug
         try {
           const examsCollection = collection(
@@ -453,7 +451,7 @@ export async function createExam(
             patientId,
             'exams',
           )
-          const allDocs = await getDocs(examsCollection)
+          await getDocs(examsCollection)
         } catch (listError) {
           console.error('❌ Erro ao listar documentos:', listError)
         }

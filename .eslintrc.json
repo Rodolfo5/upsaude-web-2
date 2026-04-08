@@ -1,11 +1,10 @@
 {
-  "extends": [
-    "next/core-web-vitals",
-    "@rocketseat/eslint-config/next"
-  ],
+  "extends": ["next/core-web-vitals", "@rocketseat/eslint-config/next"],
   "plugins": ["import"],
   "rules": {
     "prettier/prettier": "error",
+    "@typescript-eslint/no-duplicate-enum-values": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/no-require-imports": [
       "error",
       {
@@ -15,7 +14,14 @@
     "import/order": [
       "error",
       {
-        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
         "pathGroups": [
           {
             "pattern": "react",

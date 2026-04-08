@@ -3,7 +3,6 @@
 import * as React from 'react'
 
 import Input from '@/components/atoms/Input/input'
-import { cn } from '@/lib/utils'
 
 import { CurrencyInputProps } from './types'
 

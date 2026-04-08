@@ -12,7 +12,7 @@
  */
 
 import { getAnalytics, Analytics } from 'firebase/analytics'
-import { initializeApp } from 'firebase/app'
+import { getApp, getApps, initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
@@ -53,11 +53,24 @@ const missingVars = Object.entries(requiredEnvVars)
   .filter(([key, value]) => !value && key !== 'measurementId')
   .map(([key]) => envVarNames[key] ?? key)
 
-if (missingVars.length > 0) {
-  throw new Error(
-    `🚨 Variáveis de ambiente Firebase faltando: ${missingVars.join(', ')}\n` +
-    `💡 Local: .env.local. Vercel: Project Settings > Environment Variables (faça novo deploy após adicionar).`,
-  )
+const firebaseEnvErrorMessage =
+  missingVars.length > 0
+    ? `🚨 Variáveis de ambiente Firebase faltando: ${missingVars.join(', ')}\n` +
+      `💡 Local: .env.local. Vercel: Project Settings > Environment Variables (faça novo deploy após adicionar).`
+    : null
+
+export const firebaseEnv = {
+  isConfigured: missingVars.length === 0,
+  missingVars,
+  errorMessage: firebaseEnvErrorMessage,
+}
+
+if (firebaseEnvErrorMessage && process.env.NODE_ENV === 'production') {
+  throw new Error(firebaseEnvErrorMessage)
+}
+
+if (firebaseEnvErrorMessage && process.env.NODE_ENV !== 'production') {
+  console.warn(firebaseEnvErrorMessage)
 }
 
 // ====================================================================
@@ -69,13 +82,13 @@ if (missingVars.length > 0) {
  * Usa as variáveis de ambiente validadas acima
  */
 const firebaseConfig = {
-  apiKey: requiredEnvVars.apiKey!, // Chave da API
-  authDomain: requiredEnvVars.authDomain!, // Domínio de autenticação
-  projectId: requiredEnvVars.projectId!, // ID do projeto
-  storageBucket: requiredEnvVars.storageBucket!, // Bucket do Storage
-  messagingSenderId: requiredEnvVars.messagingSenderId!, // ID do messaging
-  appId: requiredEnvVars.appId!, // ID da aplicação
-  measurementId: requiredEnvVars.measurementId, // ID do Analytics (opcional)
+  apiKey: requiredEnvVars.apiKey ?? '',
+  authDomain: requiredEnvVars.authDomain ?? '',
+  projectId: requiredEnvVars.projectId ?? '',
+  storageBucket: requiredEnvVars.storageBucket ?? '',
+  messagingSenderId: requiredEnvVars.messagingSenderId ?? '',
+  appId: requiredEnvVars.appId ?? '',
+  measurementId: requiredEnvVars.measurementId,
 }
 
 // ====================================================================
@@ -86,7 +99,7 @@ const firebaseConfig = {
  * Inicializa a aplicação Firebase
  * Esta é a instância principal que conecta com o projeto
  */
-const app = initializeApp(firebaseConfig)
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig)
 
 /**
  * 🔐 AUTHENTICATION SERVICE
@@ -94,7 +107,7 @@ const app = initializeApp(firebaseConfig)
  *
  * Uso: import { auth } from '@/config/firebase/firebase'
  */
-export const auth = getAuth(app)
+export const auth = firebaseEnv.isConfigured ? getAuth(app) : (null as never)
 
 /**
  * 🗄️ FIRESTORE DATABASE SERVICE
@@ -102,7 +115,9 @@ export const auth = getAuth(app)
  *
  * Uso: import { firestore } from '@/config/firebase/firebase'
  */
-export const firestore = getFirestore(app)
+export const firestore = firebaseEnv.isConfigured
+  ? getFirestore(app)
+  : (null as never)
 
 /**
  * 📁 STORAGE SERVICE
@@ -110,7 +125,9 @@ export const firestore = getFirestore(app)
  *
  * Uso: import { storage } from '@/config/firebase/firebase'
  */
-export const storage = getStorage(app)
+export const storage = firebaseEnv.isConfigured
+  ? getStorage(app)
+  : (null as never)
 
 /**
  * 📊 ANALYTICS SERVICE
@@ -120,8 +137,7 @@ export const storage = getStorage(app)
  * Por isso verificamos se estamos no cliente antes de inicializar
  */
 let analytics: Analytics | null = null
-if (typeof window !== 'undefined') {
-  // Só inicializa se estiver no cliente (browser)
+if (typeof window !== 'undefined' && requiredEnvVars.measurementId) {
   analytics = getAnalytics(app)
 }
 

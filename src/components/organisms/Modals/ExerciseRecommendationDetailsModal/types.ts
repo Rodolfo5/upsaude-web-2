@@ -5,4 +5,3 @@ export interface ExerciseRecommendationDetailsModalProps {
   setIsOpen: (isOpen: boolean) => void
   activity: ActivityEntity | null
 }
-

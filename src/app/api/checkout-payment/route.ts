@@ -199,7 +199,11 @@ export async function POST(request: Request) {
       },
     }
 
-    let paymentLink: { id: string; url: string; customer_settings: { customer_id: string } }
+    let paymentLink: {
+      id: string
+      url: string
+      customer_settings: { customer_id: string }
+    }
 
     try {
       const response = await axios.request({

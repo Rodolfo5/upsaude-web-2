@@ -38,7 +38,7 @@ await client.sendSimpleEmail(
   'usuario@example.com',
   'Bem-vindo!',
   '<h1>Olá!</h1><p>Bem-vindo ao Upsaude!</p>',
-  'João Silva' // nome opcional
+  'João Silva', // nome opcional
 )
 ```
 
@@ -52,14 +52,14 @@ const client = createSendPulseClient()
 await client.sendEmail({
   to: [
     { email: 'usuario1@example.com', name: 'João Silva' },
-    { email: 'usuario2@example.com', name: 'Maria Santos' }
+    { email: 'usuario2@example.com', name: 'Maria Santos' },
   ],
   subject: 'Notificação Importante',
   html: '<h1>Conteúdo HTML</h1>',
   text: 'Versão texto alternativa',
   cc: [{ email: 'gerente@example.com', name: 'Gerente' }],
   bcc: [{ email: 'auditoria@example.com' }],
-  replyTo: 'suporte@example.com'
+  replyTo: 'suporte@example.com',
 })
 ```
 
@@ -77,8 +77,8 @@ const emailHTML = await render(
   PatientWelcomeEmail({
     name: 'João Silva',
     email: 'joao@example.com',
-    password: 'senha123'
-  })
+    password: 'senha123',
+  }),
 )
 
 // Envia o email
@@ -87,7 +87,7 @@ await client.sendSimpleEmail(
   'joao@example.com',
   'Bem-vindo ao Upsaude!',
   emailHTML,
-  'João Silva'
+  'João Silva',
 )
 ```
 
@@ -111,9 +111,9 @@ const response = await fetch('/api/email', {
     data: {
       name: 'João Silva',
       email: 'usuario@example.com',
-      password: 'senha123'
-    }
-  })
+      password: 'senha123',
+    },
+  }),
 })
 
 const result = await response.json()
@@ -135,6 +135,7 @@ if (result.success) {
 ### Autenticação Automática
 
 O cliente gerencia automaticamente:
+
 - Autenticação OAuth2
 - Renovação de tokens
 - Cache de tokens em memória
@@ -198,9 +199,9 @@ await client.sendEmail({
     {
       name: 'documento.pdf',
       content: base64Content, // conteúdo em Base64
-      type: 'application/pdf'
-    }
-  ]
+      type: 'application/pdf',
+    },
+  ],
 })
 ```
 
@@ -211,10 +212,10 @@ await client.sendEmail({
   to: [
     { email: 'usuario1@example.com', name: 'João' },
     { email: 'usuario2@example.com', name: 'Maria' },
-    { email: 'usuario3@example.com', name: 'Pedro' }
+    { email: 'usuario3@example.com', name: 'Pedro' },
   ],
   subject: 'Notificação em Massa',
-  html: '<p>Mensagem para todos</p>'
+  html: '<p>Mensagem para todos</p>',
 })
 ```
 
@@ -230,6 +231,7 @@ await client.sendEmail({
 ### Erro de Autenticação
 
 Verifique:
+
 - Client ID e Client Secret corretos
 - Credenciais válidas no painel do SendPulse
 - Sem espaços extras nas variáveis de ambiente
@@ -237,6 +239,7 @@ Verifique:
 ### Erro ao Enviar Email
 
 Verifique:
+
 - Email remetente verificado no SendPulse
 - Formato válido dos emails destinatários
 - HTML do email sem scripts ou conteúdo bloqueado
@@ -253,6 +256,7 @@ O sistema registra erros no console. Em produção, considere usar um serviço d
 ## Suporte
 
 Para problemas com a integração, verifique:
+
 1. Logs do servidor
 2. Variáveis de ambiente
 3. Status do serviço SendPulse

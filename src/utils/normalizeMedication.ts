@@ -85,9 +85,10 @@ function normalizeDate(
  * Extrai dose e unidade de uma string de posologia
  * Exemplo: "1 comprimido" -> { dose: 1, unit: "comprimido" }
  */
-function extractDoseFromPosology(
-  posology?: string,
-): { dose?: number; unit?: string } {
+function extractDoseFromPosology(posology?: string): {
+  dose?: number
+  unit?: string
+} {
   if (!posology) return {}
 
   // Padrões comuns: "1 comprimido", "2 gotas", "5ml", etc.
@@ -107,9 +108,10 @@ function extractDoseFromPosology(
  * Exemplo: "a cada 8 horas" -> { interval: 8, unit: "Horas" }
  * Exemplo: "3x ao dia" -> { interval: 3, unit: "Dias" }
  */
-function extractIntervalFromPosology(
-  posology?: string,
-): { interval?: number; unit?: string } {
+function extractIntervalFromPosology(posology?: string): {
+  interval?: number
+  unit?: string
+} {
   if (!posology) return {}
 
   // Padrão: "a cada X horas"
@@ -122,9 +124,7 @@ function extractIntervalFromPosology(
   }
 
   // Padrão: "Xx ao dia" ou "X vezes ao dia"
-  const timesPerDayMatch = posology.match(
-    /(\d+)\s*(?:x|vezes)\s*ao\s*dia/i,
-  )
+  const timesPerDayMatch = posology.match(/(\d+)\s*(?:x|vezes)\s*ao\s*dia/i)
   if (timesPerDayMatch) {
     return {
       interval: parseInt(timesPerDayMatch[1], 10),
@@ -148,9 +148,10 @@ function extractIntervalFromPosology(
  * Extrai concentração e unidade da apresentação
  * Exemplo: "500mg" -> { concentration: 500, unit: "mg" }
  */
-function extractConcentrationFromPresentation(
-  presentation?: string,
-): { concentration?: number; unit?: string } {
+function extractConcentrationFromPresentation(presentation?: string): {
+  concentration?: number
+  unit?: string
+} {
   if (!presentation) return {}
 
   const match = presentation.match(/(\d+)\s*([a-záàâãéèêíïóôõöúçñ]+)/i)

@@ -46,7 +46,11 @@ function CursorPagination({
         >
           Anterior
         </Button>
-        <Button variant="success" onClick={onNext} disabled={!hasNextPage || isLoading}>
+        <Button
+          variant="success"
+          onClick={onNext}
+          disabled={!hasNextPage || isLoading}
+        >
           Próxima
         </Button>
       </div>
@@ -54,11 +58,7 @@ function CursorPagination({
   )
 }
 
-function DoctorsTabContent({
-  mainAction,
-}: {
-  mainAction: ReactNode
-}) {
+function DoctorsTabContent({ mainAction }: { mainAction: ReactNode }) {
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null])
   const currentCursor = cursorStack[cursorStack.length - 1]
 

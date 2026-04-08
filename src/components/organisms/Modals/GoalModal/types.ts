@@ -11,4 +11,3 @@ export interface GoalModalProps {
   defaultType?: 'Qualidade de Sono' | 'Estresse' | 'Humor' | 'Outros'
   onSuccess?: () => void
 }
-

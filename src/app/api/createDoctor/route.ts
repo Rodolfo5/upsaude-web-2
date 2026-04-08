@@ -6,11 +6,11 @@ import {
   hasRouteUserRole,
   requireAuthenticatedRouteUser,
 } from '@/lib/server/routeAuth'
-import { memedService } from '@/services/memed'
 import {
   createUserAuthAdmin,
   deleteUserAuthAdmin,
 } from '@/services/firebase/firebaseAdmin'
+import { memedService } from '@/services/memed'
 import { UserRole, UserStatus } from '@/types/entities/user'
 import { generateRandomPassword } from '@/utils/generateRandomPassword'
 import { getMemedIdForSpecialty } from '@/utils/specialtyHelpers'
@@ -128,17 +128,19 @@ export async function POST(
         .limit(10)
         .get()
 
-      const crmAlreadyInUse = existingDoctorSnapshot.docs.some((docSnapshot) => {
-        const data = docSnapshot.data()
-        const storedState =
-          typeof data.credentialState === 'string'
-            ? data.credentialState
-            : typeof data.state === 'string'
-              ? data.state
-              : ''
+      const crmAlreadyInUse = existingDoctorSnapshot.docs.some(
+        (docSnapshot) => {
+          const data = docSnapshot.data()
+          const storedState =
+            typeof data.credentialState === 'string'
+              ? data.credentialState
+              : typeof data.state === 'string'
+                ? data.state
+                : ''
 
-        return storedState.toUpperCase() === crmState
-      })
+          return storedState.toUpperCase() === crmState
+        },
+      )
 
       if (crmAlreadyInUse) {
         return NextResponse.json(
@@ -175,27 +177,30 @@ export async function POST(
     const warnings: string[] = []
 
     try {
-      await db.collection('users').doc(uid).set(
-        removeUndefinedFields({
-          id: uid,
-          uid,
-          name,
-          email,
-          cpf,
-          birthDate,
-          state,
-          credential: crm || undefined,
-          credentialState: crm ? crmState : undefined,
-          typeOfCredential: crm ? 'CRM' : undefined,
-          specialty,
-          role: UserRole.DOCTOR,
-          status: UserStatus.APPROVED,
-          currentStep: 2,
-          isCompleted: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }),
-      )
+      await db
+        .collection('users')
+        .doc(uid)
+        .set(
+          removeUndefinedFields({
+            id: uid,
+            uid,
+            name,
+            email,
+            cpf,
+            birthDate,
+            state,
+            credential: crm || undefined,
+            credentialState: crm ? crmState : undefined,
+            typeOfCredential: crm ? 'CRM' : undefined,
+            specialty,
+            role: UserRole.DOCTOR,
+            status: UserStatus.APPROVED,
+            currentStep: 2,
+            isCompleted: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }),
+        )
     } catch (firestoreError) {
       console.error('Erro ao persistir medico no Firestore:', firestoreError)
 
@@ -230,21 +235,26 @@ export async function POST(
           birthDate: birthDate.toISOString(),
           crm,
           crmState,
-          specialtyId: specialty ? getMemedIdForSpecialty(specialty) : undefined,
+          specialtyId: specialty
+            ? getMemedIdForSpecialty(specialty)
+            : undefined,
         })
 
         if (memedResult.success) {
-          await db.collection('users').doc(uid).set(
-            removeUndefinedFields({
-              memedId: memedResult.memedId,
-              memedRegistered: Boolean(
-                memedResult.memedId || memedResult.prescriberToken,
-              ),
-              token: memedResult.prescriberToken,
-              updatedAt: new Date(),
-            }),
-            { merge: true },
-          )
+          await db
+            .collection('users')
+            .doc(uid)
+            .set(
+              removeUndefinedFields({
+                memedId: memedResult.memedId,
+                memedRegistered: Boolean(
+                  memedResult.memedId || memedResult.prescriberToken,
+                ),
+                token: memedResult.prescriberToken,
+                updatedAt: new Date(),
+              }),
+              { merge: true },
+            )
         } else if (memedResult.error) {
           warnings.push(
             `Medico criado, mas nao foi possivel registrar na Memed: ${memedResult.error}`,

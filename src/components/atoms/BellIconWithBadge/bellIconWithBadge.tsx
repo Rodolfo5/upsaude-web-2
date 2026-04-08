@@ -1,6 +1,7 @@
 'use client'
 
 import NotificationsIcon from '@mui/icons-material/Notifications'
+
 import { cn } from '@/lib/utils'
 
 export interface BellIconWithBadgeProps {

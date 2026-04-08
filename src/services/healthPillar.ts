@@ -1,18 +1,19 @@
 import {
   collection,
   doc,
-  getDoc,
   getDocs,
   getFirestore,
   query,
   setDoc,
   Timestamp,
-  updateDoc,
   where,
 } from 'firebase/firestore'
 
 import firebaseApp from '@/config/firebase/firebase'
-import { HealthPillarEntity, HealthPillarType } from '@/types/entities/healthPillar'
+import {
+  HealthPillarEntity,
+  HealthPillarType,
+} from '@/types/entities/healthPillar'
 
 const firestore = getFirestore(firebaseApp)
 
@@ -156,4 +157,3 @@ export async function getAllHealthPillars(
     } as HealthPillarEntity
   })
 }
-

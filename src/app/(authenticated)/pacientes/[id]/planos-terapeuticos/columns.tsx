@@ -85,7 +85,9 @@ export function makeTherapeuticPlansColumns(
             variant="link"
             className="text-purple-600 hover:text-purple-800 hover:no-underline"
             onClick={() =>
-              router.push(`/pacientes/${patientId}/plano-terapeutico/${plan.id}`)
+              router.push(
+                `/pacientes/${patientId}/plano-terapeutico/${plan.id}`,
+              )
             }
           >
             Ver plano

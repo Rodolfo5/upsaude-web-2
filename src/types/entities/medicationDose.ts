@@ -1,5 +1,11 @@
 import { Timestamp } from 'firebase/firestore'
 
+export enum DoseStatus {
+  TAKEN = 'tomei',
+  IGNORED = 'ignorei',
+  DELAYED = 'adiei',
+}
+
 export interface MedicationDoseEntity {
   id: string // Formato: dd-mm-aaaa-hh-mm-ss
   medicationId: string
@@ -8,10 +14,4 @@ export interface MedicationDoseEntity {
   status: DoseStatus
   createdAt: Timestamp
   updatedAt: Timestamp
-}
-
-export enum DoseStatus {
-  TAKEN = 'tomei', // Tomei
-  IGNORED = 'ignorei', // Ignorei
-  DELAYED = 'adiei', // Adiei
 }

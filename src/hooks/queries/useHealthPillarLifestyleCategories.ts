@@ -8,11 +8,12 @@ import {
   updateCategory,
 } from '@/services/healthPillarLifestyleCategory'
 import { LifestyleCategoryEntity } from '@/types/entities/healthPillar'
+import { getCategoryAdjustmentTitle } from '@/utils/therapeuticPlanAdjustments'
 
 import { errorToast, successToast } from '../useAppToast'
-import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 import useDoctor from '../useDoctor'
-import { getCategoryAdjustmentTitle } from '@/utils/therapeuticPlanAdjustments'
+
+import { useCreateAdjustment } from './useTherapeuticPlanAdjustments'
 
 export const useLifestyleCategories = (
   patientId: string,

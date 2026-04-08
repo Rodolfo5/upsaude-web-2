@@ -8,8 +8,9 @@ type CustomInputProps = Omit<InputProps, 'name'> &
   Omit<InputCurrencyProps, 'name' | 'control'> &
   Omit<InputMasksProps, 'name' | 'control'>
 
-export interface InputFieldProps<T extends FieldValues>
-  extends CustomInputProps {
+export interface InputFieldProps<
+  T extends FieldValues,
+> extends CustomInputProps {
   name: Path<T>
   control: Control<T>
   label?: string

@@ -48,11 +48,13 @@ export function getDoctorCouncil(
   // Primeiro tenta buscar em doctorData (dados salvos do rawData)
   if (exam.doctorData?.board) {
     // Dados vêm da API Memed em snake_case
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { board_code, board_number, board_state } = exam.doctorData.board
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const {
+      board_code: boardCode,
+      board_number: boardNumber,
+      board_state: boardState,
+    } = exam.doctorData.board
     const council =
-      `${board_code || ''} ${board_number || ''} ${board_state || ''}`.trim()
+      `${boardCode || ''} ${boardNumber || ''} ${boardState || ''}`.trim()
     if (council) return council
   }
 

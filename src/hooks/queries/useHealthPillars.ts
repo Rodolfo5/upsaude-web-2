@@ -5,9 +5,9 @@ import {
   getAllHealthPillars,
   getHealthPillar,
 } from '@/services/healthPillar'
-import { HealthPillarEntity, HealthPillarType } from '@/types/entities/healthPillar'
+import { HealthPillarType } from '@/types/entities/healthPillar'
 
-import { errorToast, successToast } from '../useAppToast'
+import { errorToast } from '../useAppToast'
 
 /**
  * Hook para buscar um pilar específico por tipo
@@ -71,4 +71,3 @@ export const useCreateHealthPillar = () => {
     },
   })
 }
-

@@ -13,7 +13,8 @@ import PersonIcon from '@mui/icons-material/Person'
 import { IndentDecreaseIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, type ReactNode } from 'react'
 
 import { BellIconWithBadge } from '@/components/atoms/BellIconWithBadge/bellIconWithBadge'
 import { NotificationsModal } from '@/components/organisms/Modals/NotificationsModal/notificationsModal'
@@ -25,7 +26,7 @@ import { cn } from '@/lib/utils'
 type SidebarItem = {
   label: string
   href: string
-  icon: React.ReactNode
+  icon: ReactNode
 }
 
 const items: SidebarItem[] = [
@@ -72,13 +73,22 @@ const secondary: SidebarItem[] = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { userUid, logoutUser, loading } = useAuth()
   const { isExpanded, toggleExpanded } = useSidebar()
   const { unreadCount } = useUnreadNotifications(userUid ?? undefined)
 
   const handleLogoutClick = () => {
-    void logoutUser()
+    logoutUser().catch(() => undefined)
   }
+
+  useEffect(() => {
+    ;[...items, ...secondary].forEach((it) => {
+      try {
+        router.prefetch(it.href)
+      } catch {}
+    })
+  }, [router])
 
   return (
     <aside
@@ -153,6 +163,7 @@ export default function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 transition-colors hover:bg-primary/10 hover:text-primary',
                   isActive && 'bg-primary/15 text-primary',
@@ -160,6 +171,11 @@ export default function Sidebar() {
                 )}
                 aria-label={item.label}
                 title={!isExpanded ? item.label : undefined}
+                onMouseEnter={() => {
+                  try {
+                    router.prefetch(item.href)
+                  } catch {}
+                }}
               >
                 <div className="flex h-8 w-8 items-center justify-center">
                   {item.icon}
@@ -212,6 +228,7 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 transition-colors hover:bg-primary/10 hover:text-primary',
                 isActive && 'bg-primary/15 text-primary',
@@ -219,6 +236,11 @@ export default function Sidebar() {
               )}
               aria-label={item.label}
               title={!isExpanded ? item.label : undefined}
+              onMouseEnter={() => {
+                try {
+                  router.prefetch(item.href)
+                } catch {}
+              }}
             >
               <div className="flex h-8 w-8 items-center justify-center">
                 {item.icon}

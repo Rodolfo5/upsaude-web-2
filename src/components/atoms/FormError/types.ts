@@ -4,8 +4,7 @@ import { ComponentProps, ReactNode } from 'react'
 import { formErrorLabelVariants } from './formError'
 
 export interface FormErrorLabelProps
-  extends ComponentProps<'div'>,
-    VariantProps<typeof formErrorLabelVariants> {
+  extends ComponentProps<'div'>, VariantProps<typeof formErrorLabelVariants> {
   children: ReactNode
 
   icon?: ReactNode

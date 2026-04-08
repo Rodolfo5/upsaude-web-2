@@ -17,7 +17,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { getAllSpecialties } from '@/utils/specialtyHelpers'
 import { useAppToast } from '@/hooks/useAppToast'
 import useUser from '@/hooks/useUser'
 import {
@@ -26,6 +25,7 @@ import {
 } from '@/services/consultationPlan'
 import { createRequestConsultation } from '@/services/requestConsultations'
 import { DoctorEntity } from '@/types/entities/user'
+import { getAllSpecialties } from '@/utils/specialtyHelpers'
 import RequestConsultationsSchema from '@/validations/requestConsultations'
 
 import { ComplementaryConsultationModalProps } from './types'

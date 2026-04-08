@@ -2,9 +2,9 @@ import { randomUUID } from 'crypto'
 
 import { NextResponse } from 'next/server'
 
-import { getMemedIdForSpecialty } from '@/utils/specialtyHelpers'
 import { memedService } from '@/services/memed'
 import { updateUserDoc } from '@/services/user'
+import { getMemedIdForSpecialty } from '@/utils/specialtyHelpers'
 
 export async function POST(request: Request) {
   try {

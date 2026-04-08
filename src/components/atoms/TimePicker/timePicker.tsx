@@ -25,8 +25,8 @@ const generateTimeOptions = (minTime?: string, maxTime?: string) => {
   const options: { value: string; label: string }[] = []
 
   const minMinutes = minTime ? parseTimeToMinutes(minTime) : 0
-  let maxMinutes = maxTime ? parseTimeToMinutes(maxTime) : 24 * 60 - 1
-  
+  const maxMinutes = maxTime ? parseTimeToMinutes(maxTime) : 24 * 60 - 1
+
   // Se maxTime for 00:00, significa que é o turno da noite terminando em meia-noite
   const includesMidnight = maxTime === '00:00'
 
@@ -34,12 +34,12 @@ const generateTimeOptions = (minTime?: string, maxTime?: string) => {
   for (let hour = 0; hour < 24; hour++) {
     for (let minute = 0; minute < 60; minute += 15) {
       const timeMinutes = hour * 60 + minute
-      
+
       // Filtrar opções fora do range mínimo
       if (timeMinutes < minMinutes) {
         continue
       }
-      
+
       if (includesMidnight) {
         // Para turno da noite com meia-noite, incluir de 18:00 até 23:59
         if (timeMinutes >= minMinutes && timeMinutes <= 23 * 60 + 59) {
@@ -52,12 +52,12 @@ const generateTimeOptions = (minTime?: string, maxTime?: string) => {
       } else {
         // Range normal: de minMinutes até maxMinutes
         if (timeMinutes <= maxMinutes) {
-      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-      options.push({
-        value: timeString,
+          const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+          options.push({
+            value: timeString,
             label: timeString,
-      })
-    }
+          })
+        }
       }
     }
   }
@@ -74,8 +74,21 @@ const generateTimeOptions = (minTime?: string, maxTime?: string) => {
 }
 
 const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
-  ({ value, onChange, disabled = false, placeholder = 'Selecione', minTime, maxTime }, ref) => {
-    const options = React.useMemo(() => generateTimeOptions(minTime, maxTime), [minTime, maxTime])
+  (
+    {
+      value,
+      onChange,
+      disabled = false,
+      placeholder = 'Selecione',
+      minTime,
+      maxTime,
+    },
+    ref,
+  ) => {
+    const options = React.useMemo(
+      () => generateTimeOptions(minTime, maxTime),
+      [minTime, maxTime],
+    )
 
     return (
       <div ref={ref} className={cn('w-full')}>

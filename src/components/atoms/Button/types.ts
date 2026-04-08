@@ -6,7 +6,8 @@ import { buttonVariants } from './button'
 export type Ref = HTMLButtonElement
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   children: ReactNode
   asChild?: boolean

@@ -108,9 +108,8 @@ export default function ExerciseRecommendationPage({ params }: Props) {
       if (!patientId || !planId || planId === 'new') return
 
       try {
-        const { collection, getDocs, getFirestore } = await import(
-          'firebase/firestore'
-        )
+        const { collection, getDocs, getFirestore } =
+          await import('firebase/firestore')
         const firestore = getFirestore(firebaseApp)
 
         const pillarsRef = collection(
@@ -230,7 +229,7 @@ export default function ExerciseRecommendationPage({ params }: Props) {
       // Carregar prescrições da atividade
       const prescriptions =
         existingActivity.trainingPrescriptions &&
-          Array.isArray(existingActivity.trainingPrescriptions)
+        Array.isArray(existingActivity.trainingPrescriptions)
           ? existingActivity.trainingPrescriptions
           : []
       setLocalPrescriptions(prescriptions)
@@ -357,11 +356,11 @@ export default function ExerciseRecommendationPage({ params }: Props) {
           prev.map((p) =>
             p.id === selectedPrescription.id
               ? {
-                ...p,
-                title: data.title,
-                description: data.description || '',
-                updatedAt: now,
-              }
+                  ...p,
+                  title: data.title,
+                  description: data.description || '',
+                  updatedAt: now,
+                }
               : p,
           ),
         )
@@ -615,10 +614,11 @@ export default function ExerciseRecommendationPage({ params }: Props) {
                   {localPrescriptions.map((prescription, index) => (
                     <div
                       key={prescription.id}
-                      className={`flex items-center justify-between px-4 py-3 ${index < localPrescriptions.length - 1
+                      className={`flex items-center justify-between px-4 py-3 ${
+                        index < localPrescriptions.length - 1
                           ? 'border-b border-purple-200'
                           : ''
-                        }`}
+                      }`}
                     >
                       <div className="flex-1">
                         <p className="font-medium text-gray-900">

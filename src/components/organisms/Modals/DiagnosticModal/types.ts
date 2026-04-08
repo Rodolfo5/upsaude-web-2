@@ -8,4 +8,3 @@ export interface DiagnosticModalProps {
   diagnostic?: DiagnosticEntity | null
   onSuccess?: () => void
 }
-

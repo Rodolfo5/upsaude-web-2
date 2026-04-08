@@ -44,9 +44,10 @@ export function normalizeEmail(email: string): string {
 /**
  * Valida uma lista de emails
  */
-export function validateEmailList(
-  emails: string[],
-): { valid: string[]; invalid: string[] } {
+export function validateEmailList(emails: string[]): {
+  valid: string[]
+  invalid: string[]
+} {
   const valid: string[] = []
   const invalid: string[] = []
 

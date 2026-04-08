@@ -61,8 +61,7 @@ export function ExerciseSummaryCard({
 
   const hours = Math.floor(totalDuration / 60)
   const minutes = totalDuration % 60
-  const durationText =
-    hours > 0 ? `${hours}h ${minutes}min` : `${minutes} min`
+  const durationText = hours > 0 ? `${hours}h ${minutes}min` : `${minutes} min`
 
   return (
     <div className={cn('flex flex-col gap-4', className)}>
@@ -133,7 +132,9 @@ export function ExerciseSummaryCard({
           <h3 className="text-base font-semibold text-gray-900">
             Calorias queimadas
           </h3>
-          <p className="text-sm text-gray-600">Hoje: {totalCaloriesBurned} kcal</p>
+          <p className="text-sm text-gray-600">
+            Hoje: {totalCaloriesBurned} kcal
+          </p>
         </div>
       </Card>
 

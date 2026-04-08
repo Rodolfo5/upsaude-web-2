@@ -1,13 +1,13 @@
 'use client'
 
-import { Controller, FieldValues } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 
 import { FormErrorLabel } from '@/components/atoms/FormError/formError'
 import { Label } from '@/components/atoms/Label/label'
 import { TimePicker } from '@/components/atoms/TimePicker/timePicker'
 import { TimePickerFieldProps } from '@/components/atoms/TimePicker/types'
 
-const TimePickerField = <T extends FieldValues>({
+const TimePickerField = ({
   control,
   name,
   label,

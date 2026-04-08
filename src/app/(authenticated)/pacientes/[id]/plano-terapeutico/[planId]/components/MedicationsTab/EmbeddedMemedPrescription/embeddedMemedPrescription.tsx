@@ -71,9 +71,9 @@ function isExamLikeItem(item: Record<string, unknown>): boolean {
   const tipo = typeof item.tipo === 'string' ? item.tipo.toLowerCase() : ''
   const hasExamCodes = Boolean(
     item.exames_sus_codigo ||
-      item.exames_tuss_codigo ||
-      item.codigo_sus ||
-      item.codigo_tuss,
+    item.exames_tuss_codigo ||
+    item.codigo_sus ||
+    item.codigo_tuss,
   )
 
   return tipo === 'exame' || id.startsWith('e') || hasExamCodes
@@ -82,17 +82,17 @@ function isExamLikeItem(item: Record<string, unknown>): boolean {
 function isMedicationLikeItem(item: Record<string, unknown>): boolean {
   return Boolean(
     item.tarja ||
-      item.receituario ||
-      item.forma_farmaceutica ||
-      item.pharmaceutical_form ||
-      item.apresentacao ||
-      item.presentation ||
-      item.via ||
-      item.quantidade ||
-      item.duracao ||
-      item.frequencia ||
-      item.unit ||
-      item.dose,
+    item.receituario ||
+    item.forma_farmaceutica ||
+    item.pharmaceutical_form ||
+    item.apresentacao ||
+    item.presentation ||
+    item.via ||
+    item.quantidade ||
+    item.duracao ||
+    item.frequencia ||
+    item.unit ||
+    item.dose,
   )
 }
 

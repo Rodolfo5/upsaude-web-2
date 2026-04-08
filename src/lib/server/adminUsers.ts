@@ -73,7 +73,10 @@ export async function fetchAgendaMapForUsers(
 
       const professionalId = data.professionalId
 
-      if (typeof professionalId === 'string' && !agendaMap.has(professionalId)) {
+      if (
+        typeof professionalId === 'string' &&
+        !agendaMap.has(professionalId)
+      ) {
         agendaMap.set(professionalId, data)
       }
     })
@@ -86,9 +89,10 @@ export const mapUserSnapshotToAdminListItem = (
   docSnapshot: FirebaseFirestore.QueryDocumentSnapshot,
   agendaMap?: Map<string, AgendaEntity>,
 ) => {
-  const data = serializeFirestoreValue(
-    docSnapshot.data(),
-  ) as Record<string, unknown>
+  const data = serializeFirestoreValue(docSnapshot.data()) as Record<
+    string,
+    unknown
+  >
 
   const mappedUser = {
     ...data,

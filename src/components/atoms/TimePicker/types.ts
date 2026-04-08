@@ -1,3 +1,5 @@
+import type { Control, FieldValues } from 'react-hook-form'
+
 export interface TimePickerProps {
   value?: string // formato HH:MM
   onChange?: (time: string) => void
@@ -8,7 +10,7 @@ export interface TimePickerProps {
 }
 
 export interface TimePickerFieldProps {
-  control: any
+  control: Control<FieldValues>
   name: string
   label?: string
   required?: boolean

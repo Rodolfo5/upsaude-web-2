@@ -15,18 +15,38 @@ import { getNotificationTemplate } from '../templates'
 
 describe('generateEventHash', () => {
   it('deve gerar hash MD5 consistente para os mesmos parâmetros', () => {
-    const hash1 = generateEventHash('consultation_scheduled', 'abc123', 'doc456')
-    const hash2 = generateEventHash('consultation_scheduled', 'abc123', 'doc456')
+    const hash1 = generateEventHash(
+      'consultation_scheduled',
+      'abc123',
+      'doc456',
+    )
+    const hash2 = generateEventHash(
+      'consultation_scheduled',
+      'abc123',
+      'doc456',
+    )
     expect(hash1).toBe(hash2)
     expect(hash1).toHaveLength(32)
     expect(hash1).toMatch(/^[a-f0-9]+$/)
   })
 
   it('deve gerar hashes diferentes para parâmetros diferentes', () => {
-    const hash1 = generateEventHash('consultation_scheduled', 'abc123', 'doc456')
+    const hash1 = generateEventHash(
+      'consultation_scheduled',
+      'abc123',
+      'doc456',
+    )
     const hash2 = generateEventHash('consultation_canceled', 'abc123', 'doc456')
-    const hash3 = generateEventHash('consultation_scheduled', 'xyz789', 'doc456')
-    const hash4 = generateEventHash('consultation_scheduled', 'abc123', 'doc999')
+    const hash3 = generateEventHash(
+      'consultation_scheduled',
+      'xyz789',
+      'doc456',
+    )
+    const hash4 = generateEventHash(
+      'consultation_scheduled',
+      'abc123',
+      'doc999',
+    )
 
     expect(hash1).not.toBe(hash2)
     expect(hash1).not.toBe(hash3)

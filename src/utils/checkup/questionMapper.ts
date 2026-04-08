@@ -1,8 +1,8 @@
+import { timestampToDate } from '@/lib/utils'
 import {
   HealthCheckupEntity,
   UserProfile,
 } from '@/types/entities/healthCheckup'
-import { timestampToDate } from '@/lib/utils'
 
 export interface QuestionAnswer {
   section: string

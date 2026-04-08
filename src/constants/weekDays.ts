@@ -37,4 +37,3 @@ export const WEEK_DAYS_PT_SHORT: Record<WeekDay, string> = {
   [WeekDay.FRIDAY]: 'Sex',
   [WeekDay.SATURDAY]: 'Sáb',
 }
-

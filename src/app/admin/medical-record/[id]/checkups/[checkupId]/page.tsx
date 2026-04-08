@@ -59,7 +59,8 @@ export default function CheckupResultPage({ params }: PageProps) {
   const sections = mapCheckupToQuestions(checkup)
   const professionalName = getRequesterName(checkup as CheckupRow)
   const professionalCouncil = getRequesterCouncil(checkup as CheckupRow)
-  const showProfessional = professionalName !== '-' || professionalCouncil !== '-'
+  const showProfessional =
+    professionalName !== '-' || professionalCouncil !== '-'
 
   return (
     <div className="flex h-screen w-full flex-col bg-white px-16">

@@ -22,17 +22,14 @@ export function useMentalHealthCarousel(
   const [sleepData, setSleepData] = useState<SleepTimeEntity[]>([])
   const [humorData, setHumorData] = useState<HumorEntity[]>([])
   const [stressData, setStressData] = useState<QuestionnaireEntity[]>([])
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       if (!patientId) {
-        setIsLoading(false)
         return
       }
 
       try {
-        setIsLoading(true)
         const [sleep, humor, stress] = await Promise.all([
           getAllSleepTimeData(patientId),
           getAllHumorData(patientId),
@@ -44,8 +41,6 @@ export function useMentalHealthCarousel(
         setStressData(stress)
       } catch (error) {
         console.error('Erro ao buscar dados de saúde mental:', error)
-      } finally {
-        setIsLoading(false)
       }
     }
 

@@ -40,12 +40,12 @@ import {
   getFirestore,
 } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
-import { getAgenda } from '@/services/firestore/user'
+import firebaseApp, { firebaseEnv } from '@/config/firebase/firebase'
 import {
   getApiErrorMessage,
   getAuthenticatedHeaders,
 } from '@/services/api/authenticatedFetch'
+import { getAgenda } from '@/services/firestore/user'
 import { DoctorEntity, UserRole, UserStatus } from '@/types/entities/user'
 
 // ====================================================================
@@ -55,8 +55,11 @@ import { DoctorEntity, UserRole, UserStatus } from '@/types/entities/user'
 /**
  * Instâncias do Firebase conectadas ao app principal
  */
-const auth = getAuth(firebaseApp)
-const db = getFirestore(firebaseApp)
+const auth = firebaseEnv.isConfigured ? getAuth(firebaseApp) : null
+const db = firebaseEnv.isConfigured ? getFirestore(firebaseApp) : null
+
+const getFirebaseNotConfiguredError = () =>
+  firebaseEnv.errorMessage ?? 'Firebase não configurado'
 
 /**
  * Nome da coleção no Firestore
@@ -154,6 +157,9 @@ export const createNewUserDoc = async ({
   fromQRCode?: boolean
   qrCodePatientId?: string
 }): Promise<OperationResult> => {
+  if (!db) {
+    return { error: getFirebaseNotConfiguredError() }
+  }
   console.log('📄 createNewUserDoc chamado:', {
     uid,
     email,
@@ -247,6 +253,9 @@ export const getUserDoc = async (uid: string): Promise<UserResult> => {
   if (!uid) {
     return { user: null, error: 'UID não fornecido' }
   }
+  if (!db) {
+    return { user: null, error: getFirebaseNotConfiguredError() }
+  }
 
   try {
     const docRef = doc(db, COLLECTION_NAME, uid)
@@ -306,6 +315,9 @@ export const getUserDoc = async (uid: string): Promise<UserResult> => {
  * Para grandes volumes, considere implementar paginação
  */
 export const getAllUsers = async (): Promise<UsersResult> => {
+  if (!db) {
+    return { users: [], error: getFirebaseNotConfiguredError() }
+  }
   try {
     const usersRef = collection(db, COLLECTION_NAME)
 
@@ -374,15 +386,13 @@ export const getAdminUsersPage = async ({
       cache: 'no-store',
     })
 
-    const data = (await response.json().catch(() => null)) as
-      | {
-          users?: DoctorEntity[]
-          nextCursor?: string | null
-          hasNextPage?: boolean
-          error?: string | null
-          message?: string | null
-        }
-      | null
+    const data = (await response.json().catch(() => null)) as {
+      users?: DoctorEntity[]
+      nextCursor?: string | null
+      hasNextPage?: boolean
+      error?: string | null
+      message?: string | null
+    } | null
 
     if (!response.ok) {
       return {
@@ -532,6 +542,9 @@ export const deleteUserDoc = async (uid: string): Promise<OperationResult> => {
   if (!uid) {
     return { error: 'UID não fornecido' }
   }
+  if (!db) {
+    return { error: getFirebaseNotConfiguredError() }
+  }
 
   try {
     // 🗑️ Deletar documento
@@ -561,5 +574,9 @@ export const deleteUserDoc = async (uid: string): Promise<OperationResult> => {
  * @deprecated Considere usar apenas a versão do auth service
  */
 export const waitForUser = (callback: (user: User | null) => void) => {
+  if (!auth) {
+    callback(null)
+    return () => undefined
+  }
   return auth.onAuthStateChanged(callback)
 }

@@ -115,7 +115,9 @@ export function ExerciseDetailModal({
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Calorias queimadas:</span>
-                <span className="font-medium">{record.caloriesBurned} kcal</span>
+                <span className="font-medium">
+                  {record.caloriesBurned} kcal
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Tempo de exercício:</span>

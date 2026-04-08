@@ -4,8 +4,7 @@ import { ComponentProps, ReactNode } from 'react'
 import { labelVariants } from './label'
 
 export interface LabelProps
-  extends ComponentProps<'label'>,
-    VariantProps<typeof labelVariants> {
+  extends ComponentProps<'label'>, VariantProps<typeof labelVariants> {
   children: ReactNode
   htmlFor?: string
   name?: string

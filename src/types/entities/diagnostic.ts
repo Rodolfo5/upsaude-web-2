@@ -18,4 +18,3 @@ export interface DiagnosticEntity {
   createdAt: Date | string
   updatedAt: Date | string
 }
-

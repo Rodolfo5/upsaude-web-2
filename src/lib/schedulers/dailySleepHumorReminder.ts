@@ -157,7 +157,8 @@ export async function runDailySleepHumorReminder(): Promise<{
         .get()
 
       const sleepGoal = goalsSnapshot.docs.find(
-        (d) => d.data().type === 'Qualidade de Sono' && d.data().status === 'Ativa',
+        (d) =>
+          d.data().type === 'Qualidade de Sono' && d.data().status === 'Ativa',
       )
       const humorGoal = goalsSnapshot.docs.find(
         (d) => d.data().type === 'Humor' && d.data().status === 'Ativa',
