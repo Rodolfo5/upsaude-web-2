@@ -14,6 +14,7 @@ import { Roboto } from 'next/font/google'
 import './globals.css'
 import { ToastContainer } from 'react-toastify'
 
+import ErrorBoundary from '@/components/atoms/ErrorBoundary/errorBoundary'
 import AuthProvider from '@/providers/Auth'
 import QueryClientProviderApp from '@/providers/QueryClientApp'
 import UserProvider from '@/providers/User'
@@ -50,6 +51,14 @@ export const metadata: Metadata = {
   description: 'Up Saúde',
   keywords: ['Up Saúde', 'Next.js', 'React', 'TypeScript', 'Boilerplate'],
   authors: [{ name: 'José Carlos Barros' }],
+  icons: {
+    icon: [
+      { url: '/purple-logo.png', type: 'image/png', sizes: '32x32' },
+      { url: '/purple-logo.png', type: 'image/png', sizes: '16x16' },
+    ],
+    shortcut: '/purple-logo.png',
+    apple: '/purple-logo.png',
+  },
 }
 
 // ====================================================================
@@ -88,8 +97,9 @@ export default function RootLayout({
         <QueryClientProviderApp>
           <AuthProvider>
             <UserProvider>
-              {/* 📱 Conteúdo principal da aplicação */}
-              <main id="root">{children}</main>
+              <ErrorBoundary>
+                <main id="root">{children}</main>
+              </ErrorBoundary>
 
               {/* 🔔 Container de notificações Toast */}
               <ToastContainer

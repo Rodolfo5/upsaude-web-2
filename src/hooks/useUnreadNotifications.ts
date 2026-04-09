@@ -2,7 +2,6 @@
 
 import {
   collection,
-  getFirestore,
   limit,
   onSnapshot,
   orderBy,
@@ -11,10 +10,9 @@ import {
 } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 
-import firebaseApp from '@/config/firebase/firebase'
+import { firestore as db } from '@/config/firebase/firebase'
 import type { DoctorNotificationEntity } from '@/types/entities/doctorNotification'
 
-const db = getFirestore(firebaseApp)
 const COLLECTION_NAME = 'doctorNotifications'
 
 function parseNotificationDoc(

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
+import { FORTY_FIVE_MINUTES_IN_MS } from '@/constants/generic'
 import {
   findMedicationsByPatientId,
   findMedicationById,
@@ -15,6 +16,7 @@ export function useMedications(patientId?: string) {
       return findMedicationsByPatientId(patientId)
     },
     enabled: !!patientId,
+    staleTime: FORTY_FIVE_MINUTES_IN_MS,
   })
 }
 
@@ -28,5 +30,6 @@ export function useMedication(patientId?: string, medicationId?: string) {
       return findMedicationById(patientId, medicationId)
     },
     enabled: !!patientId && !!medicationId,
+    staleTime: FORTY_FIVE_MINUTES_IN_MS,
   })
 }

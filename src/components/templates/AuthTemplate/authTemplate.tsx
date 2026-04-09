@@ -16,6 +16,7 @@ export default function AuthTemplate({ form, footerLink }: AuthTemplateProps) {
             alt="Logo Upsaude"
             width={300}
             height={300}
+            priority
             className="h-auto w-20 sm:w-28 md:w-36 lg:w-44 xl:w-52"
           />
         </div>

@@ -107,9 +107,9 @@ export default function Sidebar() {
             <Image
               src="/logoups1.png"
               alt="Upsaúde Logo"
-              width={100}
-              height={40}
-              className="object-contain"
+              width={200}
+              height={60}
+              style={{ width: '100px', height: 'auto' }}
               priority
             />
           </div>
@@ -118,9 +118,9 @@ export default function Sidebar() {
             <Image
               src="/logoups1.png"
               alt="Upsaúde Logo"
-              width={40}
-              height={40}
-              className="object-contain"
+              width={200}
+              height={60}
+              style={{ width: '40px', height: 'auto' }}
               priority
             />
           </div>

@@ -27,7 +27,7 @@ const gcTime = 1000 * 60 * 60 * 24 * 5 // 5 dias em millisegundos
  * Tempo que dados são considerados "frescos"
  * Evita refetch desnecessário quando dados ainda são válidos
  */
-const staleTime = 1000 * 60 * 5 // 5 minutos
+const staleTime = 1000 * 60 * 30 // 30 minutos
 
 // ====================================================================
 // 🔧 QUERY CLIENT
@@ -38,8 +38,8 @@ const staleTime = 1000 * 60 * 5 // 5 minutos
  *
  * Configurações aplicadas:
  * - gcTime: 5 dias (garbage collection time - substitui cacheTime)
- * - staleTime: 5 minutos (tempo considerado "fresco")
- * - retry: 3 tentativas em caso de erro
+ * - staleTime: 30 minutos (tempo considerado "fresco")
+ * - retry: 1 tentativa em caso de erro
  * - refetchOnWindowFocus: false (não refaz ao focar janela)
  */
 export const queryClient = new QueryClient({
@@ -47,7 +47,7 @@ export const queryClient = new QueryClient({
     queries: {
       gcTime, // ✅ gcTime substitui cacheTime no v5
       staleTime,
-      retry: 3,
+      retry: 1,
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
     },

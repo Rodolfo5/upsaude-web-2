@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
+import { FORTY_FIVE_MINUTES_IN_MS } from '@/constants/generic'
 import { findAllExams, findExamById } from '@/services/exam'
 
 export function useExams(patientId?: string) {
@@ -12,6 +13,7 @@ export function useExams(patientId?: string) {
       return findAllExams(patientId)
     },
     enabled: !!patientId,
+    staleTime: FORTY_FIVE_MINUTES_IN_MS,
   })
 }
 
@@ -25,5 +27,6 @@ export function useExam(patientId?: string, examId?: string) {
       return findExamById(patientId, examId)
     },
     enabled: !!patientId && !!examId,
+    staleTime: FORTY_FIVE_MINUTES_IN_MS,
   })
 }

@@ -485,6 +485,9 @@ export const updateUserDoc = async (
   if (!id) {
     return { error: 'ID não fornecido' }
   }
+  if (!db) {
+    return { error: getFirebaseNotConfiguredError() }
+  }
 
   try {
     const docRef = doc(db, COLLECTION_NAME, id)

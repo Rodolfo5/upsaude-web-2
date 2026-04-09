@@ -29,11 +29,13 @@ export const useAdminUsersPage = ({
   limit,
   role,
   includeAgenda,
+  enabled = true,
 }: {
   cursor?: string | null
   limit?: number
   role?: UserRole
   includeAgenda?: boolean
+  enabled?: boolean
 }) =>
   useQuery({
     queryKey: getAdminUsersPageQueryKey({
@@ -50,4 +52,5 @@ export const useAdminUsersPage = ({
         includeAgenda,
       }),
     staleTime: FORTY_FIVE_MINUTES_IN_MS,
+    enabled,
   })

@@ -21,7 +21,13 @@ import { ptBR } from 'date-fns/locale'
 import React, { useEffect } from 'react'
 
 import { Button } from '@/components/atoms/Button/button'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useSidebar } from '@/contexts/SidebarContext'
 import { useNotifications } from '@/hooks/useNotifications'
@@ -217,7 +223,12 @@ export function NotificationsModal({
         )}
       >
         <div className="flex flex-row items-center justify-between space-y-0 border-b border-gray-200 px-6 py-5">
-          <h2 className="text-xl font-semibold text-[#792EBD]">Notificações</h2>
+          <DialogTitle className="text-xl font-semibold text-[#792EBD]">
+            Notificações
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Lista de notificações do usuário
+          </DialogDescription>
         </div>
 
         <Tabs

@@ -1,6 +1,14 @@
 {
   "indexes": [
     {
+      "collectionGroup": "doctorNotifications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "users", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "emailNotifications",
       "queryScope": "COLLECTION",
       "fields": [

@@ -1,14 +1,19 @@
 'use client'
 
 import { Link, UserPlus } from 'lucide-react'
-import { type ReactNode, useMemo, useState } from 'react'
+import { type ReactNode, useMemo, useState, useEffect } from 'react'
 
 import { Button } from '@/components/atoms/Button/button'
 import { DataTable } from '@/components/organisms/DataTable/dataTable'
 import { CreateDoctorModal } from '@/components/organisms/Modals/CreateDoctorModal/createDoctorModal'
 import { InviteDoctorModal } from '@/components/organisms/Modals/InviteDoctorModal/inviteDoctorModal'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useAdminUsersPage } from '@/hooks/queries/useAdminUsersPage'
+import {
+  useAdminUsersPage,
+  getAdminUsersPageQueryKey,
+} from '@/hooks/queries/useAdminUsersPage'
+import { queryClient } from '@/providers/QueryClientApp/queryClient'
+import { getAdminUsersPage } from '@/services/user'
 import { DoctorEntity, PatientEntity, UserRole } from '@/types/entities/user'
 
 import { doctorColumns } from './doctorColumns'
@@ -58,7 +63,13 @@ function CursorPagination({
   )
 }
 
-function DoctorsTabContent({ mainAction }: { mainAction: ReactNode }) {
+function DoctorsTabContent({
+  mainAction,
+  isActive,
+}: {
+  mainAction: ReactNode
+  isActive: boolean
+}) {
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null])
   const currentCursor = cursorStack[cursorStack.length - 1]
 
@@ -66,6 +77,7 @@ function DoctorsTabContent({ mainAction }: { mainAction: ReactNode }) {
     role: UserRole.DOCTOR,
     limit: PAGE_SIZE,
     cursor: currentCursor,
+    enabled: isActive,
   })
 
   const doctors = useMemo(
@@ -110,7 +122,7 @@ function DoctorsTabContent({ mainAction }: { mainAction: ReactNode }) {
   )
 }
 
-function PatientsTabContent() {
+function PatientsTabContent({ isActive }: { isActive: boolean }) {
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null])
   const currentCursor = cursorStack[cursorStack.length - 1]
 
@@ -118,6 +130,7 @@ function PatientsTabContent() {
     role: UserRole.PATIENT,
     limit: PAGE_SIZE,
     cursor: currentCursor,
+    enabled: isActive,
   })
 
   const patients = useMemo(
@@ -187,6 +200,23 @@ export default function AdminUsuariosPage() {
     </>
   )
 
+  const prefetchUsersPage = (role: UserRole) => {
+    queryClient.prefetchQuery({
+      queryKey: getAdminUsersPageQueryKey({ role, limit: PAGE_SIZE, cursor: null }),
+      queryFn: () =>
+        getAdminUsersPage({ role, limit: PAGE_SIZE, cursor: null }),
+    })
+  }
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      prefetchUsersPage(UserRole.DOCTOR)
+      prefetchUsersPage(UserRole.PATIENT)
+    }, 800)
+
+    return () => clearTimeout(t)
+  }, [])
+
   return (
     <div className="flex h-screen w-full flex-col bg-white px-16">
       <h1 className="mt-24 text-2xl font-bold tracking-tight text-brand-purple-dark">
@@ -199,18 +229,31 @@ export default function AdminUsuariosPage() {
         className="mt-6"
       >
         <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="doctors">Médicos</TabsTrigger>
-          <TabsTrigger value="patients">Pacientes</TabsTrigger>
+          <TabsTrigger
+            value="doctors"
+            onMouseEnter={() => prefetchUsersPage(UserRole.DOCTOR)}
+            onFocus={() => prefetchUsersPage(UserRole.DOCTOR)}
+          >
+            Médicos
+          </TabsTrigger>
+          <TabsTrigger
+            value="patients"
+            onMouseEnter={() => prefetchUsersPage(UserRole.PATIENT)}
+            onFocus={() => prefetchUsersPage(UserRole.PATIENT)}
+          >
+            Pacientes
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="doctors" className="mt-4">
-          {activeTab === 'doctors' && (
-            <DoctorsTabContent mainAction={doctorActions} />
-          )}
+        <TabsContent value="doctors" forceMount className="mt-4">
+          <DoctorsTabContent
+            mainAction={doctorActions}
+            isActive={activeTab === 'doctors'}
+          />
         </TabsContent>
 
-        <TabsContent value="patients" className="mt-4">
-          {activeTab === 'patients' && <PatientsTabContent />}
+        <TabsContent value="patients" forceMount className="mt-4">
+          <PatientsTabContent isActive={activeTab === 'patients'} />
         </TabsContent>
       </Tabs>
 

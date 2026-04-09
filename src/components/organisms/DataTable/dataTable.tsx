@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import {
   ColumnFiltersState,
@@ -11,10 +11,10 @@ import {
   getSortedRowModel,
   RowSelectionState,
   useReactTable,
-} from '@tanstack/react-table'
-import React, { useMemo, useState } from 'react'
+} from "@tanstack/react-table"
+import React, { useMemo, useState } from "react"
 
-import Input from '@/components/atoms/Input/input'
+import Input from "@/components/atoms/Input/input"
 import {
   Table,
   TableBody,
@@ -22,12 +22,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from "@/components/ui/table"
 
-import { DataTablePagination } from './dataTablePagination'
-import { DataTableProps } from './types'
+import { DataTablePagination } from "./dataTablePagination"
+import { DataTableProps } from "./types"
 
-export function DataTable<TData, TValue>({
+function DataTableInner<TData, TValue>({
   columns,
   data,
   actionsColumn,
@@ -50,7 +50,7 @@ export function DataTable<TData, TValue>({
   const setColumnFilters =
     externalOnColumnFiltersChange ?? setLocalColumnFilters
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const [globalFilter, setGlobalFilter] = useState('')
+  const [globalFilter, setGlobalFilter] = useState("")
 
   const tableColumns = useMemo(() => {
     return actionsColumn ? [...columns, actionsColumn] : columns
@@ -242,3 +242,10 @@ export function DataTable<TData, TValue>({
     </div>
   )
 }
+
+type DataTableComponent = <TData, TValue>(
+  props: DataTableProps<TData, TValue>,
+) => JSX.Element
+
+export const DataTable = React.memo(DataTableInner) as unknown as DataTableComponent
+

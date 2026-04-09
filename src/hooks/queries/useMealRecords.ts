@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
+import { FORTY_FIVE_MINUTES_IN_MS } from '@/constants/generic'
 import { getHealthPillar } from '@/services/healthPillar'
 import { getAllMenusByPillar } from '@/services/healthPillarMenu'
 import {
@@ -16,6 +17,7 @@ export function useLifestylePillar(patientId: string, planId: string) {
     queryFn: () =>
       getHealthPillar(patientId, planId, 'Estilo de Vida' as const),
     enabled: !!patientId && !!planId && planId !== 'new',
+    staleTime: FORTY_FIVE_MINUTES_IN_MS,
   })
 }
 
@@ -34,6 +36,7 @@ export function useActiveMenu(
       return menus.find((m) => m.status === 'Ativa') ?? null
     },
     enabled: !!patientId && !!planId && !!pillarId && planId !== 'new',
+    staleTime: FORTY_FIVE_MINUTES_IN_MS,
   })
 }
 
@@ -75,6 +78,7 @@ export function useMealRecords(
       planId !== 'new' &&
       !!startDate &&
       !!endDate,
+    staleTime: FORTY_FIVE_MINUTES_IN_MS,
   })
 }
 
@@ -99,5 +103,6 @@ export function useMealRecordById(
       !!menuId &&
       !!recordId &&
       planId !== 'new',
+    staleTime: FORTY_FIVE_MINUTES_IN_MS,
   })
 }

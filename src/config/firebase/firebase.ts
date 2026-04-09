@@ -137,7 +137,13 @@ export const storage = firebaseEnv.isConfigured
  * Por isso verificamos se estamos no cliente antes de inicializar
  */
 let analytics: Analytics | null = null
-if (typeof window !== 'undefined' && requiredEnvVars.measurementId) {
+// Only initialize Analytics in production to avoid loading the gtag script
+// during development (adblockers/extensions can cause net::ERR_BLOCKED_BY_CLIENT).
+if (
+  typeof window !== 'undefined' &&
+  requiredEnvVars.measurementId &&
+  process.env.NODE_ENV === 'production'
+) {
   analytics = getAnalytics(app)
 }
 

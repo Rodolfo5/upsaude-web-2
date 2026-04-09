@@ -41,3 +41,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# scripts de infraestrutura com credenciais (não versionar)
+set-cors.js
+cors.json

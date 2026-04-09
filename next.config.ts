@@ -1,8 +1,17 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  compress: true,
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  experimental: {
+    optimizePackageImports: [
+      '@mui/icons-material',
+      '@tanstack/react-query',
+      'lucide-react',
+      'date-fns',
+    ],
   },
   images: {
     remotePatterns: [

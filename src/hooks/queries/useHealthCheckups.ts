@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
+import { FORTY_FIVE_MINUTES_IN_MS } from '@/constants/generic'
 import { findAllHealthCheckups } from '@/services/healthCheckups'
 
 export function useHealthCheckups(patientId?: string) {
@@ -12,5 +13,6 @@ export function useHealthCheckups(patientId?: string) {
       return findAllHealthCheckups(patientId)
     },
     enabled: !!patientId,
+    staleTime: FORTY_FIVE_MINUTES_IN_MS,
   })
 }

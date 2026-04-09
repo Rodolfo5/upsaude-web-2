@@ -2,7 +2,6 @@
 
 import {
   collection,
-  getFirestore,
   limit,
   onSnapshot,
   orderBy,
@@ -11,14 +10,13 @@ import {
 } from 'firebase/firestore'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import firebaseApp from '@/config/firebase/firebase'
+import { firestore as db } from '@/config/firebase/firebase'
 import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from '@/services/doctorNotification'
 import type { DoctorNotificationEntity } from '@/types/entities/doctorNotification'
 
-const db = getFirestore(firebaseApp)
 const COLLECTION_NAME = 'doctorNotifications'
 
 export type NotificationsFilter = 'all' | 'unread' | 'read'

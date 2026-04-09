@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
+import { FORTY_FIVE_MINUTES_IN_MS } from '@/constants/generic'
 import { getWeightRecordsByDateRange } from '@/services/weightRecords'
 
 /**
@@ -19,5 +20,6 @@ export function useWeightRecords(
     ],
     queryFn: () => getWeightRecordsByDateRange(patientId, startDate, endDate),
     enabled: !!patientId && !!startDate && !!endDate,
+    staleTime: FORTY_FIVE_MINUTES_IN_MS,
   })
 }

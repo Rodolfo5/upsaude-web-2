@@ -5,7 +5,7 @@ import { formatDate, isDate } from 'date-fns'
 import { Camera, Download, Edit3, Plus, Save, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 
 import Input from '@/components/atoms/Input/input'
 import LoadingComponent from '@/components/atoms/Loading/loading'
@@ -20,6 +20,8 @@ import useUser from '@/hooks/useUser'
 import { formatCpf, formatcep, timestampToDate } from '@/lib/utils'
 import { deleteOwnAccount, logout } from '@/services/firebase/auth'
 import { uploadFile } from '@/services/firebase/firebaseStorage'
+import { brazilianStates } from '@/components/organisms/Forms/SignUpForm/Step2/step2'
+import { credentialTypes } from '@/constants/options'
 import { deleteUserDoc, updateUserDoc } from '@/services/user'
 import {
   getSpecialtiesForCredential,
@@ -62,6 +64,7 @@ export default function PerfilPage() {
     control,
     formState: { errors, isSubmitting },
     reset,
+    watch,
   } = useForm<ProfileEditData>({
     resolver: zodResolver(profileEditSchema),
     defaultValues: {
@@ -71,7 +74,7 @@ export default function PerfilPage() {
         ? isDate(currentDoctor.birthDate)
           ? currentDoctor.birthDate
           : (timestampToDate(currentDoctor.birthDate) as Date)
-        : new Date(),
+        : undefined,
       state: currentDoctor?.state || '',
       typeOfCredential: currentDoctor?.typeOfCredential || '',
       credential: currentDoctor?.credential || '',
@@ -97,7 +100,7 @@ export default function PerfilPage() {
           ? isDate(currentDoctor.birthDate)
             ? currentDoctor.birthDate
             : (timestampToDate(currentDoctor.birthDate) as Date)
-          : new Date(),
+          : undefined,
         state: currentDoctor.state || '',
         typeOfCredential: currentDoctor.typeOfCredential || '',
         credential: currentDoctor.credential || '',
@@ -115,9 +118,10 @@ export default function PerfilPage() {
     }
   }, [currentDoctor, reset])
 
+  const watchedTypeOfCredential = watch('typeOfCredential')
   const filteredSpecialties = useMemo(
-    () => getSpecialtiesForCredential(currentDoctor?.typeOfCredential),
-    [currentDoctor?.typeOfCredential],
+    () => getSpecialtiesForCredential(watchedTypeOfCredential || currentDoctor?.typeOfCredential),
+    [watchedTypeOfCredential, currentDoctor?.typeOfCredential],
   )
 
   const onSubmit = async (data: ProfileEditData) => {
@@ -138,7 +142,12 @@ export default function PerfilPage() {
         updateData.profileImage = url
       }
 
-      await updateUserDoc(currentDoctor.uid, updateData)
+      const { error } = await updateUserDoc(currentDoctor.uid, updateData)
+
+      if (error) {
+        errorToast(error)
+        return
+      }
 
       successToast('Perfil atualizado com sucesso!')
       setIsEditing(false)
@@ -266,6 +275,7 @@ export default function PerfilPage() {
                 accept="image/*"
                 onChange={handleImageChange}
                 className="hidden"
+                title="Selecionar imagem de perfil"
               />
             </div>
 
@@ -357,9 +367,23 @@ export default function PerfilPage() {
                     Nome
                   </p>
                   <div className="min-w-0 flex-1 sm:w-1/2">
-                    <p className="truncate font-medium text-gray-900">
-                      {currentDoctor?.name || '-'}
-                    </p>
+                    {isEditing ? (
+                      <>
+                        <Input
+                          {...register('name')}
+                          className="border-purple-300 focus:border-purple-500"
+                          placeholder="Nome completo"
+                          disabled={isSubmitting}
+                        />
+                        {errors.name && (
+                          <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="truncate font-medium text-gray-900">
+                        {currentDoctor?.name || '-'}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="h-px w-full bg-[#CAC4D0]" />
@@ -368,9 +392,23 @@ export default function PerfilPage() {
                     CPF
                   </p>
                   <div className="min-w-0 flex-1 sm:w-1/2">
-                    <p className="font-medium text-gray-900">
-                      {currentDoctor?.cpf ? formatCpf(currentDoctor.cpf) : '-'}
-                    </p>
+                    {isEditing ? (
+                      <>
+                        <Input
+                          {...register('cpf')}
+                          className="border-purple-300 focus:border-purple-500"
+                          placeholder="000.000.000-00"
+                          disabled={isSubmitting}
+                        />
+                        {errors.cpf && (
+                          <p className="mt-1 text-xs text-red-500">{errors.cpf.message}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="font-medium text-gray-900">
+                        {currentDoctor?.cpf ? formatCpf(currentDoctor.cpf) : '-'}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="h-px w-full bg-[#CAC4D0]" />
@@ -379,16 +417,48 @@ export default function PerfilPage() {
                     Data de Nascimento
                   </p>
                   <div className="min-w-0 flex-1 sm:w-1/2">
-                    <p className="font-medium text-gray-900">
-                      {currentDoctor?.birthDate
-                        ? isDate(currentDoctor.birthDate)
-                          ? formatDate(currentDoctor.birthDate, 'dd/MM/yyyy')
-                          : formatDate(
-                              timestampToDate(currentDoctor.birthDate) as Date,
-                              'dd/MM/yyyy',
-                            )
-                        : '-'}
-                    </p>
+                    {isEditing ? (
+                      <>
+                        <Controller
+                          name="birthDate"
+                          control={control}
+                          render={({ field }) => (
+                            <input
+                              type="date"
+                              title="Data de nascimento"
+                              className="flex h-10 w-full rounded-md border border-purple-300 bg-white px-3 py-2 text-sm focus:border-purple-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              value={
+                                field.value instanceof Date && !isNaN(field.value.getTime())
+                                  ? formatDate(field.value, 'yyyy-MM-dd')
+                                  : ''
+                              }
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value
+                                    ? new Date(e.target.value + 'T12:00:00')
+                                    : undefined,
+                                )
+                              }
+                              disabled={isSubmitting}
+                            />
+                          )}
+                        />
+                        {errors.birthDate && (
+                          <p className="mt-1 text-xs text-red-500">{errors.birthDate.message}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="font-medium text-gray-900">
+                        {currentDoctor?.birthDate
+                          ? isDate(currentDoctor.birthDate)
+                            ? formatDate(currentDoctor.birthDate, 'dd/MM/yyyy')
+                            : formatDate(
+                                timestampToDate(currentDoctor.birthDate) as Date,
+                                'dd/MM/yyyy',
+                              )
+                          : '-'}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="h-px w-full bg-[#CAC4D0]" />
@@ -397,9 +467,24 @@ export default function PerfilPage() {
                     Estado
                   </p>
                   <div className="min-w-0 flex-1 sm:w-1/2">
-                    <p className="font-medium text-gray-900">
-                      {currentDoctor?.state || '-'}
-                    </p>
+                    {isEditing ? (
+                      <>
+                        <SelectField
+                          name="state"
+                          control={control}
+                          placeholder="Selecione o estado"
+                          options={brazilianStates}
+                          disabled={isSubmitting}
+                        />
+                        {errors.state && (
+                          <p className="mt-1 text-xs text-red-500">{errors.state.message}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="font-medium text-gray-900">
+                        {currentDoctor?.state || '-'}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -417,9 +502,24 @@ export default function PerfilPage() {
                     Credencial
                   </p>
                   <div className="min-w-0 flex-1 sm:w-1/2">
-                    <p className="font-medium text-gray-900">
-                      {currentDoctor?.typeOfCredential || '-'}
-                    </p>
+                    {isEditing ? (
+                      <>
+                        <SelectField
+                          name="typeOfCredential"
+                          control={control}
+                          placeholder="Tipo de credencial"
+                          options={credentialTypes}
+                          disabled={isSubmitting}
+                        />
+                        {errors.typeOfCredential && (
+                          <p className="mt-1 text-xs text-red-500">{errors.typeOfCredential.message}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="font-medium text-gray-900">
+                        {currentDoctor?.typeOfCredential || '-'}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="h-px w-full bg-[#CAC4D0]" />
@@ -428,9 +528,23 @@ export default function PerfilPage() {
                     Número
                   </p>
                   <div className="min-w-0 flex-1 sm:w-1/2">
-                    <p className="font-medium text-gray-900">
-                      {currentDoctor?.credential || '-'}
-                    </p>
+                    {isEditing ? (
+                      <>
+                        <Input
+                          {...register('credential')}
+                          className="border-purple-300 focus:border-purple-500"
+                          placeholder="Número da credencial"
+                          disabled={isSubmitting}
+                        />
+                        {errors.credential && (
+                          <p className="mt-1 text-xs text-red-500">{errors.credential.message}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="font-medium text-gray-900">
+                        {currentDoctor?.credential || '-'}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="h-px w-full bg-[#CAC4D0]" />

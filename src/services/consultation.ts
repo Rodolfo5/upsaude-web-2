@@ -7,6 +7,7 @@ import {
   getDoc,
   getDocs,
   getFirestore,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -17,6 +18,7 @@ import {
 } from 'firebase/firestore'
 
 import firebaseApp from '@/config/firebase/firebase'
+import logger from '@/lib/logger'
 import { notifyConsultationCanceled } from '@/services/emailNotification'
 import { ConsultationEntity, SoapData } from '@/types/entities/consultation'
 
@@ -111,7 +113,7 @@ export const getAllConsultations = async (): Promise<ConsultationsResult> => {
   try {
     const consultationsRef = collection(db, COLLECTION_NAME)
 
-    const q = query(consultationsRef, orderBy('createdAt', 'desc'))
+    const q = query(consultationsRef, orderBy('createdAt', 'desc'), limit(2000))
 
     const querySnapshot = await getDocs(q)
 
@@ -185,6 +187,36 @@ export const getAllConsultations = async (): Promise<ConsultationsResult> => {
     }
   }
 }
+
+export const getAllConsultationsByDoctor = async (
+  doctorId: string,
+): Promise<ConsultationsResult> => {
+  if (!doctorId) return { consultations: [], error: null }
+  try {
+    const consultationsRef = collection(db, COLLECTION_NAME)
+    const q = query(
+      consultationsRef,
+      where('doctorId', '==', doctorId),
+      orderBy('createdAt', 'desc'),
+      limit(1000),
+    )
+    const querySnapshot = await getDocs(q)
+    const consultations = querySnapshot.docs.map(mapDocToConsultationEntity)
+    return { consultations, error: null }
+  } catch (error: unknown) {
+    if (error instanceof FirebaseError) {
+      return { consultations: [], error: error.message }
+    }
+    return {
+      consultations: [],
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Erro ao buscar consultas do médico',
+    }
+  }
+}
+
 
 function mapDocToConsultationEntity(
   docSnapshot: QueryDocumentSnapshot,
@@ -580,9 +612,9 @@ export const updateConsultation = async (
       updates.audioUrl !== ''
     ) {
       updateData.audioUrl = updates.audioUrl
-      console.log('Salvando audioUrl no Firestore:', updates.audioUrl)
+      logger.log('Salvando audioUrl no Firestore:', updates.audioUrl)
     } else {
-      console.log('audioUrl não será salvo:', {
+      logger.log('audioUrl n\u00e3o ser\u00e1 salvo:', {
         audioUrl: updates.audioUrl,
         isUndefined: updates.audioUrl === undefined,
         isNull: updates.audioUrl === null,

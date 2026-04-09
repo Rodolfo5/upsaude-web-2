@@ -21,7 +21,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import useAllConsultations from '@/hooks/queries/useAllConsultations'
+import useConsultationsForDashboard from '@/hooks/queries/useConsultionsForDashboard'
 import useAllPrescriptionsByDoctor from '@/hooks/queries/useAllPrescriptionsByDoctor'
 import useClassifiedPatientsByDoctor from '@/hooks/queries/useClassifiedPatientsByDoctor'
 import useComplementaryConsultations from '@/hooks/queries/useComplementaryConsultations'
@@ -137,7 +137,7 @@ const getConsultationsColumns = (
             variant="link"
             className="h-auto p-0 text-[#792EBD]"
             onClick={() => {
-              console.log('View details', consultation.id)
+              // TODO: navegar para detalhes da consulta
             }}
           >
             Ver detalhes
@@ -153,7 +153,7 @@ export default function DashboardPage() {
   const today = new Date()
 
   const { data: allConsultations, isLoading: isLoadingConsultations } =
-    useAllConsultations()
+    useConsultationsForDashboard()
   const { data: classifiedPatients, isLoading: isLoadingPatients } =
     useClassifiedPatientsByDoctor()
   const { data: complementaryConsultations } = useComplementaryConsultations()
@@ -329,6 +329,29 @@ export default function DashboardPage() {
         </p>
       </div>
 
+      <Card className="border-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <MedicalInformationIcon className="h-5 w-5 text-[#792EBD]" />
+              Consultas do Dia
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {todayConsultationsWithNames.length === 0 ? (
+              <p className="py-8 text-center text-gray-500">
+                Nenhuma consulta agendada para hoje
+              </p>
+            ) : (
+              <div className="px-6 pb-6">
+                <DataTable
+                  columns={consultationsColumns}
+                  data={todayConsultationsWithNames}
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="border-none">
           <CardHeader>
@@ -401,7 +424,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-600">Receita Mensal</p>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <button className="hover:opacity-80">
+                    <button className="hover:opacity-80" title="Informação sobre receita mensal">
                       <InfoIcon className="h-4 w-4 text-gray-400" />
                     </button>
                   </PopoverTrigger>
@@ -425,7 +448,7 @@ export default function DashboardPage() {
                     <p className="text-sm text-gray-600">Recorrente</p>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <button className="hover:opacity-80">
+                        <button className="hover:opacity-80" title="Informação sobre entrada recorrente">
                           <InfoIcon className="h-4 w-4 text-gray-400" />
                         </button>
                       </PopoverTrigger>
@@ -450,7 +473,7 @@ export default function DashboardPage() {
                     <p className="text-sm text-gray-600">Complementar</p>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <button className="hover:opacity-80">
+                        <button className="hover:opacity-80" title="Informação sobre entrada complementar">
                           <InfoIcon className="h-4 w-4 text-gray-400" />
                         </button>
                       </PopoverTrigger>
@@ -475,34 +498,11 @@ export default function DashboardPage() {
         <Card className="border-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
-              <MedicalInformationIcon className="h-5 w-5 text-[#792EBD]" />
-              Consultas do Dia
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {todayConsultationsWithNames.length === 0 ? (
-              <p className="py-8 text-center text-gray-500">
-                Nenhuma consulta agendada para hoje
-              </p>
-            ) : (
-              <div className="px-6 pb-6">
-                <DataTable
-                  columns={consultationsColumns}
-                  data={todayConsultationsWithNames}
-                />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl">
               <TrendingUpIcon className="h-5 w-5 text-[#792EBD]" />
               Suas Atividades
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="hover:opacity-80">
+                  <button className="hover:opacity-80" title="Informação sobre suas atividades">
                     <InfoIcon className="h-4 w-4 text-gray-400" />
                   </button>
                 </PopoverTrigger>

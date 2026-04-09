@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
+import { FORTY_FIVE_MINUTES_IN_MS } from '@/constants/generic'
 import { findAllNotes } from '@/services/notes'
 
 export function useNotes(patientId?: string) {
@@ -14,5 +15,6 @@ export function useNotes(patientId?: string) {
       return findAllNotes(targetId)
     },
     enabled: !!targetId,
+    staleTime: FORTY_FIVE_MINUTES_IN_MS,
   })
 }
