@@ -78,13 +78,6 @@ export default function Sidebar() {
     logoutUser().catch(() => undefined)
   }
 
-  useEffect(() => {
-    ;[...items, ...secondary].forEach((it) => {
-      try {
-        router.prefetch(it.href)
-      } catch {}
-    })
-  }, [router])
 
   return (
     <aside
