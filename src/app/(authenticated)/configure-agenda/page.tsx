@@ -2,11 +2,22 @@
 
 import { X as Close } from 'lucide-react'
 import Image from 'next/image'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 import { Button } from '@/components/atoms/Button/button'
 import { AgendaForm } from '@/components/organisms/Forms/AgendaForm/agendaForm'
 
 export default function ConfigureAgenda() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const isEditMode = searchParams.get('mode') === 'edit'
+
+  const handleClose = () => {
+    if (isEditMode) {
+      router.back()
+    }
+  }
+
   return (
     <div className="flex min-h-screen w-full flex-col">
       <div className="flex min-h-24 w-full flex-shrink-0 items-center justify-between bg-[#4B1F7C] px-4 sm:px-6 lg:px-8">
@@ -19,9 +30,11 @@ export default function ConfigureAgenda() {
             consultas de forma prática.
           </p>
         </div>
-        <Button variant="ghost" className="shrink-0 text-white">
-          <Close />
-        </Button>
+        {isEditMode && (
+          <Button variant="ghost" className="shrink-0 text-white" onClick={handleClose}>
+            <Close />
+          </Button>
+        )}
       </div>
 
       <div className="flex w-full flex-shrink-0 justify-center overflow-hidden bg-white py-6 sm:py-8 lg:py-12">

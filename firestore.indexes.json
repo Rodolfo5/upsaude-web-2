@@ -51,6 +51,13 @@
         { "fieldPath": "doctorId", "order": "ASCENDING" },
         { "fieldPath": "requestDate", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "exams",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "doctorId", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

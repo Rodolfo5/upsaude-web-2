@@ -2,25 +2,54 @@
 
 import { ArrowLeft as ArrowBackOutlinedIcon } from 'lucide-react'
 import { Pencil as CreateOutlinedIcon } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, use, useEffect } from 'react'
 
 import { Button } from '@/components/atoms/Button/button'
-import { CarouselCharts } from '@/components/molecules/CarouselCharts/carouselCharts'
 import HealthCheckupCard from '@/components/organisms/CheckUp/HealthCheckupCard/healthCheckupCard'
-import { RequestNewCheckup } from '@/components/organisms/CheckUp/RequestNewCheckup/requestNewCheckup'
-import HealthScoreCard from '@/components/organisms/HealthScoreCard/healthScoreCard'
-import { MedicamentsActiveCard } from '@/components/organisms/Medicaments/MedicamentsActiveCard/medicamentsActiveCard'
-import { ComplementaryConsultationModal } from '@/components/organisms/Modals/ComplementaryConsultationModal/complementaryConsultationModal'
-import { DischargePlanModal } from '@/components/organisms/Modals/DischargePlanModal/dischargePlanModal'
-import { PrescriptionModal } from '@/components/organisms/Modals/PrescriptionModal/prescriptionModal'
-import NoteCard from '@/components/organisms/NoteCard/noteCard'
 import {
   PatientBasicInfoCard,
   PatientGeneralDataCard,
   PatientConsultationsTable,
 } from '@/components/organisms/Patient'
-import { TimelinePatient } from '@/components/organisms/TimelinePatient/timelinePatient'
+
+const CarouselCharts = dynamic(
+  () => import('@/components/molecules/CarouselCharts/carouselCharts').then(m => m.CarouselCharts),
+  { ssr: false },
+)
+const RequestNewCheckup = dynamic(
+  () => import('@/components/organisms/CheckUp/RequestNewCheckup/requestNewCheckup').then(m => m.RequestNewCheckup),
+  { ssr: false },
+)
+const HealthScoreCard = dynamic(
+  () => import('@/components/organisms/HealthScoreCard/healthScoreCard'),
+  { ssr: false },
+)
+const MedicamentsActiveCard = dynamic(
+  () => import('@/components/organisms/Medicaments/MedicamentsActiveCard/medicamentsActiveCard').then(m => m.MedicamentsActiveCard),
+  { ssr: false },
+)
+const ComplementaryConsultationModal = dynamic(
+  () => import('@/components/organisms/Modals/ComplementaryConsultationModal/complementaryConsultationModal').then(m => m.ComplementaryConsultationModal),
+  { ssr: false },
+)
+const DischargePlanModal = dynamic(
+  () => import('@/components/organisms/Modals/DischargePlanModal/dischargePlanModal').then(m => m.DischargePlanModal),
+  { ssr: false },
+)
+const PrescriptionModal = dynamic(
+  () => import('@/components/organisms/Modals/PrescriptionModal/prescriptionModal').then(m => m.PrescriptionModal),
+  { ssr: false },
+)
+const NoteCard = dynamic(
+  () => import('@/components/organisms/NoteCard/noteCard'),
+  { ssr: false },
+)
+const TimelinePatient = dynamic(
+  () => import('@/components/organisms/TimelinePatient/timelinePatient').then(m => m.TimelinePatient),
+  { ssr: false },
+)
 import {
   useCurrentTherapeuticPlan,
   useHasDischargedPlan,

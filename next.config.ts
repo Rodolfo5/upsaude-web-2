@@ -11,8 +11,21 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: [
       '@tanstack/react-query',
+      '@tanstack/react-table',
       'lucide-react',
       'date-fns',
+      'react-icons',
+      '@radix-ui/react-accordion',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-checkbox',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-select',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-tooltip',
+      'firebase',
     ],
   },
   images: {
