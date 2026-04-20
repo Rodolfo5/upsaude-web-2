@@ -12,12 +12,12 @@
 import type { Metadata } from 'next'
 import { Roboto } from 'next/font/google'
 import './globals.css'
-import { ToastContainer } from 'react-toastify'
+import dynamic from 'next/dynamic'
 
-import ErrorBoundary from '@/components/atoms/ErrorBoundary/errorBoundary'
-import AuthProvider from '@/providers/Auth'
-import QueryClientProviderApp from '@/providers/QueryClientApp'
-import UserProvider from '@/providers/User'
+const ClientProviders = dynamic(
+  () => import('@/providers/ClientProviders'),
+  { ssr: false },
+)
 
 // ====================================================================
 // 🎨 CONFIGURAÇÃO DE FONTES DA MARCA
@@ -94,29 +94,9 @@ export default function RootLayout({
           🔄 Hierarquia de Providers - ORDEM IMPORTANTE:
           QueryClient > Auth > User > App Content
         */}
-        <QueryClientProviderApp>
-          <AuthProvider>
-            <UserProvider>
-              <ErrorBoundary>
-                <main id="root">{children}</main>
-              </ErrorBoundary>
-
-              {/* 🔔 Container de notificações Toast */}
-              <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-              />
-            </UserProvider>
-          </AuthProvider>
-        </QueryClientProviderApp>
+        <ClientProviders>
+          <main id="root">{children}</main>
+        </ClientProviders>
       </body>
     </html>
   )

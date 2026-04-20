@@ -10,6 +10,7 @@ import {
   LifeBuoyIcon,
   LogOutIcon,
   PanelLeftCloseIcon,
+  ChevronLeft as ChevronLeftIcon,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -145,7 +146,7 @@ export default function Sidebar() {
             {isExpanded ? (
               <PanelLeftCloseIcon size={20} />
             ) : (
-              <LayoutDashboardIcon size={20} className="rotate-180" />
+              <ChevronLeftIcon size={20} />
             )}
           </button>
         </div>
