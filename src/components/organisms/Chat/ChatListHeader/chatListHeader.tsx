@@ -1,4 +1,4 @@
-import { Add, Search } from '@mui/icons-material'
+import { Plus as Add, Search } from 'lucide-react'
 
 interface ChatListHeaderProps {
   isSearchOpen: boolean

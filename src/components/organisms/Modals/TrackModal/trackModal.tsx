@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
-import CloseIcon from '@mui/icons-material/Close'
+import { Plus as AddOutlinedIcon } from 'lucide-react'
+import { X as CloseIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'

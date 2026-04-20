@@ -1,12 +1,6 @@
 'use client'
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import CheckIcon from '@mui/icons-material/Check'
-import EditIcon from '@mui/icons-material/Edit'
-import MedicalServicesIcon from '@mui/icons-material/MedicalServices'
-import MedicationIcon from '@mui/icons-material/Medication'
-import PhoneIcon from '@mui/icons-material/Phone'
-import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
+import { ArrowLeft, Check, Pencil, Stethoscope, Pill, Phone, Circle } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { use, useEffect, useRef, useState } from 'react'
@@ -338,7 +332,7 @@ export default function PresentialConsultationPage({
               className="mt-1 rounded-full p-2 transition-colors hover:bg-gray-100"
               title="Voltar para agenda"
             >
-              <ArrowBackIcon className="h-5 w-5 text-gray-600" />
+              <ArrowLeft className="h-5 w-5 text-gray-600" />
             </button>
             <div className="flex flex-col gap-2">
               <h1 className="text-3xl font-bold text-brand-purple-dark">
@@ -395,7 +389,7 @@ export default function PresentialConsultationPage({
                     : 'bg-brand-purple text-white hover:bg-purple-700'
               }`}
             >
-              <RadioButtonCheckedIcon className="h-4 w-4" />
+              <Circle className="fill-current" />
               {isRecording
                 ? 'Pausar gravação'
                 : isPaused
@@ -411,7 +405,7 @@ export default function PresentialConsultationPage({
               disabled={isUploadingAudio}
               className="flex items-center gap-2 rounded-full border-2 border-pink-500 bg-white px-4 py-2 text-sm font-semibold text-pink-500 transition-colors hover:bg-pink-50 disabled:opacity-50"
             >
-              <PhoneIcon className="h-4 w-4" />
+              <Phone />
               {isUploadingAudio ? 'Finalizando...' : 'Finalizar consulta'}
             </Button>
           </div>
@@ -449,7 +443,7 @@ export default function PresentialConsultationPage({
                 onClick={() => setIsPrescriptionModalOpen(true)}
                 className="flex items-center gap-2 rounded-full border-2 border-brand-purple bg-white px-4 py-2 text-sm font-semibold text-brand-purple transition-colors hover:bg-purple-50"
               >
-                <MedicationIcon className="h-4 w-4" />
+                <Pill />
                 Prescrever com Memed
               </Button>
             )}
@@ -458,7 +452,7 @@ export default function PresentialConsultationPage({
               onClick={() => setIsComplementaryModalOpen(true)}
               className="flex items-center gap-2 rounded-full border-2 border-brand-purple bg-white px-4 py-2 text-sm font-semibold text-brand-purple transition-colors hover:bg-purple-50"
             >
-              <MedicalServicesIcon className="h-4 w-4" />
+              <Stethoscope />
               Solicitar consulta complementar
             </Button>
             <Button
@@ -506,7 +500,7 @@ export default function PresentialConsultationPage({
                         className="rounded-full p-2 text-brand-purple transition-colors hover:bg-purple-100"
                         title="Salvar"
                       >
-                        <CheckIcon className="h-5 w-5" />
+                        <Check className="h-5 w-5" />
                       </button>
                     )}
                     <button
@@ -522,7 +516,7 @@ export default function PresentialConsultationPage({
                         editingFields.subjective ? 'Cancelar edição' : 'Editar'
                       }
                     >
-                      <EditIcon className="h-5 w-5" />
+                      <Pencil />
                     </button>
                   </div>
                 </div>
@@ -568,7 +562,7 @@ export default function PresentialConsultationPage({
                         className="rounded-full p-2 text-brand-purple transition-colors hover:bg-purple-100"
                         title="Salvar"
                       >
-                        <CheckIcon className="h-5 w-5" />
+                        <Check className="h-5 w-5" />
                       </button>
                     )}
                     <button
@@ -584,7 +578,7 @@ export default function PresentialConsultationPage({
                         editingFields.objective ? 'Cancelar edição' : 'Editar'
                       }
                     >
-                      <EditIcon className="h-5 w-5" />
+                      <Pencil />
                     </button>
                   </div>
                 </div>
@@ -630,7 +624,7 @@ export default function PresentialConsultationPage({
                         className="rounded-full p-2 text-brand-purple transition-colors hover:bg-purple-100"
                         title="Salvar"
                       >
-                        <CheckIcon className="h-5 w-5" />
+                        <Check className="h-5 w-5" />
                       </button>
                     )}
                     <button
@@ -646,7 +640,7 @@ export default function PresentialConsultationPage({
                         editingFields.assessment ? 'Cancelar edição' : 'Editar'
                       }
                     >
-                      <EditIcon className="h-5 w-5" />
+                      <Pencil />
                     </button>
                   </div>
                 </div>
@@ -690,7 +684,7 @@ export default function PresentialConsultationPage({
                         className="rounded-full p-2 text-brand-purple transition-colors hover:bg-purple-100"
                         title="Salvar"
                       >
-                        <CheckIcon className="h-5 w-5" />
+                        <Check className="h-5 w-5" />
                       </button>
                     )}
                     <button
@@ -704,7 +698,7 @@ export default function PresentialConsultationPage({
                       className="rounded-full p-2 text-brand-purple transition-colors hover:bg-purple-100"
                       title={editingFields.plan ? 'Cancelar edição' : 'Editar'}
                     >
-                      <EditIcon className="h-5 w-5" />
+                      <Pencil />
                     </button>
                   </div>
                 </div>

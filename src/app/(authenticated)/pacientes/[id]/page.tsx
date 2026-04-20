@@ -1,8 +1,8 @@
 'use client'
 
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined'
-import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined'
-import MapOutlinedIcon from '@mui/icons-material/MapOutlined'
+import { ArrowLeft as ArrowBackOutlinedIcon } from 'lucide-react'
+import { Pencil as CreateOutlinedIcon } from 'lucide-react'
+import { Map as MapOutlinedIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React, { useState, use } from 'react'
 

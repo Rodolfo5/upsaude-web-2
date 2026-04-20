@@ -1,6 +1,6 @@
 'use client'
 
-import RestaurantIcon from '@mui/icons-material/Restaurant'
+import { UtensilsCrossed as RestaurantIcon } from 'lucide-react'
 import { ChevronDown } from 'lucide-react'
 import { useEffect, useState } from 'react'
 

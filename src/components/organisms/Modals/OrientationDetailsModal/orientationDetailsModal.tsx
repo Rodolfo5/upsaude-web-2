@@ -1,6 +1,6 @@
 'use client'
 
-import VisibilityIcon from '@mui/icons-material/Visibility'
+import { Eye as VisibilityIcon } from 'lucide-react'
 import { Download } from 'lucide-react'
 import Image from 'next/image'
 

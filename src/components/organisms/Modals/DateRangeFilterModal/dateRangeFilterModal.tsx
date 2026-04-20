@@ -1,5 +1,5 @@
-import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
-import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined'
+import { CalendarDays as CalendarMonthOutlinedIcon } from 'lucide-react'
+import { X as CloseOutlinedIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useEffect, useState } from 'react'

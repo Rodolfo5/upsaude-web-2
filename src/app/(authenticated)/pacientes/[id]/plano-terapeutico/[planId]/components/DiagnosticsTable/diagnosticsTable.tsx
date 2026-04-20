@@ -1,8 +1,8 @@
 'use client'
 
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import { Plus as AddOutlinedIcon } from 'lucide-react'
+import { Trash2 as DeleteOutlineIcon } from 'lucide-react'
+import { Pencil as EditOutlinedIcon } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { useState } from 'react'
 

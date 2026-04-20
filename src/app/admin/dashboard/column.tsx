@@ -1,6 +1,6 @@
 'use client'
 
-import DeleteIcon from '@mui/icons-material/Delete'
+import { Trash2 as DeleteIcon } from 'lucide-react'
 import { Column, ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown } from 'lucide-react'
 import { useState } from 'react'

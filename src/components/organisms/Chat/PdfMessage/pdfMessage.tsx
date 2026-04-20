@@ -1,4 +1,4 @@
-import { PictureAsPdf } from '@mui/icons-material'
+import { FileText as PictureAsPdf } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { formatMessageTime } from '@/utils/chat/formatMessageDate'

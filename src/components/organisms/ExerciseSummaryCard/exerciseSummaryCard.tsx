@@ -1,7 +1,7 @@
 'use client'
 
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
-import TimerIcon from '@mui/icons-material/Timer'
+import { Flame as LocalFireDepartmentIcon } from 'lucide-react'
+import { Timer as TimerIcon } from 'lucide-react'
 import { Cell, Pie, PieChart } from 'recharts'
 
 import { Card } from '@/components/ui/card'

@@ -1,6 +1,6 @@
 'use client'
 
-import NotificationsIcon from '@mui/icons-material/Notifications'
+import { Bell as NotificationsIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 

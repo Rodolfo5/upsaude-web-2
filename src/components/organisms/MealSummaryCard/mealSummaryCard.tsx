@@ -1,6 +1,6 @@
 'use client'
 
-import RestaurantIcon from '@mui/icons-material/Restaurant'
+import { UtensilsCrossed as RestaurantIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Cell, Pie, PieChart } from 'recharts'

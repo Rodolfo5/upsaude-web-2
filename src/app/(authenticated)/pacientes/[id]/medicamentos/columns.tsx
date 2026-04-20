@@ -1,7 +1,7 @@
 'use client'
 
-import CloseIcon from '@mui/icons-material/Close'
-import MedicalInformationOutlinedIcon from '@mui/icons-material/MedicalInformationOutlined'
+import { X as CloseIcon } from 'lucide-react'
+import { ClipboardList as MedicalInformationOutlinedIcon } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'

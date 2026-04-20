@@ -1,6 +1,6 @@
 'use client'
 
-import { Close } from '@mui/icons-material'
+import { X as Close } from 'lucide-react'
 import Image from 'next/image'
 
 import { Button } from '@/components/atoms/Button/button'

@@ -1,10 +1,10 @@
 'use client'
 
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import FirstPageIcon from '@mui/icons-material/FirstPage'
-import LastPageIcon from '@mui/icons-material/LastPage'
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import { ChevronLeft as ChevronLeftIcon } from 'lucide-react'
+import { ChevronRight as ChevronRightIcon } from 'lucide-react'
+import { ChevronsLeft as FirstPageIcon } from 'lucide-react'
+import { ChevronsRight as LastPageIcon } from 'lucide-react'
+import { ExternalLink as OpenInNewIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState, useMemo } from 'react'
 

@@ -1,5 +1,5 @@
-import ArrowOutwardOutlinedIcon from '@mui/icons-material/ArrowOutwardOutlined'
-import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined'
+import { ArrowUpRight as ArrowOutwardOutlinedIcon } from 'lucide-react'
+import { MoreVertical as MoreVertOutlinedIcon } from 'lucide-react'
 import React from 'react'
 
 import { Button } from '@/components/atoms/Button/button'

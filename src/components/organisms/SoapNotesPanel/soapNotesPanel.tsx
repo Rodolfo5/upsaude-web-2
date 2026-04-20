@@ -1,5 +1,5 @@
-import EditIcon from '@mui/icons-material/Edit'
-import FileDownloadDoneIcon from '@mui/icons-material/FileDownloadDone'
+import { Pencil as EditIcon } from 'lucide-react'
+import { CheckSquare as FileDownloadDoneIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import Textarea from '@/components/atoms/Textarea/textarea'

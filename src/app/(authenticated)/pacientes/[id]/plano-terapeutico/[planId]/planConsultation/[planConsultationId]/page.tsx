@@ -1,8 +1,8 @@
 'use client'
 
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined'
-import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined'
-import EditIcon from '@mui/icons-material/Edit'
+import { ArrowLeft as ArrowBackOutlinedIcon } from 'lucide-react'
+import { Calendar as CalendarTodayOutlinedIcon } from 'lucide-react'
+import { Pencil as EditIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Timestamp } from 'firebase/firestore'

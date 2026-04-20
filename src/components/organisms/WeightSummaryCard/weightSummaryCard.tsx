@@ -1,8 +1,8 @@
 'use client'
 
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
-import MonitorWeightIcon from '@mui/icons-material/MonitorWeight'
+import { ArrowDown as ArrowDownwardIcon } from 'lucide-react'
+import { ArrowUp as ArrowUpwardIcon } from 'lucide-react'
+import { Scale as MonitorWeightIcon } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { Card } from '@/components/ui/card'

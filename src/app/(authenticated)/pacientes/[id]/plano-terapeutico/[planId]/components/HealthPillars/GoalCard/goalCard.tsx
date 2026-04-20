@@ -1,8 +1,8 @@
 'use client'
 
-import CheckIcon from '@mui/icons-material/Check'
-import CloseIcon from '@mui/icons-material/Close'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import { Check as CheckIcon } from 'lucide-react'
+import { X as CloseIcon } from 'lucide-react'
+import { Pencil as EditOutlinedIcon } from 'lucide-react'
 import { Moon, Frown, Smile, Target } from 'lucide-react'
 import { useState } from 'react'
 

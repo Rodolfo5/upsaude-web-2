@@ -1,4 +1,4 @@
-import { Message } from '@mui/icons-material'
+import { MessageSquare as Message } from 'lucide-react'
 
 interface EmptyStateProps {
   title: string

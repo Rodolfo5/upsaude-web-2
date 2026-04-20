@@ -1,5 +1,5 @@
 'use client'
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined'
+import { ArrowLeft as ArrowBackOutlinedIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useState } from 'react'
 

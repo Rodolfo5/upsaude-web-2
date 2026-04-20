@@ -1,6 +1,6 @@
 'use client'
 
-import { Close } from '@mui/icons-material'
+import { X as Close } from 'lucide-react'
 import * as React from 'react'
 
 import {

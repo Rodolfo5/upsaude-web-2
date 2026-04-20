@@ -1,5 +1,5 @@
-import ExpandLessOutlinedIcon from '@mui/icons-material/ExpandLessOutlined'
-import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined'
+import { ChevronUp as ExpandLessOutlinedIcon } from 'lucide-react'
+import { ChevronDown as ExpandMoreOutlinedIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { Card } from '@/components/ui/card'

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import InfoIcon from '@mui/icons-material/Info'
+import { Info as InfoIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'

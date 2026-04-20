@@ -1,16 +1,14 @@
 'use client'
 
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
-import GroupIcon from '@mui/icons-material/Group'
-import InfoIcon from '@mui/icons-material/Info'
-import MedicalInformationIcon from '@mui/icons-material/MedicalInformation'
-import TrendingUpIcon from '@mui/icons-material/TrendingUp'
-import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
+import { DollarSign as AttachMoneyIcon } from 'lucide-react'
+import { Users as GroupIcon } from 'lucide-react'
+import { Info as InfoIcon } from 'lucide-react'
+import { ClipboardList as MedicalInformationIcon } from 'lucide-react'
+import { TrendingUp as TrendingUpIcon } from 'lucide-react'
+import { ChevronsUpDown as UnfoldMoreIcon } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
-import { startOfMonth, isSameMonth } from 'date-fns'
 import { useMemo } from 'react'
 
-import LoadingComponent from '@/components/atoms/Loading/loading'
 import { DataTable } from '@/components/organisms/DataTable/dataTable'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -21,12 +19,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import useConsultationsForDashboard from '@/hooks/queries/useConsultionsForDashboard'
-import useAllPrescriptionsByDoctor from '@/hooks/queries/useAllPrescriptionsByDoctor'
-import useClassifiedPatientsByDoctor from '@/hooks/queries/useClassifiedPatientsByDoctor'
-import useComplementaryConsultations from '@/hooks/queries/useComplementaryConsultations'
-import useConsultationsByDoctor from '@/hooks/queries/useConsultationsByDoctor'
-import usePatientsByDoctor from '@/hooks/queries/usePatientsByDoctor'
+import { Skeleton } from '@/components/ui/skeleton'
+import useDashboardData from '@/hooks/queries/useDashboardData'
 import useUser from '@/hooks/useUser'
 import { ConsultationEntity } from '@/types/entities/consultation'
 
@@ -148,173 +142,140 @@ const getConsultationsColumns = (
   },
 ]
 
+function DashboardSkeleton() {
+  return (
+    <div className="container mx-auto space-y-6 bg-[#FAFAFA] p-4 md:p-6 lg:p-8">
+      <div className="space-y-2">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-5 w-96" />
+      </div>
+
+      <Card className="border-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Skeleton className="h-5 w-5" />
+            <Skeleton className="h-6 w-40" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="px-6 pb-6">
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card className="border-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Skeleton className="h-5 w-5" />
+              <Skeleton className="h-6 w-48" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-lg bg-purple-50 p-4">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="mt-2 h-8 w-16" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Skeleton className="h-5 w-5" />
+              <Skeleton className="h-6 w-48" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="rounded-lg bg-purple-50 p-4">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="mt-2 h-8 w-24" />
+              </div>
+              <div className="rounded-lg bg-purple-50 p-4">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="mt-2 h-6 w-20" />
+              </div>
+              <div className="rounded-lg bg-purple-50 p-4">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="mt-2 h-6 w-20" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Skeleton className="h-5 w-5" />
+            <Skeleton className="h-6 w-40" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-lg bg-purple-50 p-4">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="mt-2 h-8 w-16" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const { currentUser } = useUser()
-  const today = new Date()
 
-  const { data: allConsultations, isLoading: isLoadingConsultations } =
-    useConsultationsForDashboard()
-  const { data: classifiedPatients, isLoading: isLoadingPatients } =
-    useClassifiedPatientsByDoctor()
-  const { data: complementaryConsultations } = useComplementaryConsultations()
-  const { data: patients } = usePatientsByDoctor()
-  const { data: todayConsultations, isLoading: isLoadingToday } =
-    useConsultationsByDoctor(today)
-  const { data: allPrescriptions } = useAllPrescriptionsByDoctor()
-
-  const patientNameMap = useMemo(() => {
-    const map = new Map<string, string>()
-    patients?.forEach((patient) => {
-      if (patient?.id) {
-        map.set(patient.id, patient.name || patient.email || patient.id)
-      }
-    })
-    return map
-  }, [patients])
-
-  const activePatients = useMemo(() => {
-    return classifiedPatients?.acompanhamento?.length || 0
-  }, [classifiedPatients])
-
-  const newPatients = useMemo(() => {
-    if (!classifiedPatients?.acompanhamento) return 0
-    const now = new Date()
-    const monthStart = startOfMonth(now)
-
-    return classifiedPatients.acompanhamento.filter((patient) => {
-      const createdAt = patient.createdAt ? new Date(patient.createdAt) : null
-      return createdAt && createdAt >= monthStart && isSameMonth(createdAt, now)
-    }).length
-  }, [classifiedPatients])
-
-  const patientsAttendedThisMonth = useMemo(() => {
-    if (!allConsultations || !currentUser?.id) return 0
-    const now = new Date()
-    const monthStart = startOfMonth(now)
-
-    const completedThisMonth = allConsultations.filter((consultation) => {
-      const consultationDate = new Date(consultation.date)
-      return (
-        consultation.doctorId === currentUser.id &&
-        consultation.status === 'COMPLETED' &&
-        consultationDate >= monthStart &&
-        isSameMonth(consultationDate, now)
-      )
-    })
-
-    const uniquePatientIds = new Set(completedThisMonth.map((c) => c.patientId))
-    return uniquePatientIds.size
-  }, [allConsultations, currentUser?.id])
-
-  const financialData = useMemo(() => {
-    if (!allConsultations || !currentUser?.id || !complementaryConsultations)
-      return {
-        monthlyRevenue: 0,
-        recurring: 0,
-        complementary: 0,
-      }
-
-    const now = new Date()
-    const monthStart = startOfMonth(now)
-
-    const thisMonthConsultations = allConsultations.filter((consultation) => {
-      const consultationDate = new Date(consultation.date)
-      return (
-        consultation.doctorId === currentUser.id &&
-        consultationDate >= monthStart &&
-        isSameMonth(consultationDate, now)
-      )
-    })
-
-    const complementaryConsultationIds = new Set(
-      complementaryConsultations.map((cc) => cc.consultationId),
-    )
-
-    const acompanhamentoPatientIds = new Set(
-      classifiedPatients?.acompanhamento?.map((p) => p.id) || [],
-    )
-
-    let monthlyRevenue = 0
-    let recurring = 0
-    let complementary = 0
-
-    thisMonthConsultations.forEach((consultation) => {
-      const value = Number(consultation.value) || 0
-      monthlyRevenue += value
-
-      if (complementaryConsultationIds.has(consultation.id)) {
-        complementary += value
-      } else if (acompanhamentoPatientIds.has(consultation.patientId)) {
-        recurring += value
-      }
-    })
-
-    return {
-      monthlyRevenue,
-      recurring,
-      complementary,
-    }
-  }, [
-    allConsultations,
-    currentUser?.id,
-    complementaryConsultations,
-    classifiedPatients,
-  ])
-
-  const todayConsultationsWithNames = useMemo(() => {
-    if (!todayConsultations) return []
-
-    return todayConsultations
-      .map((consultation) => ({
-        ...consultation,
-        patientName:
-          patientNameMap.get(consultation.patientId) || 'Paciente sem nome',
-      }))
-      .sort((a, b) => {
-        const timeA = a.hour.split('-')[0] || '00:00'
-        const timeB = b.hour.split('-')[0] || '00:00'
-        return timeA.localeCompare(timeB)
-      })
-  }, [todayConsultations, patientNameMap])
+  const { data: dashboardData, isLoading } = useDashboardData()
 
   const consultationsColumns = useMemo(
-    () => getConsultationsColumns(patients),
-    [patients],
+    () => getConsultationsColumns(dashboardData?.patients),
+    [dashboardData?.patients],
   )
 
-  const totalPatientsAttended = useMemo(() => {
-    if (!allConsultations || !currentUser?.id) return 0
-    const completed = allConsultations.filter(
-      (c) => c.doctorId === currentUser.id && c.status === 'COMPLETED',
-    )
-    return new Set(completed.map((c) => c.patientId)).size
-  }, [allConsultations, currentUser?.id])
-
-  const totalPrescriptions = useMemo(() => {
-    if (!allPrescriptions) return 0
-    return allPrescriptions.length
-  }, [allPrescriptions])
-
-  const totalPrescribedExams = useMemo(() => {
-    if (!allPrescriptions) return 0
-    return allPrescriptions.reduce((total, prescription) => {
-      return total + (prescription.exams?.length || 0)
-    }, 0)
-  }, [allPrescriptions])
-
-  const isLoading =
-    isLoadingConsultations ||
-    isLoadingPatients ||
-    isLoadingToday ||
-    !currentUser
-
-  if (isLoading) {
+  if (!currentUser) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#FAFAFA]">
-        <LoadingComponent />
+        <p className="text-gray-500">Usuário não encontrado</p>
       </div>
     )
   }
+
+  if (isLoading) {
+    return <DashboardSkeleton />
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#FAFAFA]">
+        <p className="text-gray-500">Erro ao carregar dados do dashboard</p>
+      </div>
+    )
+  }
+
+  const {
+    todayConsultations,
+    activePatients,
+    newPatients,
+    patientsAttendedThisMonth,
+    financialData,
+    totalPatientsAttended,
+    totalPrescriptions,
+    totalPrescribedExams,
+  } = dashboardData
 
   return (
     <div className="container mx-auto space-y-6 bg-[#FAFAFA] p-4 md:p-6 lg:p-8">
@@ -337,7 +298,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {todayConsultationsWithNames.length === 0 ? (
+            {todayConsultations.length === 0 ? (
               <p className="py-8 text-center text-gray-500">
                 Nenhuma consulta agendada para hoje
               </p>
@@ -345,7 +306,7 @@ export default function DashboardPage() {
               <div className="px-6 pb-6">
                 <DataTable
                   columns={consultationsColumns}
-                  data={todayConsultationsWithNames}
+                  data={todayConsultations}
                 />
               </div>
             )}

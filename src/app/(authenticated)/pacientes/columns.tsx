@@ -1,7 +1,7 @@
 'use client'
 
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
-import MedicationOutlinedIcon from '@mui/icons-material/MedicationOutlined'
+import { FileText as DescriptionOutlinedIcon } from 'lucide-react'
+import { Pill as MedicationOutlinedIcon } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -192,7 +192,7 @@ export const patientsColumns: ColumnDef<PatientWithType>[] = [
       const birthDate = row.original.birthDate
       if (!birthDate) return '-'
       const dateObj = timestampToDate(
-        birthDate as unknown as TimestampLike | Date | string,
+        birthDate as unknown as Date | string,
       )
 
       const age = dateObj

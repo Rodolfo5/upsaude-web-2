@@ -1,11 +1,11 @@
 'use client'
 
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
-import CheckIcon from '@mui/icons-material/Check'
-import CloseIcon from '@mui/icons-material/Close'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-import ExpandLessIcon from '@mui/icons-material/ExpandLess'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { ArrowRight as ArrowForwardIcon } from 'lucide-react'
+import { Check as CheckIcon } from 'lucide-react'
+import { X as CloseIcon } from 'lucide-react'
+import { Pencil as EditOutlinedIcon } from 'lucide-react'
+import { ChevronUp as ExpandLessIcon } from 'lucide-react'
+import { ChevronDown as ExpandMoreIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { Button } from '@/components/atoms/Button/button'

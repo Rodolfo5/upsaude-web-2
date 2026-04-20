@@ -245,7 +245,7 @@ function DataTableInner<TData, TValue>({
 
 type DataTableComponent = <TData, TValue>(
   props: DataTableProps<TData, TValue>,
-) => JSX.Element
+) => React.ReactElement
 
 export const DataTable = React.memo(DataTableInner) as unknown as DataTableComponent
 

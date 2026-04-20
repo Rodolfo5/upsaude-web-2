@@ -1,7 +1,7 @@
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
-import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft'
-import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight'
+import { ChevronLeft as KeyboardArrowLeftIcon } from 'lucide-react'
+import { ChevronRight as KeyboardArrowRightIcon } from 'lucide-react'
+import { ChevronsLeft as KeyboardDoubleArrowLeftIcon } from 'lucide-react'
+import { ChevronsRight as KeyboardDoubleArrowRightIcon } from 'lucide-react'
 import { Table } from '@tanstack/react-table'
 
 import { Button } from '@/components/ui/button'

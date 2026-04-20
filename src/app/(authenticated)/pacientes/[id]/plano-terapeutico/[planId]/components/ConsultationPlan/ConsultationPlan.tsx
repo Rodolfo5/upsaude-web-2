@@ -1,6 +1,6 @@
 'use client'
 
-import { Add } from '@mui/icons-material'
+import { Plus as Add } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { DataTable } from '@/components/organisms/DataTable/dataTable'

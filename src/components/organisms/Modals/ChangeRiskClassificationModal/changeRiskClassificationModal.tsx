@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined'
+import { ArrowLeft as ArrowBackOutlinedIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'

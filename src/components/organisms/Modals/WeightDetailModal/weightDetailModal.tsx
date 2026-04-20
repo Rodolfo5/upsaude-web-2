@@ -1,6 +1,6 @@
 'use client'
 
-import MonitorWeightIcon from '@mui/icons-material/MonitorWeight'
+import { Scale as MonitorWeightIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import {

@@ -1,7 +1,7 @@
 'use client'
 
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import { ArrowLeft as ArrowBackOutlinedIcon } from 'lucide-react'
+import { Pencil as EditOutlinedIcon } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Search } from 'lucide-react'
 import Image from 'next/image'

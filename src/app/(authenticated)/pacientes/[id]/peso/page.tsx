@@ -1,9 +1,9 @@
 'use client'
 
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import MonitorWeightIcon from '@mui/icons-material/MonitorWeight'
+import { ArrowLeft as ArrowBackOutlinedIcon } from 'lucide-react'
+import { ChevronLeft as ChevronLeftIcon } from 'lucide-react'
+import { ChevronRight as ChevronRightIcon } from 'lucide-react'
+import { Scale as MonitorWeightIcon } from 'lucide-react'
 import { addDays, subDays } from 'date-fns'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'

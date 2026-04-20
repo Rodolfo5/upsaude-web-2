@@ -213,7 +213,7 @@ export function AgendaStep2Form({ onSuccess, onBack }: AgendaStep2FormProps) {
             >
               {activeDay && shifts[activeDay] ? (
                 <div className="space-y-6">
-                  {shifts[activeDay].map((_, index) => (
+                  {shifts[activeDay]!.map((_, index) => (
                     <ShiftConfiguration
                       key={`${activeDay}-${index}`}
                       shiftName={`Turno ${index === 0 ? 'da manhã' : index === 1 ? 'da tarde' : 'da noite'}`}

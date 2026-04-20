@@ -1,15 +1,15 @@
 'use client'
 
-import AssignmentIcon from '@mui/icons-material/Assignment'
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-import ChatBubbleIcon from '@mui/icons-material/ChatBubbleOutline'
-import ChecklistIcon from '@mui/icons-material/Checklist'
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
-import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft'
-import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight'
-import MedicationOutlinedIcon from '@mui/icons-material/MedicationOutlined'
+import { ClipboardList as AssignmentIcon } from 'lucide-react'
+import { CalendarDays as CalendarMonthIcon } from 'lucide-react'
+import { MessageSquare as ChatBubbleIcon } from 'lucide-react'
+import { ClipboardList as ChecklistIcon } from 'lucide-react'
+import { HelpCircle as HelpOutlineIcon } from 'lucide-react'
+import { ChevronLeft as KeyboardArrowLeftIcon } from 'lucide-react'
+import { ChevronRight as KeyboardArrowRightIcon } from 'lucide-react'
+import { ChevronsLeft as KeyboardDoubleArrowLeftIcon } from 'lucide-react'
+import { ChevronsRight as KeyboardDoubleArrowRightIcon } from 'lucide-react'
+import { Pill as MedicationOutlinedIcon } from 'lucide-react'
 import {
   getCoreRowModel,
   getFilteredRowModel,

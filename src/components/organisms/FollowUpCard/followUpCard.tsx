@@ -1,9 +1,9 @@
 'use client'
 
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
-import FavoriteIcon from '@mui/icons-material/Favorite'
-import MenuBookIcon from '@mui/icons-material/MenuBook'
-import QuizIcon from '@mui/icons-material/Quiz'
+import { CheckCircle as CheckCircleOutlineIcon } from 'lucide-react'
+import { Heart as FavoriteIcon } from 'lucide-react'
+import { BookOpen as MenuBookIcon } from 'lucide-react'
+import { HelpCircle as QuizIcon } from 'lucide-react'
 import React from 'react'
 
 import { Badge } from '@/components/ui/badge'

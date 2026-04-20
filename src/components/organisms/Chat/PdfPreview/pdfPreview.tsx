@@ -1,4 +1,4 @@
-import { Close, PictureAsPdf } from '@mui/icons-material'
+import { X as Close, FileText as PictureAsPdf } from 'lucide-react'
 
 interface PdfPreviewProps {
   fileName: string

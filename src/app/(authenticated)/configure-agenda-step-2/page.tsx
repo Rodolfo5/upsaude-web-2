@@ -1,6 +1,6 @@
 'use client'
 
-import { Close } from '@mui/icons-material'
+import { X as Close } from 'lucide-react'
 
 import { Button } from '@/components/atoms/Button/button'
 import { AgendaStep2Form } from '@/components/organisms/Forms/AgendaStep2Form/agendaStep2Form'

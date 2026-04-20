@@ -21,9 +21,58 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
   const pathname = usePathname()
   const { userUid, loading, setUserUid } = useAuth()
   const { currentUser, loading: userLoading, refreshUser } = useUser()
-  const [isAllowed, setIsAllowed] = useState(false)
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false)
   const isHandlingAdminPublicLogin = useRef(false)
+
+  // Otimização: calcular permissão de forma síncrona para evitar flash de loading
+  // durante navegação interna (quando auth já está resolvido)
+  const isAuthResolved = !loading.onAuthUserChanged && !userLoading.fetchCurrentUser
+
+  const computeAllowed = (): boolean => {
+    if (!isAuthResolved) return false
+
+    const isLoginFlowInProgress =
+      loading.loginWithInternalService ||
+      loading.loginWithGoogle ||
+      loading.loginWithApple
+
+    if (
+      accessType === 'public' &&
+      pathname === '/login' &&
+      userUid &&
+      currentUser?.role === UserRole.ADMIN &&
+      !isLoginFlowInProgress
+    ) {
+      return false
+    }
+
+    switch (accessType) {
+      case 'public':
+        return !userUid
+
+      case 'authenticated': {
+        const isDoctor = currentUser?.role === UserRole.DOCTOR
+        if (!userUid || !isDoctor) return false
+
+        if (currentUser?.status === UserStatus.APPROVED) return true
+
+        if (currentUser?.status === UserStatus.PENDING) {
+          if (!currentUser.isCompleted && pathname === '/complete-registration')
+            return true
+          if (pathname === '/complete-registration') return true
+        }
+
+        return false
+      }
+
+      case 'admin':
+        return !!userUid && currentUser?.role === UserRole.ADMIN
+    }
+
+    return false
+  }
+
+  const isAllowed = computeAllowed()
 
   // Check if user came from QR Code (using Firebase flag)
   const isFromQRCode = (): boolean => {
@@ -101,7 +150,6 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
     if (loading.onAuthUserChanged || userLoading.fetchCurrentUser) return
 
     // Force refresh user data on first check after auth is ready
-    // This ensures we have the latest data from Firestore
     if (!hasCheckedAuth && userUid && !currentUser) {
       setHasCheckedAuth(true)
       refreshUser()
@@ -113,6 +161,7 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
       loading.loginWithGoogle ||
       loading.loginWithApple
 
+    // Handle redirects for unauthorized access
     if (
       accessType === 'public' &&
       pathname === '/login' &&
@@ -120,70 +169,11 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
       currentUser?.role === UserRole.ADMIN &&
       !isLoginFlowInProgress
     ) {
-      setIsAllowed(false)
       redirectAdminToAdminLogin().catch(() => undefined)
       return
     }
 
-    let allowed = false
-
-    switch (accessType) {
-      case 'public':
-        allowed = !userUid
-        break
-
-      case 'authenticated': {
-        const isDoctor = currentUser?.role === UserRole.DOCTOR
-        if (!userUid || !isDoctor) {
-          allowed = false
-          break
-        }
-
-        // Approved doctors have full access
-        if (currentUser?.status === UserStatus.APPROVED) {
-          allowed = true
-          break
-        }
-
-        // Pending doctors...
-        if (currentUser?.status === UserStatus.PENDING) {
-          // Can access complete-registration if not completed
-          if (
-            !currentUser.isCompleted &&
-            pathname === '/complete-registration'
-          ) {
-            allowed = true
-            break
-          }
-
-          // If from QR Code, can access the patient's medical record
-          // (regardless of isCompleted status - they just completed the form)
-          if (isFromQRCode() && isAccessingQRCodePatientRecord()) {
-            allowed = true
-            break
-          }
-
-          // Also allow staying on complete-registration even if completed
-          // (to show the success screen)
-          if (pathname === '/complete-registration') {
-            allowed = true
-            break
-          }
-        }
-
-        allowed = false
-        break
-      }
-
-      case 'admin':
-        allowed = !!userUid && currentUser?.role === UserRole.ADMIN
-        break
-    }
-
-    setIsAllowed(allowed)
-
-    // Redirect if not allowed
-    if (!allowed) {
+    if (!isAllowed) {
       if (accessType === 'public' && userUid && currentUser) {
         const correctPath = getCorrectRedirectPath()
         if (correctPath) {
@@ -216,6 +206,7 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
     accessType,
     pathname,
     hasCheckedAuth,
+    isAllowed,
   ])
 
   if (loading.onAuthUserChanged || userLoading.fetchCurrentUser) {

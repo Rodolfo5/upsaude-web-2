@@ -1,16 +1,16 @@
 'use client'
 
-import AnalyticsIcon from '@mui/icons-material/Analytics'
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-import ChatBubbleIcon from '@mui/icons-material/ChatBubbleOutline'
-import ChecklistIcon from '@mui/icons-material/Checklist'
-import GroupIcon from '@mui/icons-material/Group'
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
-import LogoutIcon from '@mui/icons-material/Logout'
-import MenuIcon from '@mui/icons-material/Menu'
-import PersonIcon from '@mui/icons-material/Person'
-// import VideoCallIcon from '@mui/icons-material/VideoCall'
-import { IndentDecreaseIcon } from 'lucide-react'
+import {
+  LayoutDashboardIcon,
+  UsersIcon,
+  CalendarIcon,
+  ClipboardListIcon,
+  MessageSquareIcon,
+  UserIcon,
+  LifeBuoyIcon,
+  LogOutIcon,
+  PanelLeftCloseIcon,
+} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -33,41 +33,36 @@ const items: SidebarItem[] = [
   {
     label: 'Dashboard',
     href: '/dashboard',
-    icon: <AnalyticsIcon fontSize="small" />,
+    icon: <LayoutDashboardIcon size={20} />,
   },
   {
     label: 'Meus Pacientes',
     href: '/pacientes',
-    icon: <GroupIcon fontSize="small" />,
+    icon: <UsersIcon size={20} />,
   },
   {
     label: 'Agenda',
     href: '/agenda',
-    icon: <CalendarMonthIcon fontSize="small" />,
+    icon: <CalendarIcon size={20} />,
   },
   {
     label: 'Questionários',
     href: '/questionarios',
-    icon: <ChecklistIcon fontSize="small" />,
+    icon: <ClipboardListIcon size={20} />,
   },
   {
     label: 'Chat',
     href: '/chat',
-    icon: <ChatBubbleIcon fontSize="small" />,
+    icon: <MessageSquareIcon size={20} />,
   },
-  // {
-  //   label: 'Videochamada (Teste)',
-  //   href: '/videochamada-teste',
-  //   icon: <VideoCallIcon fontSize="small" />,
-  // },
 ]
 
 const secondary: SidebarItem[] = [
-  { label: 'Perfil', href: '/perfil', icon: <PersonIcon fontSize="small" /> },
+  { label: 'Perfil', href: '/perfil', icon: <UserIcon size={20} /> },
   {
     label: 'Suporte',
     href: '/suporte',
-    icon: <HelpOutlineIcon fontSize="small" />,
+    icon: <LifeBuoyIcon size={20} />,
   },
 ]
 
@@ -148,9 +143,9 @@ export default function Sidebar() {
             aria-label={isExpanded ? 'Contrair menu' : 'Expandir menu'}
           >
             {isExpanded ? (
-              <IndentDecreaseIcon />
+              <PanelLeftCloseIcon size={20} />
             ) : (
-              <MenuIcon fontSize="small" />
+              <LayoutDashboardIcon size={20} className="rotate-180" />
             )}
           </button>
         </div>
@@ -266,7 +261,7 @@ export default function Sidebar() {
           title={!isExpanded ? 'Sair' : undefined}
         >
           <div className="flex h-8 w-8 items-center justify-center">
-            <LogoutIcon fontSize="small" />
+            <LogOutIcon size={20} />
           </div>
           {isExpanded && (
             <span className="truncate text-sm font-medium">Sair</span>

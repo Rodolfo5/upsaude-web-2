@@ -1,6 +1,6 @@
 'use client'
 
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined'
+import { ArrowLeft as ArrowBackOutlinedIcon } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'

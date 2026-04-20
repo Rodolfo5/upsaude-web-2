@@ -1,9 +1,9 @@
 'use client'
 
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined'
-import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
-import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
-import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined'
+import { ArrowLeft as ArrowBackOutlinedIcon } from 'lucide-react'
+import { FileText as ArticleOutlinedIcon } from 'lucide-react'
+import { CalendarDays as CalendarMonthOutlinedIcon } from 'lucide-react'
+import { ListFilter as FilterListOutlinedIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Timestamp } from 'firebase/firestore'

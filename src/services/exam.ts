@@ -1,5 +1,6 @@
 import {
   collection,
+  collectionGroup,
   doc,
   getDoc,
   getDocs,
@@ -86,52 +87,39 @@ export async function findAllPrescriptionsByDoctor(
   doctorId: string,
 ): Promise<ExamEntity[]> {
   try {
-    const usersRef = collection(firestore, 'users')
-    const usersSnapshot = await getDocs(usersRef)
+    // Collection Group Query: busca em TODAS as subcoleções 'exams' de uma vez
+    // em vez de iterar sobre cada usuário (N+1 queries)
+    const examsRef = collectionGroup(firestore, 'exams')
+    const q = query(
+      examsRef,
+      where('type', '==', 'prescription'),
+      where('doctorId', '==', doctorId),
+      orderBy('requestDate', 'desc'),
+    )
 
-    const allPrescriptions: ExamEntity[] = []
+    const snapshot = await getDocs(q)
 
-    for (const userDoc of usersSnapshot.docs) {
-      const examsRef = collection(firestore, 'users', userDoc.id, 'exams')
-      const q = query(
-        examsRef,
-        where('type', '==', 'prescription'),
-        where('doctorId', '==', doctorId),
-        orderBy('requestDate', 'desc'),
-      )
-
-      const snapshot = await getDocs(q)
-
-      if (!snapshot.empty) {
-        const prescriptions = snapshot.docs.map((doc) => {
-          const data = doc.data() as DocumentData
-          return {
-            id: doc.id,
-            ...data,
-            requestDate: data.requestDate?.toDate
-              ? data.requestDate.toDate()
-              : data.requestDate,
-            completionDate: data.completionDate?.toDate
-              ? data.completionDate.toDate()
-              : data.completionDate || null,
-            createdAt: data.createdAt?.toDate
-              ? data.createdAt.toDate()
-              : data.createdAt,
-            updatedAt: data.updatedAt?.toDate
-              ? data.updatedAt.toDate()
-              : data.updatedAt,
-          } as ExamEntity
-        })
-
-        allPrescriptions.push(...prescriptions)
-      }
-    }
-
-    return allPrescriptions.sort((a, b) => {
-      const dateA = new Date(a.requestDate).getTime()
-      const dateB = new Date(b.requestDate).getTime()
-      return dateB - dateA
+    const prescriptions = snapshot.docs.map((doc) => {
+      const data = doc.data() as DocumentData
+      return {
+        id: doc.id,
+        ...data,
+        requestDate: data.requestDate?.toDate
+          ? data.requestDate.toDate()
+          : data.requestDate,
+        completionDate: data.completionDate?.toDate
+          ? data.completionDate.toDate()
+          : data.completionDate || null,
+        createdAt: data.createdAt?.toDate
+          ? data.createdAt.toDate()
+          : data.createdAt,
+        updatedAt: data.updatedAt?.toDate
+          ? data.updatedAt.toDate()
+          : data.updatedAt,
+      } as ExamEntity
     })
+
+    return prescriptions
   } catch (error) {
     console.error('Erro ao buscar prescrições do médico:', error)
     return []

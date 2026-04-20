@@ -1,8 +1,8 @@
 'use client'
 
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-import ExpandLessIcon from '@mui/icons-material/ExpandLess'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { Pencil as EditOutlinedIcon } from 'lucide-react'
+import { ChevronUp as ExpandLessIcon } from 'lucide-react'
+import { ChevronDown as ExpandMoreIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { RestrictedButton } from '@/components/atoms/RestrictedButton/restrictedButton'

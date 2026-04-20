@@ -1,6 +1,6 @@
 'use client'
 
-import DeleteIcon from '@mui/icons-material/Delete'
+import { Trash2 as DeleteIcon } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Column, ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown, Ban, ClipboardPlus, Eye, UserCheck } from 'lucide-react'

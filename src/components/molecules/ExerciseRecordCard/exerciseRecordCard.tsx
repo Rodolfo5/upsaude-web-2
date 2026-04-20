@@ -1,7 +1,7 @@
 'use client'
 
-import ArrowOutwardOutlinedIcon from '@mui/icons-material/ArrowOutwardOutlined'
-import DirectionsRunIcon from '@mui/icons-material/DirectionsRun'
+import { ArrowUpRight as ArrowOutwardOutlinedIcon } from 'lucide-react'
+import { Footprints as DirectionsRunIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import type { ExerciseRecordEntity } from '@/types/entities/lifestyle'

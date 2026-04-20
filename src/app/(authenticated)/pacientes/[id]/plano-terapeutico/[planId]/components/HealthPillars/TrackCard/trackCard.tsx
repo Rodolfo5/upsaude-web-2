@@ -1,9 +1,9 @@
 'use client'
 
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-import ExpandLessIcon from '@mui/icons-material/ExpandLess'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
+import { Pencil as EditOutlinedIcon } from 'lucide-react'
+import { ChevronUp as ExpandLessIcon } from 'lucide-react'
+import { ChevronDown as ExpandMoreIcon } from 'lucide-react'
+import { Circle as RadioButtonUncheckedIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 

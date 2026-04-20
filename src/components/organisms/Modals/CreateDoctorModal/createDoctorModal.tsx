@@ -1,8 +1,8 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
-import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
+import { Plus as AddOutlinedIcon } from 'lucide-react'
+import { Copy as ContentCopyOutlinedIcon } from 'lucide-react'
 import { Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'

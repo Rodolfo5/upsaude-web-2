@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { useQueries } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import {
   Plus,
   Search,
@@ -50,31 +50,44 @@ import { patientsColumns } from './columns'
 export default function PacientesPage() {
   const { data } = useClassifiedPatientsByDoctor()
   const patients = useMemo(() => data?.all || [], [data])
+  const patientIds = useMemo(() => patients.map((p) => p.id), [patients])
 
-  // Fetch latest health checkup for each patient
-  const checkupQueries = useQueries({
-    queries: patients.map((patient) => ({
-      queryKey: ['latest-checkup', patient.id],
-      queryFn: () => findLatestHealthCheckup(patient.id),
-      enabled: !!patient.id,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    })),
+  // Batch query: busca checkup e aderência de TODOS pacientes em paralelo
+  // em vez de 2N queries individuais
+  const { data: checkupMap } = useQuery({
+    queryKey: ['latest-checkups-batch', patientIds],
+    queryFn: async () => {
+      const results = await Promise.all(
+        patientIds.map(async (id) => {
+          const checkup = await findLatestHealthCheckup(id)
+          return [id, checkup] as const
+        }),
+      )
+      return Object.fromEntries(results)
+    },
+    enabled: patientIds.length > 0,
+    staleTime: 5 * 60 * 1000,
   })
 
-  // Fetch medication adherence for each patient
-  const adherenceQueries = useQueries({
-    queries: patients.map((patient) => ({
-      queryKey: ['medication-adherence', patient.id],
-      queryFn: () => getMedicationAdherence(patient.id),
-      enabled: !!patient.id,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    })),
+  const { data: adherenceMap } = useQuery({
+    queryKey: ['medication-adherence-batch', patientIds],
+    queryFn: async () => {
+      const results = await Promise.all(
+        patientIds.map(async (id) => {
+          const adherence = await getMedicationAdherence(id)
+          return [id, adherence] as const
+        }),
+      )
+      return Object.fromEntries(results)
+    },
+    enabled: patientIds.length > 0,
+    staleTime: 5 * 60 * 1000,
   })
 
   const patientsWithCheckupStatus = useMemo(() => {
-    return patients.map((patient, index) => {
-      const checkup = checkupQueries[index]?.data
-      const adherence = adherenceQueries[index]?.data
+    return patients.map((patient) => {
+      const checkup = checkupMap?.[patient.id]
+      const adherence = adherenceMap?.[patient.id]
       const hasPendingCheckup =
         checkup?.status === 'IN_PROGRESS' || checkup?.status === 'REQUESTED'
       const isNotAdheringToMedication = adherence?.isAdhering === false
@@ -84,7 +97,7 @@ export default function PacientesPage() {
         isNotAdheringToMedication,
       }
     })
-  }, [patients, checkupQueries, adherenceQueries])
+  }, [patients, checkupMap, adherenceMap])
 
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('')

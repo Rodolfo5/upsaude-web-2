@@ -1,4 +1,4 @@
-import { AttachFile, Send } from '@mui/icons-material'
+import { Paperclip as AttachFile, Send } from 'lucide-react'
 import { useRef } from 'react'
 
 import { PdfPreview } from '../PdfPreview/pdfPreview'

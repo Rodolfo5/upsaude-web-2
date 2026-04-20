@@ -1,15 +1,17 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import CheckIcon from '@mui/icons-material/Check'
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
-import FullscreenIcon from '@mui/icons-material/Fullscreen'
-import MicIcon from '@mui/icons-material/Mic'
-import MicOffIcon from '@mui/icons-material/MicOff'
-import VideocamIcon from '@mui/icons-material/Videocam'
-import VideocamOffIcon from '@mui/icons-material/VideocamOff'
-import ViewModuleIcon from '@mui/icons-material/ViewModule'
+import {
+  ArrowLeft,
+  Check,
+  Circle,
+  Maximize,
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  LayoutGrid,
+} from 'lucide-react'
 import AgoraRTC, {
   IAgoraRTCClient,
   IAgoraRTCRemoteUser,
@@ -1754,7 +1756,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
             className={`pointer-events-auto h-10 w-10 rounded-full ${isSplitView ? 'bg-purple-100 text-purple-700 hover:bg-purple-700/90 hover:text-white' : 'bg-white/80 text-purple-700 hover:bg-purple-700/90 hover:text-white'}`}
             onClick={() => setIsSplitView(!isSplitView)}
           >
-            {isSplitView ? <FullscreenIcon /> : <ViewModuleIcon />}
+            {isSplitView ? <Maximize /> : <LayoutGrid />}
           </Button>
         </div>
       )}
@@ -1816,7 +1818,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
                 {/* Indicador de gravação */}
                 {isRecording && (
                   <div className="flex items-center gap-2">
-                    <FiberManualRecordIcon className="animate-pulse text-red-500" />
+                    <Circle className="animate-pulse fill-red-500 text-red-500" />
                     {recordingDuration > 0 && (
                       <span className="text-xs text-white/90">
                         {Math.floor(recordingDuration / 60)}:
@@ -1832,7 +1834,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
                   )}
                   onClick={toggleCamera}
                 >
-                  {isCameraOn ? <VideocamIcon /> : <VideocamOffIcon />}
+                  {isCameraOn ? <Video /> : <VideoOff />}
                 </Button>
                 <Button
                   variant="ghost"
@@ -1841,7 +1843,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
                   )}
                   onClick={toggleMicrophone}
                 >
-                  {isMicrophoneOn ? <MicIcon /> : <MicOffIcon />}
+                  {isMicrophoneOn ? <Mic /> : <MicOff />}
                 </Button>
                 <Button
                   className="h-10 rounded-full bg-red-500 px-4 text-sm text-white hover:bg-red-500/90"
@@ -1861,7 +1863,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
                     className="cursor-pointer text-primary-500 hover:text-primary-500/60"
                     onClick={handleOpenComplementaryConsultation}
                   >
-                    <ArrowBackIcon fontSize="large" />
+                    <ArrowLeft size={32} />
                   </div>
                   <h3 className="text-2xl font-medium text-primary-500">
                     Solicitar consulta complementar
@@ -1883,7 +1885,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
                     >
                       {isResponsibleForConsultation ? (
                         <div className="flex h-4 w-4 items-center justify-center rounded-[2px] border-2 border-gray-500 text-gray-500">
-                          <CheckIcon fontSize="small" />
+                          <Check size={16} />
                         </div>
                       ) : (
                         <div className="h-4 w-4 rounded-[2px] border-2 border-gray-500"></div>
@@ -1978,7 +1980,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
                         className={`pointer-events-auto h-10 w-10 rounded-full ${isSplitView ? 'bg-purple-100 text-purple-700 hover:bg-purple-700/90 hover:text-white' : 'bg-white/80 text-purple-700 hover:bg-purple-700/90 hover:text-white'}`}
                         onClick={() => setIsSplitView(!isSplitView)}
                       >
-                        {isSplitView ? <FullscreenIcon /> : <ViewModuleIcon />}
+                        {isSplitView ? <Maximize /> : <LayoutGrid />}
                       </Button>
                     </div>
                     <div className="flex flex-row items-center gap-x-4">
@@ -2087,7 +2089,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
             {/* Indicador de gravação */}
             {isRecording && (
               <div className="flex items-center gap-2">
-                <FiberManualRecordIcon className="animate-pulse text-red-500" />
+                <Circle className="animate-pulse fill-red-500 text-red-500" />
                 {recordingDuration > 0 && (
                   <span className="text-sm font-semibold text-white">
                     {Math.floor(recordingDuration / 60)}:
@@ -2103,7 +2105,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
               )}
               onClick={toggleCamera}
             >
-              {isCameraOn ? <VideocamIcon /> : <VideocamOffIcon />}
+              {isCameraOn ? <Video /> : <VideoOff />}
             </Button>
             <Button
               variant="ghost"
@@ -2112,7 +2114,7 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
               )}
               onClick={toggleMicrophone}
             >
-              {isMicrophoneOn ? <MicIcon /> : <MicOffIcon />}
+              {isMicrophoneOn ? <Mic /> : <MicOff />}
             </Button>
             <Button
               className="h-12 rounded-full bg-red-500 px-6 text-white hover:bg-red-500/90"

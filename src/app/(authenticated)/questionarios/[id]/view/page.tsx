@@ -1,6 +1,6 @@
 'use client'
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import { ArrowLeft as ArrowBackIcon } from 'lucide-react'
 import { useRouter, useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 

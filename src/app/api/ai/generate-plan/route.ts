@@ -105,7 +105,7 @@ export async function POST(
 
     const checkupData = checkupSnap.data() as admin.firestore.DocumentData
     const checkup: HealthCheckupEntity = {
-      ...checkupData,
+      ...(checkupData as HealthCheckupEntity),
       id: checkupSnap.id,
       createdAt: checkupData.createdAt?.toDate
         ? checkupData.createdAt.toDate()

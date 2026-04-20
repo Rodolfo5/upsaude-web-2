@@ -1,6 +1,6 @@
 'use client'
 
-import QuestionAnswerOutlinedIcon from '@mui/icons-material/QuestionAnswerOutlined'
+import { MessageSquare as QuestionAnswerOutlinedIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/atoms/Button/button'

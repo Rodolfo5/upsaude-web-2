@@ -1,8 +1,8 @@
 'use client'
 
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined'
-import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
-import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
+import { ArrowLeft as ArrowBackOutlinedIcon } from 'lucide-react'
+import { FileText as ArticleOutlinedIcon } from 'lucide-react'
+import { CalendarDays as CalendarMonthOutlinedIcon } from 'lucide-react'
 import { Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, use, useEffect } from 'react'

@@ -1,4 +1,4 @@
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
+import { Plus as AddOutlinedIcon } from 'lucide-react'
 import React, { useState } from 'react'
 
 import { Button } from '@/components/atoms/Button/button'

@@ -1,7 +1,7 @@
 'use client'
 
-import DeleteIcon from '@mui/icons-material/Delete'
-import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined'
+import { Trash2 as DeleteIcon } from 'lucide-react'
+import { Eye as VisibilityOutlined } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Column, ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown, CheckCircle, XCircle } from 'lucide-react'

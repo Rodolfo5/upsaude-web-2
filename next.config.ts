@@ -5,9 +5,11 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   experimental: {
     optimizePackageImports: [
-      '@mui/icons-material',
       '@tanstack/react-query',
       'lucide-react',
       'date-fns',

@@ -1,8 +1,8 @@
 'use client'
 
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined'
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
+import { ArrowLeft as ArrowBackOutlinedIcon } from 'lucide-react'
+import { ChevronLeft as KeyboardArrowLeftIcon } from 'lucide-react'
+import { ChevronRight as KeyboardArrowRightIcon } from 'lucide-react'
 import { addDays, subDays } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import React, { useMemo, useState, use } from 'react'

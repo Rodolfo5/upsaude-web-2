@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import { Pencil as EditOutlinedIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { Button } from '@/components/atoms/Button/button'

@@ -1,8 +1,8 @@
 'use client'
 
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import { Plus as AddOutlinedIcon } from 'lucide-react'
+import { ChevronLeft as ChevronLeftIcon } from 'lucide-react'
+import { ChevronRight as ChevronRightIcon } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 
 import LoadingComponent from '@/components/atoms/Loading/loading'

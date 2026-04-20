@@ -1,6 +1,6 @@
 'use client'
 
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import { Pencil as EditOutlinedIcon } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { PieChart, Pie, Cell } from 'recharts'

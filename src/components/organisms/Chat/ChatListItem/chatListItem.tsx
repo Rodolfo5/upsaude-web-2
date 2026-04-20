@@ -1,4 +1,4 @@
-import { Block, Message } from '@mui/icons-material'
+import { Ban as Block, MessageSquare as Message } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'

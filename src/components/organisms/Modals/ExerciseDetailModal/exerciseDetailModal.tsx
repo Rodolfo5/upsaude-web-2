@@ -1,8 +1,8 @@
 'use client'
 
-import DirectionsRunIcon from '@mui/icons-material/DirectionsRun'
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
-import TimerIcon from '@mui/icons-material/Timer'
+import { Footprints as DirectionsRunIcon } from 'lucide-react'
+import { Flame as LocalFireDepartmentIcon } from 'lucide-react'
+import { Timer as TimerIcon } from 'lucide-react'
 
 import {
   Dialog,

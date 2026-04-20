@@ -1,6 +1,6 @@
 'use client'
 
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
+import { Plus as AddOutlinedIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 

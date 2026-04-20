@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft as ArrowLeftIcon } from '@mui/icons-material'
+import { ArrowLeft as ArrowLeftIcon } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 

@@ -1,9 +1,9 @@
 'use client'
 
-import X from '@mui/icons-material/Close'
-import LogoutIcon from '@mui/icons-material/Logout'
-import Menu from '@mui/icons-material/Menu'
-import UserIcon from '@mui/icons-material/Person'
+import { X } from 'lucide-react'
+import { LogOut as LogoutIcon } from 'lucide-react'
+import { Menu } from 'lucide-react'
+import { User as UserIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'

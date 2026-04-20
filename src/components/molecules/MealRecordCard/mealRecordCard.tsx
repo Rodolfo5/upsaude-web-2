@@ -1,7 +1,7 @@
 'use client'
 
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import RestaurantIcon from '@mui/icons-material/Restaurant'
+import { ChevronRight as ChevronRightIcon } from 'lucide-react'
+import { UtensilsCrossed as RestaurantIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useState } from 'react'
 

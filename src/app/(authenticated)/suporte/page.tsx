@@ -1,6 +1,6 @@
 'use client'
 
-import { WhatsApp } from '@mui/icons-material'
+import { MessageCircle as WhatsApp } from 'lucide-react'
 import { Plus, Minus } from 'lucide-react'
 import Image from 'next/image'
 import { useState } from 'react'

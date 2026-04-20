@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { CalendarMonth } from '@mui/icons-material'
+import { CalendarDays as CalendarMonth } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useEffect, useState, useMemo } from 'react'

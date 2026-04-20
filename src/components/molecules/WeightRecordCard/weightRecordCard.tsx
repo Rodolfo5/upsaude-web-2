@@ -1,7 +1,7 @@
 'use client'
 
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import MonitorWeightIcon from '@mui/icons-material/MonitorWeight'
+import { ChevronRight as ChevronRightIcon } from 'lucide-react'
+import { Scale as MonitorWeightIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useState } from 'react'
 

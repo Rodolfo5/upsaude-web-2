@@ -1,6 +1,6 @@
 'use client'
 
-import ArrowOutwardOutlinedIcon from '@mui/icons-material/ArrowOutwardOutlined'
+import { ArrowUpRight as ArrowOutwardOutlinedIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 
