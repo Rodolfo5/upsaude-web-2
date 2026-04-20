@@ -2,6 +2,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import dynamic from 'next/dynamic'
 import {
   Plus,
   Search,
@@ -19,8 +20,6 @@ import { Button } from '@/components/atoms/Button/button'
 import Input from '@/components/atoms/Input/input'
 import Select from '@/components/atoms/Select/select'
 import { DataTable } from '@/components/organisms/DataTable/dataTable'
-import { AddNewPatientForm } from '@/components/organisms/Modals/AddNewPatient/addNewPatient'
-import { PrescriptionModal } from '@/components/organisms/Modals/PrescriptionModal/prescriptionModal'
 import {
   Dialog,
   DialogContent,
@@ -46,6 +45,20 @@ import { getQuestionnaireType } from '@/utils/questionnaire/getQuestionnairePdfP
 import { questionnaires } from '../questionarios/column'
 
 import { patientsColumns } from './columns'
+
+const AddNewPatientForm = dynamic(
+  () =>
+    import('@/components/organisms/Modals/AddNewPatient/addNewPatient').then(
+      (module) => module.AddNewPatientForm,
+    ),
+)
+
+const PrescriptionModal = dynamic(
+  () =>
+    import(
+      '@/components/organisms/Modals/PrescriptionModal/prescriptionModal'
+    ).then((module) => module.PrescriptionModal),
+)
 
 export default function PacientesPage() {
   const { data } = useClassifiedPatientsByDoctor()

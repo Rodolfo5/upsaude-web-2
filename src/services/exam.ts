@@ -18,6 +18,36 @@ import { ExamEntity } from '@/types/entities/exam'
 
 const firestore = getFirestore(firebaseApp)
 
+function mapExamDoc(doc: { id: string; data: () => DocumentData }): ExamEntity {
+  const data = doc.data() as DocumentData
+
+  return {
+    id: doc.id,
+    ...data,
+    requestDate: data.requestDate?.toDate
+      ? data.requestDate.toDate()
+      : data.requestDate,
+    completionDate: data.completionDate?.toDate
+      ? data.completionDate.toDate()
+      : data.completionDate || null,
+    createdAt: data.createdAt?.toDate
+      ? data.createdAt.toDate()
+      : data.createdAt,
+    updatedAt: data.updatedAt?.toDate
+      ? data.updatedAt.toDate()
+      : data.updatedAt,
+  } as ExamEntity
+}
+
+function isMissingIndexError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: string }).code === 'failed-precondition'
+  )
+}
+
 export async function findAllExams(
   patientId: string,
   type?: 'exam' | 'prescription',
@@ -87,39 +117,39 @@ export async function findAllPrescriptionsByDoctor(
   doctorId: string,
 ): Promise<ExamEntity[]> {
   try {
-    // Collection Group Query: busca em TODAS as subcoleções 'exams' de uma vez
-    // em vez de iterar sobre cada usuário (N+1 queries)
     const examsRef = collectionGroup(firestore, 'exams')
-    const q = query(
-      examsRef,
-      where('type', '==', 'prescription'),
-      where('doctorId', '==', doctorId),
-      orderBy('requestDate', 'desc'),
-    )
+    try {
+      const indexedQuery = query(
+        examsRef,
+        where('type', '==', 'prescription'),
+        where('doctorId', '==', doctorId),
+        orderBy('requestDate', 'desc'),
+      )
 
-    const snapshot = await getDocs(q)
+      const snapshot = await getDocs(indexedQuery)
+      return snapshot.docs.map(mapExamDoc)
+    } catch (error) {
+      if (!isMissingIndexError(error)) {
+        throw error
+      }
 
-    const prescriptions = snapshot.docs.map((doc) => {
-      const data = doc.data() as DocumentData
-      return {
-        id: doc.id,
-        ...data,
-        requestDate: data.requestDate?.toDate
-          ? data.requestDate.toDate()
-          : data.requestDate,
-        completionDate: data.completionDate?.toDate
-          ? data.completionDate.toDate()
-          : data.completionDate || null,
-        createdAt: data.createdAt?.toDate
-          ? data.createdAt.toDate()
-          : data.createdAt,
-        updatedAt: data.updatedAt?.toDate
-          ? data.updatedAt.toDate()
-          : data.updatedAt,
-      } as ExamEntity
-    })
+      const fallbackQuery = query(examsRef, where('doctorId', '==', doctorId))
+      const snapshot = await getDocs(fallbackQuery)
 
-    return prescriptions
+      return snapshot.docs
+        .map(mapExamDoc)
+        .filter((exam) => exam.type === 'prescription')
+        .sort((left, right) => {
+          const leftTime = left.requestDate
+            ? new Date(left.requestDate).getTime()
+            : 0
+          const rightTime = right.requestDate
+            ? new Date(right.requestDate).getTime()
+            : 0
+
+          return rightTime - leftTime
+        })
+    }
   } catch (error) {
     console.error('Erro ao buscar prescrições do médico:', error)
     return []
