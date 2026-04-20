@@ -12,12 +12,7 @@
 import type { Metadata } from 'next'
 import { Roboto } from 'next/font/google'
 import './globals.css'
-import dynamic from 'next/dynamic'
-
-const ClientProviders = dynamic(
-  () => import('@/providers/ClientProviders'),
-  { ssr: false },
-)
+import ClientProviders from '@/providers/ClientProviders'
 
 // ====================================================================
 // 🎨 CONFIGURAÇÃO DE FONTES DA MARCA
