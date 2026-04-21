@@ -1,9 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 
-import {
-  getConsultationSoap,
-  updateConsultationSoapField,
-} from '@/services/consultation'
+import { getConsultationSoap } from '@/services/consultation'
+import { updateConsultationSoapField } from '@/services/consultation-mutations'
 import { SoapData } from '@/types/entities/consultation'
 
 type SoapField = keyof SoapData

@@ -7,6 +7,7 @@ import {
   adminFirestore,
   getAdminApp,
 } from '@/config/firebase/firebaseAdmin'
+import { SUPER_ADMIN_EMAIL } from '@/constants/generic'
 import { UserRole } from '@/types/entities/user'
 
 export interface AuthenticatedRouteUser {
@@ -41,7 +42,8 @@ export const forbiddenRouteResponse = (message = 'Acesso negado.') =>
   NextResponse.json({ error: message }, { status: 403 })
 
 export const isAdminRouteUser = (user: AuthenticatedRouteUser) =>
-  user.role === UserRole.ADMIN
+  user.role === UserRole.ADMIN ||
+  (user.email != null && user.email.toLowerCase() === SUPER_ADMIN_EMAIL)
 
 export const isPatientRouteUser = (user: AuthenticatedRouteUser) =>
   user.role === UserRole.PATIENT
@@ -49,7 +51,11 @@ export const isPatientRouteUser = (user: AuthenticatedRouteUser) =>
 export const hasRouteUserRole = (
   user: AuthenticatedRouteUser,
   allowedRoles: UserRole[],
-) => Boolean(user.role && allowedRoles.includes(user.role))
+) =>
+  Boolean(user.role && allowedRoles.includes(user.role)) ||
+  (allowedRoles.includes(UserRole.ADMIN) &&
+    user.email != null &&
+    user.email.toLowerCase() === SUPER_ADMIN_EMAIL)
 
 export const isSameRouteUser = (
   user: AuthenticatedRouteUser,

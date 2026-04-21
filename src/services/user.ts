@@ -40,7 +40,7 @@ import {
   getFirestore,
 } from 'firebase/firestore'
 
-import firebaseApp, { firebaseEnv } from '@/config/firebase/firebase'
+import firebaseApp, { firebaseEnv } from '@/config/firebase/app'
 import {
   getApiErrorMessage,
   getAuthenticatedHeaders,

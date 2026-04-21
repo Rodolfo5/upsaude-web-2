@@ -15,7 +15,7 @@ import { Label } from '@/components/atoms/Label/label'
 import InputField from '@/components/molecules/InputField/inputField'
 import { SelectField } from '@/components/molecules/SelectField/selectField'
 import TextareaField from '@/components/molecules/TextareaField/textareaField'
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 import {
   modalityOptions,
   intensityOptions,

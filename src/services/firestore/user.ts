@@ -8,7 +8,7 @@ import {
   getDocs,
 } from 'firebase/firestore'
 
-import app from '@/config/firebase/firebase'
+import app from '@/config/firebase/app'
 import { AgendaEntity, ShiftData } from '@/types/entities/agenda'
 import { UserStatus } from '@/types/entities/user'
 

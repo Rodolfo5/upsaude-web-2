@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { FORTY_FIVE_MINUTES_IN_MS } from '@/constants/generic'
 import { getAdminUsersPage } from '@/services/user'
 import { UserRole } from '@/types/entities/user'
 
@@ -51,6 +50,5 @@ export const useAdminUsersPage = ({
         role,
         includeAgenda,
       }),
-    staleTime: FORTY_FIVE_MINUTES_IN_MS,
     enabled,
   })

@@ -18,7 +18,7 @@
 
 import { NextResponse } from 'next/server'
 
-import { updateConsultationTranscription } from '@/services/consultation'
+import { updateConsultationTranscription } from '@/services/consultation-mutations'
 import { transcribeAudioFromUrl } from '@/services/transcription'
 
 // ====================================================================

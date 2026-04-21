@@ -14,7 +14,7 @@ import {
 } from "@tanstack/react-table"
 import React, { useMemo, useState } from "react"
 
-import Input from "@/components/atoms/Input/input"
+import Input from "../../atoms/Input/input"
 import {
   Table,
   TableBody,
@@ -22,7 +22,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "../../ui/table"
 
 import { DataTablePagination } from "./dataTablePagination"
 import { DataTableProps } from "./types"

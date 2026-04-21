@@ -10,6 +10,7 @@ import useUser from '@/hooks/useUser'
 import { getRedirectPath } from '@/lib/getRedirectPath'
 import { logout } from '@/services/firebase/auth'
 import { DoctorEntity, UserRole, UserStatus } from '@/types/entities/user'
+import { SUPER_ADMIN_EMAIL } from '@/constants/generic'
 
 interface RouteGuardProps {
   children: React.ReactNode
@@ -66,7 +67,11 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
       }
 
       case 'admin':
-        return !!userUid && currentUser?.role === UserRole.ADMIN
+        return (
+          !!userUid &&
+          (currentUser?.role === UserRole.ADMIN ||
+            currentUser?.email === SUPER_ADMIN_EMAIL)
+        )
     }
 
     return false
@@ -192,7 +197,9 @@ export default function RouteGuard({ children, accessType }: RouteGuardProps) {
         }
       } else if (
         accessType === 'admin' &&
-        (!userUid || currentUser?.role !== UserRole.ADMIN)
+        (!userUid ||
+          (currentUser?.role !== UserRole.ADMIN &&
+            currentUser?.email !== SUPER_ADMIN_EMAIL))
       ) {
         router.replace('/admin-login')
       }

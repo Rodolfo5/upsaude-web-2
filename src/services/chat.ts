@@ -12,7 +12,7 @@ import {
   where,
 } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 import { ChatEntity } from '@/types/entities/chat'
 
 const db = getFirestore(firebaseApp)

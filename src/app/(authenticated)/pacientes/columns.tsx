@@ -2,19 +2,22 @@
 
 import { FileText as DescriptionOutlinedIcon } from 'lucide-react'
 import { Pill as MedicationOutlinedIcon } from 'lucide-react'
+import { Send } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@/components/atoms/Button/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Button } from '../../../components/atoms/Button/button'
+import { Avatar, AvatarFallback, AvatarImage } from '../../../components/ui/avatar'
+import { Badge } from '../../../components/ui/badge'
+import { Checkbox } from '../../../components/ui/checkbox'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from '../../../components/ui/tooltip'
+import { useResendWelcome } from '@/hooks/mutations/useResendWelcome'
+import { errorToast, successToast, warningToast } from '@/hooks/useAppToast'
 import { timestampToDate } from '@/lib/utils'
 import { PatientEntity } from '@/types/entities/user'
 
@@ -53,6 +56,44 @@ function ViewMedicalRecordButton({ patientId }: { patientId: string }) {
     >
       Ver Prontuário
     </Button>
+  )
+}
+
+function ResendWelcomeButton({ patientId }: { patientId: string }) {
+  const { mutateAsync, isPending } = useResendWelcome()
+
+  const handleResend = async () => {
+    try {
+      const result = await mutateAsync(patientId)
+      if (result.warnings.length > 0) {
+        warningToast(`Enviado com avisos: ${result.warnings.join(' | ')}`)
+      } else {
+        successToast('Email e SMS de boas-vindas reenviados com sucesso!')
+      }
+    } catch (error) {
+      errorToast(
+        error instanceof Error ? error.message : 'Erro ao reenviar boas-vindas.',
+      )
+    }
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-purple-600 hover:text-purple-800"
+          onClick={handleResend}
+          disabled={isPending}
+        >
+          <Send className="h-4 w-4" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent className="bg-black text-white">
+        Reenviar email e SMS de boas-vindas
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -211,9 +252,10 @@ export const patientsColumns: ColumnDef<PatientWithType>[] = [
     header: 'Ações',
     cell: ({ row }) => {
       return (
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row items-center gap-2">
           <ViewDetailsButton patientId={row.original.id} />
           <ViewMedicalRecordButton patientId={row.original.id} />
+          <ResendWelcomeButton patientId={row.original.id} />
         </div>
       )
     },

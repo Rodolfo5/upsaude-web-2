@@ -54,8 +54,10 @@ import {
   useCurrentTherapeuticPlan,
   useHasDischargedPlan,
 } from '@/hooks/queries/useTherapeuticPlan'
+import { MEMED_ALLOWED_CREDENTIALS } from '@/constants/options'
 import useDoctor from '@/hooks/useDoctor'
 import { useIsQRCodePendingDoctor } from '@/hooks/useIsQRCodePendingDoctor'
+import useUser from '@/hooks/useUser'
 import { usePatient } from '@/hooks/usePatient'
 interface Props {
   params: Promise<{
@@ -66,6 +68,7 @@ interface Props {
 export default function PatientRecordPage({ params }: Props) {
   const { id } = use(params)
   const { currentDoctor } = useDoctor()
+  const { currentUser } = useUser()
   const { patient } = usePatient(id)
   const { isQRCodePendingDoctor } = useIsQRCodePendingDoctor()
   const router = useRouter()
@@ -159,7 +162,11 @@ export default function PatientRecordPage({ params }: Props) {
         </div>
         {!isQRCodePendingDoctor && (
           <div className="flex flex-col gap-2 sm:flex-row">
-            {currentDoctor?.typeOfCredential === 'CRM' && (
+            {MEMED_ALLOWED_CREDENTIALS.includes(
+              currentDoctor?.typeOfCredential ??
+              (currentUser as { typeOfCredential?: string })?.typeOfCredential ??
+              ''
+            ) && (
               <Button
                 variant="outline"
                 size="sm"

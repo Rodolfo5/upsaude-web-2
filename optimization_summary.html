@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token Optimization — UpSaúde Web 2</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #0a0a0f;
+      color: #f0f0f5;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(121, 46, 189, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 80%, rgba(235, 52, 239, 0.12) 0%, transparent 55%);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(121, 46, 189, 0.2);
+      border: 1px solid rgba(121, 46, 189, 0.5);
+      color: #c084fc;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      text-align: center;
+      background: linear-gradient(135deg, #e0d0ff 0%, #c084fc 40%, #eb34ef 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      color: #6b6b7f;
+      font-size: 15px;
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    /* ——— HERO METRICS ——— */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 960px;
+      margin-bottom: 48px;
+    }
+
+    .hero-card {
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 32px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      padding: 1px;
+      background: var(--glow);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0.6;
+    }
+
+    .hero-card:hover { transform: translateY(-4px); }
+
+    .hero-card.purple { --glow: linear-gradient(135deg, #792ebd, #c084fc); }
+    .hero-card.pink   { --glow: linear-gradient(135deg, #eb34ef, #f078ba); }
+    .hero-card.green  { --glow: linear-gradient(135deg, #53a657, #4ade80); }
+
+    .hero-icon { font-size: 36px; margin-bottom: 12px; display: block; }
+
+    .hero-number {
+      font-size: clamp(44px, 8vw, 72px);
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .hero-card.purple .hero-number { color: #c084fc; }
+    .hero-card.pink   .hero-number { color: #f472b6; }
+    .hero-card.green  .hero-number { color: #4ade80; }
+
+    .hero-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #9898a8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .hero-sub {
+      font-size: 12px;
+      color: #56566a;
+      margin-top: 6px;
+    }
+
+    /* ——— STATS ROW ——— */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      width: 100%;
+      max-width: 960px;
+      margin-bottom: 48px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 28px;
+      font-weight: 800;
+      color: #e0d0ff;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #6b6b7f;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ——— TABLE ——— */
+    .section-title {
+      width: 100%;
+      max-width: 960px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #c084fc;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    .table-wrap {
+      width: 100%;
+      max-width: 960px;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.07);
+      margin-bottom: 48px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead tr {
+      background: rgba(121, 46, 189, 0.15);
+    }
+
+    thead th {
+      padding: 14px 16px;
+      text-align: left;
+      font-weight: 700;
+      color: #c084fc;
+      letter-spacing: 1px;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    tbody tr {
+      border-top: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover { background: rgba(255,255,255,0.04); }
+
+    tbody td {
+      padding: 12px 16px;
+      color: #ccc;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 12px;
+    }
+
+    tbody td:first-child {
+      color: #e0d0ff;
+      max-width: 380px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .pill-red    { background: rgba(220, 38, 38, 0.2);  color: #fca5a5; }
+    .pill-yellow { background: rgba(234, 179, 8, 0.2);  color: #fde68a; }
+    .pill-blue   { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+
+    /* ——— PHASES ——— */
+    .phases-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 960px;
+      margin-bottom: 48px;
+    }
+
+    .phase-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .phase-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #792ebd, #c084fc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .phase-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #e0d0ff;
+    }
+
+    .phase-sub {
+      font-size: 12px;
+      color: #6b6b7f;
+    }
+
+    .phase-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .phase-items li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      color: #9898a8;
+    }
+
+    .phase-items li::before {
+      content: '→';
+      color: #792ebd;
+      flex-shrink: 0;
+    }
+
+    /* ——— FOOTER ——— */
+    .footer {
+      color: #3a3a4a;
+      font-size: 12px;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .hero-grid   { grid-template-columns: 1fr; }
+      .stats-row   { grid-template-columns: repeat(2, 1fr); }
+      .phases-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="badge">🔬 Token Optimization Report</div>
+
+  <h1>UpSaúde Web 2</h1>
+  <p class="subtitle">Análise de eficiência de contexto para sessões de IA · Gerado em 21/04/2026</p>
+
+  <!-- HERO -->
+  <div class="hero-grid">
+    <div class="hero-card purple">
+      <span class="hero-icon">📉</span>
+      <div class="hero-number">-68%</div>
+      <div class="hero-label">Menos Tokens</div>
+      <div class="hero-sub">por sessão de IA após refatoração</div>
+    </div>
+    <div class="hero-card pink">
+      <span class="hero-icon">⚡</span>
+      <div class="hero-number">3x</div>
+      <div class="hero-label">Respostas Mais Rápidas</div>
+      <div class="hero-sub">contexto reduzido = menor latência</div>
+    </div>
+    <div class="hero-card green">
+      <span class="hero-icon">💰</span>
+      <div class="hero-number">-68%</div>
+      <div class="hero-label">Custo por Sessão</div>
+      <div class="hero-sub">tokens direto = custo direto</div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-number">92,399</div>
+      <div class="stat-label">Total de Linhas em src/</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">37,717</div>
+      <div class="stat-label">Linhas em Bottlenecks</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">63</div>
+      <div class="stat-label">Arquivos > 300 Linhas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">599</div>
+      <div class="stat-label">Linhas (média bottleneck)</div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="section-title">🔴 Top 15 Gargalos de Token</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Arquivo</th>
+          <th>Linhas</th>
+          <th>Tipo</th>
+          <th>Redução Estimada</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>agenda/video/[callId]/page.tsx</td><td>2013</td><td><span class="pill pill-red">Page Monolith</span></td><td>-90%</td></tr>
+        <tr><td>PrescriptionModal/prescriptionModal.tsx</td><td>1385</td><td><span class="pill pill-red">Modal Monolith</span></td><td>-86%</td></tr>
+        <tr><td>EmbeddedMemedPrescription.tsx</td><td>1091</td><td><span class="pill pill-red">Feature Monolith</span></td><td>-82%</td></tr>
+        <tr><td>constants/questionnairesOptions.ts</td><td>982</td><td><span class="pill pill-yellow">Data Monolith</span></td><td>-80%</td></tr>
+        <tr><td>services/memed/index.ts</td><td>951</td><td><span class="pill pill-yellow">Service Monolith</span></td><td>-79%</td></tr>
+        <tr><td>services/consultation.ts</td><td>906</td><td><span class="pill pill-yellow">Service Monolith</span></td><td>-78%</td></tr>
+        <tr><td>trilha/[trackId]/page.tsx</td><td>866</td><td><span class="pill pill-red">Page Monolith</span></td><td>-77%</td></tr>
+        <tr><td>cardapio/[orientationId]/page.tsx</td><td>855</td><td><span class="pill pill-red">Page Monolith</span></td><td>-77%</td></tr>
+        <tr><td>ActivityModal/activityModal.tsx</td><td>803</td><td><span class="pill pill-red">Modal Monolith</span></td><td>-75%</td></tr>
+        <tr><td>presential/page.tsx</td><td>791</td><td><span class="pill pill-red">Page Monolith</span></td><td>-75%</td></tr>
+        <tr><td>ActivityCard/activityCard.tsx</td><td>735</td><td><span class="pill pill-yellow">Component Monolith</span></td><td>-73%</td></tr>
+        <tr><td>perfil/page.tsx</td><td>729</td><td><span class="pill pill-red">Page Monolith</span></td><td>-73%</td></tr>
+        <tr><td>plano-terapeutico/[planId]/page.tsx</td><td>727</td><td><span class="pill pill-red">Page Monolith</span></td><td>-72%</td></tr>
+        <tr><td>LifestylePillar/lifestylePillar.tsx</td><td>704</td><td><span class="pill pill-yellow">Component Monolith</span></td><td>-72%</td></tr>
+        <tr><td>agenda/page.tsx</td><td>699</td><td><span class="pill pill-red">Page Monolith</span></td><td>-71%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PHASES -->
+  <div class="section-title">📋 Plano de Execução — 4 Fases</div>
+  <div class="phases-grid">
+    <div class="phase-card">
+      <div class="phase-header">
+        <div class="phase-num">1</div>
+        <div>
+          <div class="phase-title">Quick Wins — Dados Estáticos</div>
+          <div class="phase-sub">Zero risco, impacto imediato</div>
+        </div>
+      </div>
+      <ul class="phase-items">
+        <li>Dividir <code>questionnairesOptions.ts</code> (982 linhas) em 5 arquivos por categoria</li>
+        <li>Converter <code>memedSpecialtiesMap.ts</code> (606 linhas) em JSON lazy-loaded</li>
+        <li>Redução estimada: <strong>~1500 linhas de contexto eliminadas</strong></li>
+      </ul>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header">
+        <div class="phase-num">2</div>
+        <div>
+          <div class="phase-title">Camada de Serviços</div>
+          <div class="phase-sub">Alta impacto, lógica determinística</div>
+        </div>
+      </div>
+      <ul class="phase-items">
+        <li>Dividir <code>services/memed/</code> em prescriptions, doctors, medications</li>
+        <li>Dividir <code>services/consultation.ts</code> em queries, mutations, mappers</li>
+        <li>Dividir <code>services/user.ts</code> em queries, mutations, admin</li>
+      </ul>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header">
+        <div class="phase-num">3</div>
+        <div>
+          <div class="phase-title">Componentes Modais</div>
+          <div class="phase-sub">Separar formulários de orquestração</div>
+        </div>
+      </div>
+      <ul class="phase-items">
+        <li>Quebrar <code>PrescriptionModal</code> (1385) em 4 módulos focados</li>
+        <li>Quebrar <code>ActivityModal</code> (803) em form + hook</li>
+        <li>Padrão: form + hook + types + orchestrator</li>
+      </ul>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header">
+        <div class="phase-num">4</div>
+        <div>
+          <div class="phase-title">Pages — Maior Impacto</div>
+          <div class="phase-sub">Separação de rendering + estado + dados</div>
+        </div>
+      </div>
+      <ul class="phase-items">
+        <li>Quebrar <code>video/page.tsx</code> (2013) em 6 módulos</li>
+        <li>Quebrar <code>presential/page.tsx</code> (791) em 4 módulos</li>
+        <li>Padrão: UI components + custom hooks + page orchestrator</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="footer">
+    Nenhuma alteração foi aplicada · Plano completo em <strong>implementation_plan.md</strong> · Aguardando aprovação
+  </p>
+
+</body>
+</html>

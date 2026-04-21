@@ -107,9 +107,14 @@ export class SendPulseClient {
     const url = `${SENDPULSE_API_URL}/smtp/emails`
 
     // Prepara o payload conforme a API do SendPulse
+    // O campo html deve ser base64 encoded conforme exigido pela API SMTP do SendPulse
+    const htmlBase64 = params.html
+      ? Buffer.from(params.html).toString('base64')
+      : undefined
+
     const payload = {
       email: {
-        html: params.html,
+        html: htmlBase64,
         text: params.text || '',
         subject: params.subject,
         from: {

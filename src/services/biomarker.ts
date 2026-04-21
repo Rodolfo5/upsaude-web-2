@@ -11,7 +11,7 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 import { BiomarkerEntity } from '@/types/entities/biomarker'
 
 const firestore = getFirestore(firebaseApp)

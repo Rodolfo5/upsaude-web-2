@@ -4,6 +4,7 @@ import { X } from 'lucide-react'
 import { LogOut as LogoutIcon } from 'lucide-react'
 import { Menu } from 'lucide-react'
 import { User as UserIcon } from 'lucide-react'
+import { Stethoscope as StethoscopeIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -19,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { SUPER_ADMIN_EMAIL } from '@/constants/generic'
 import useUser from '@/hooks/useUser'
 import { cn } from '@/lib/utils'
 import { logout } from '@/services/firebase/auth'
@@ -62,19 +64,34 @@ function UserMenu() {
   const handleLogout = async () => {
     await logout()
 
-    if (user.role === UserRole.ADMIN) {
+    if (user.role === UserRole.ADMIN || isSuperAdmin) {
       router.push('/admin-login')
     } else {
       router.push('/login')
     }
   }
 
-  // Se for ADMIN, renderiza um botão simples de Logout
-  if (user.role === UserRole.ADMIN) {
+  const isSuperAdmin = user.email === SUPER_ADMIN_EMAIL
+
+  // Se for ADMIN ou super admin, renderiza botões de ação
+  if (user.role === UserRole.ADMIN || isSuperAdmin) {
     return (
-      <Button variant="default" onClick={handleLogout}>
-        Sair
-      </Button>
+      <div className="flex items-center gap-2">
+        {isSuperAdmin && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 border-[#792EBD] bg-white text-[#792EBD] hover:bg-[#792EBD] hover:text-white"
+            onClick={() => router.push('/dashboard')}
+          >
+            <StethoscopeIcon size={15} />
+            Área do Profissional
+          </Button>
+        )}
+        <Button variant="default" onClick={handleLogout}>
+          Sair
+        </Button>
+      </div>
     )
   }
 

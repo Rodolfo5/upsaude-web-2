@@ -23,6 +23,11 @@ export async function POST(request: Request) {
         | undefined,
     })
 
+    // Deriva o ambiente a partir da MEMED_API_URL do servidor,
+    // para que o frontend use o mesmo ambiente no script data-env
+    const apiUrl = process.env.MEMED_API_URL || ''
+    const memedEnv = apiUrl.includes('integrations') ? 'integrations' : 'production'
+
     if (!result.success) {
       const status = result.error === 'Médico não encontrado' ? 404 : 400
       return NextResponse.json(
@@ -38,6 +43,7 @@ export async function POST(request: Request) {
       {
         token: result.token,
         doctorId,
+        memedEnv,
       },
       { status: 200 },
     )

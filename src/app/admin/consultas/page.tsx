@@ -17,7 +17,7 @@ import useAllConsultations, {
 } from '@/hooks/queries/useAllConsultations'
 import { useAppToast } from '@/hooks/useAppToast'
 import { getAuthenticatedJsonHeaders } from '@/services/api/authenticatedFetch'
-import { cancelConsultation, updateConsultation } from '@/services/consultation'
+import { cancelConsultation, updateConsultation } from '@/services/consultation-mutations'
 import { sendNotification } from '@/services/notification/notification'
 import { getPatientsByIds } from '@/services/patient'
 import { getUserDoc } from '@/services/user'

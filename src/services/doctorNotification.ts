@@ -10,7 +10,7 @@ import {
   where,
 } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 import { createFirestoreDoc } from '@/services/firebase/firestore'
 import { DoctorNotificationEntity } from '@/types/entities/doctorNotification'
 

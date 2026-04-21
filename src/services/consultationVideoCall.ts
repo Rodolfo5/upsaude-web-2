@@ -26,7 +26,7 @@ import {
 } from 'firebase/firestore'
 import { v4 as uuidv4 } from 'uuid'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 
 const db = getFirestore(firebaseApp)
 

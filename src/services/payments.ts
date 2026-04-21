@@ -7,7 +7,7 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 
 const db = getFirestore(firebaseApp)
 

@@ -9,7 +9,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-import LoadingComponent from '@/components/atoms/Loading/loading'
+import LoadingComponent from '../components/atoms/Loading/loading'
 import { errorToast } from '@/hooks/useAppToast'
 import useAuth from '@/hooks/useAuth'
 import useUser from '@/hooks/useUser'

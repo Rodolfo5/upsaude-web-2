@@ -43,7 +43,7 @@ function AuthenticatedLayoutContent({
       <Sidebar />
       <main
         className={cn(
-          'bg-white transition-all duration-300',
+          'bg-white transition-[margin] duration-300',
           isExpanded ? 'ml-64' : 'ml-16',
         )}
       >

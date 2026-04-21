@@ -127,6 +127,9 @@ export function PrescriptionModal({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [prescriberToken, setPrescriberToken] = useState<string | null>(null)
+  const [memedEnv, setMemedEnv] = useState<string>(
+    process.env.NEXT_PUBLIC_MEMED_ENV || 'production',
+  )
   const [patientData, setPatientData] = useState<PatientEntity | null>(null)
   const [warningQueue, setWarningQueue] = useState<string[]>([])
   const scriptLoadedRef = useRef(false)
@@ -345,15 +348,25 @@ export function PrescriptionModal({
               tokenResult.error || 'Erro ao obter token do prescritor'
 
             // Se o médico não estiver cadastrado, mostra mensagem específica
-            if (tokenResult.doctorNotRegistered) {
+            const isNotFound =
+              tokenResult.doctorNotRegistered ||
+              errorMessage.includes('404') ||
+              errorMessage.toLowerCase().includes('nenhum usu') ||
+              errorMessage.toLowerCase().includes('não encontrado') ||
+              errorMessage.toLowerCase().includes('nao encontrado')
+
+            if (isNotFound) {
               errorMessage =
-                'Médico não cadastrado na Memed. É necessário cadastrar o médico na plataforma Memed antes de poder prescrever. Entre em contato com o suporte para realizar o cadastro.'
+                'Médico não cadastrado na Memed. É necessário realizar o cadastro antes de prescrever. Entre em contato com o suporte.'
             }
 
             throw new Error(errorMessage)
           }
 
           setPrescriberToken(tokenResult.token)
+          if (tokenResult.memedEnv) {
+            setMemedEnv(tokenResult.memedEnv)
+          }
 
           // Buscar dados do paciente se patientId estiver disponível
           if (patientId) {
@@ -387,12 +400,30 @@ export function PrescriptionModal({
       return
     }
 
-    // URL do script conforme documentação oficial da Memed
+    // URL do script derivada do ambiente retornado pelo servidor,
+    // garantindo que script URL e token sempre usem o mesmo backend Memed.
+    const defaultScriptUrl =
+      memedEnv === 'production'
+        ? 'https://memed.com.br/modulos/plataforma.sinapse-prescricao/build/sinapse-prescricao.min.js'
+        : 'https://integrations.memed.com.br/modulos/plataforma.sinapse-prescricao/build/sinapse-prescricao.min.js'
     const memedScriptUrl =
-      process.env.NEXT_PUBLIC_MEMED_SCRIPT_URL ||
-      'https://integrations.memed.com.br/modulos/plataforma.sinapse-prescricao/build/sinapse-prescricao.min.js'
+      process.env.NEXT_PUBLIC_MEMED_SCRIPT_URL || defaultScriptUrl
 
-    // Verifica se o script já foi carregado
+    // Se há um script Memed carregado com ambiente diferente, remove-o para evitar 401
+    const anyMemedScript = document.querySelector(
+      'script[src*="sinapse-prescricao"]',
+    ) as HTMLScriptElement | null
+    if (anyMemedScript && anyMemedScript.src !== memedScriptUrl) {
+      anyMemedScript.remove()
+      // Limpa o SDK para forçar re-inicialização
+      if (typeof window !== 'undefined') {
+        window.MdSinapsePrescricao = undefined as unknown as typeof window.MdSinapsePrescricao
+        window.MdHub = undefined as unknown as typeof window.MdHub
+      }
+      scriptLoadedRef.current = false
+    }
+
+    // Verifica se o script correto já está carregado
     const existingScript = document.querySelector(
       `script[src="${memedScriptUrl}"]`,
     )
@@ -575,7 +606,6 @@ export function PrescriptionModal({
     const script = document.createElement('script')
     script.src = memedScriptUrl
     script.dataset.token = prescriberToken
-    const memedEnv = process.env.NEXT_PUBLIC_MEMED_ENV || 'integrations'
     script.dataset.env = memedEnv
 
     // Timeout de segurança para o carregamento do script
@@ -1465,8 +1495,7 @@ export function PrescriptionModal({
           <div className="relative mt-4 h-[700px] w-full">
             {isLoading && !error && (
               <div
-                className="absolute inset-0 z-[100] flex items-center justify-center bg-white bg-opacity-100"
-                style={{ pointerEvents: 'none' }}
+                className="absolute inset-0 z-[100] flex items-center justify-center bg-white bg-opacity-100 pointer-events-none"
               >
                 <LoadingComponent />
               </div>
@@ -1493,14 +1522,11 @@ export function PrescriptionModal({
             <div
               ref={containerRef}
               id="memed-prescription-container"
-              className="h-full w-full"
-              style={{
-                display: error ? 'none' : 'block',
-                visibility: isLoading ? 'hidden' : 'visible',
-                pointerEvents: isLoading ? 'none' : 'auto',
-                zIndex: isLoading ? -1 : 10,
-                position: 'relative',
-              }}
+              className={[
+                'h-full w-full relative',
+                error ? 'hidden' : 'block',
+                isLoading ? 'invisible pointer-events-none -z-[1]' : 'visible pointer-events-auto z-10',
+              ].join(' ')}
             />
           </div>
         </DialogContent>

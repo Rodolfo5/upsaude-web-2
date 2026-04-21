@@ -14,18 +14,19 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@components/*": ["src/components/*"], // Simplificado
+      "@components/*": ["src/components/*"],
       "@atoms/*": ["src/components/atoms/*"],
       "@molecules/*": ["src/components/molecules/*"],
       "@organisms/*": ["src/components/organisms/*"],
       "@templates/*": ["src/components/templates/*"],
       "@containers/*": ["src/containers/*"],
       "@store/*": ["src/store/*"],
-      "@providers/*": ["src/providers/*"], // Movido para raiz se não for específico de store
-      "@services/*": ["src/services/*"], // Movido para raiz
+      "@providers/*": ["src/providers/*"],
+      "@services/*": ["src/services/*"],
       "@utils/*": ["src/utils/*"],
       "@hooks/*": ["src/hooks/*"],
       "@constants/*": ["src/constants/*"]

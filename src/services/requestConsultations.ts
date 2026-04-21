@@ -1,7 +1,7 @@
 import { FirebaseError } from 'firebase/app'
 import { addDoc, collection, getFirestore, Timestamp } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 
 const db = getFirestore(firebaseApp)
 

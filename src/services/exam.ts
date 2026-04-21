@@ -13,7 +13,7 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 import { ExamEntity } from '@/types/entities/exam'
 
 const firestore = getFirestore(firebaseApp)

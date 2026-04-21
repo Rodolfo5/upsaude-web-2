@@ -6,6 +6,7 @@ export interface RegisterDoctorData {
   cpf?: string
   crm: string
   crmState: string
+  credentialType?: string // 'CRM' | 'CRO' etc. — define o board_code enviado à Memed
   phone?: string
   gender?: 'M' | 'F'
   birthDate?: string // formato dd/mm/YYYY

@@ -29,14 +29,14 @@ import { ConfirmationModal } from '@/components/organisms/Modals/ConfirmationMod
 import { ConsultationDetailsModal } from '@/components/organisms/Modals/ConsultationDetailsModal/consultationDetailsModal'
 import { RescheduleConsultationModal } from '@/components/organisms/Modals/RescheduleConsultationModal/rescheduleConsultationModal'
 import useAbsences from '@/hooks/queries/useAbsences'
-import useAllConsultations, {
-  getAllConsultationsQueryKey,
-} from '@/hooks/queries/useAllConsultations'
+import useConsultationsForDashboard, {
+  getConsultationsByDoctorQueryKey,
+} from '@/hooks/queries/useConsultionsForDashboard'
 import { useCreateAbsence } from '@/hooks/queries/useCreateAbsence'
 import usePatientsByDoctor from '@/hooks/queries/usePatientsByDoctor'
 import { useAppToast } from '@/hooks/useAppToast'
 import useUser from '@/hooks/useUser'
-import { cancelConsultation, updateConsultation } from '@/services/consultation'
+import { cancelConsultation, updateConsultation } from '@/services/consultation-mutations'
 import {
   createVideoCall,
   getActiveVideoCall,
@@ -150,7 +150,7 @@ export default function AgendaPage() {
 
   const { currentUser } = useUser()
   const { data: consultations, isLoading: isLoadingConsultations } =
-    useAllConsultations()
+    useConsultationsForDashboard()
   const { data: patients, isLoading: isLoadingPatients } = usePatientsByDoctor()
   const { data: absences, isLoading: isLoadingAbsences } = useAbsences(
     currentUser?.id,
@@ -180,14 +180,8 @@ export default function AgendaPage() {
   }, [currentUser?.agenda?.complementaryConsultationDuration])
 
   const consultationsForDoctor = useMemo(() => {
-    if (!consultations || !currentUser?.id) {
-      return []
-    }
-
-    return consultations.filter(
-      (consultation) => consultation.doctorId === currentUser.id,
-    )
-  }, [consultations, currentUser?.id])
+    return consultations ?? []
+  }, [consultations])
 
   const agendaConsultations: AgendaConsultation[] = useMemo(() => {
     return consultationsForDoctor
@@ -371,7 +365,7 @@ export default function AgendaPage() {
         }
         showSuccessToast('Consulta cancelada com sucesso!')
         queryClient.invalidateQueries({
-          queryKey: getAllConsultationsQueryKey(),
+          queryKey: getConsultationsByDoctorQueryKey(currentUser?.id ?? ''),
         })
         setIsCancelModalOpen(false)
         setIsDetailsModalOpen(false)
@@ -405,7 +399,7 @@ export default function AgendaPage() {
       if (result.success) {
         showSuccessToast('Consulta reagendada com sucesso!')
         queryClient.invalidateQueries({
-          queryKey: getAllConsultationsQueryKey(),
+          queryKey: getConsultationsByDoctorQueryKey(currentUser?.id ?? ''),
         })
         setIsDetailsModalOpen(false)
       } else {

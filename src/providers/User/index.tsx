@@ -10,8 +10,10 @@
 
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { THIRTY_MINUTES_IN_MS } from '@/constants/generic'
 import { errorToast, successToast } from '@/hooks/useAppToast'
 import useAuth from '@/hooks/useAuth'
 import { getUserDoc, getAllUsers, updateUserDoc } from '@/services/user'
@@ -33,34 +35,49 @@ interface Props {
 
 const UserProvider = ({ children }: Props) => {
   const { userUid } = useAuth()
+  const queryClient = useQueryClient()
 
   // ====================================================================
   // 📊 ESTADO INICIAL
   // ====================================================================
 
-  /**
-   * Estados de loading para cada operação
-   */
   const initialLoadingObject = {
-    fetchCurrentUser: false, // Carregando dados do usuário atual
-    updateUser: false, // Atualizando perfil
-    getAllUsers: false, // Carregando lista de usuários
-    updateUserRole: false, // Atualizando role de usuário
+    fetchCurrentUser: false,
+    updateUser: false,
+    getAllUsers: false,
+    updateUserRole: false,
   }
 
-  const [currentUser, setCurrentUser] = useState<UserEntity | null>(null)
+  // Substituído useState+useEffect por useQuery — usa cache TanStack Query
+  const {
+    data: currentUser = null,
+    isLoading: isLoadingCurrentUser,
+  } = useQuery({
+    queryKey: ['user', userUid],
+    queryFn: async () => {
+      const { user, error } = await getUserDoc(userUid!)
+      if (error || !user || Object.keys(user).length === 0) {
+        errorToast(error)
+        return null
+      }
+      return user
+    },
+    enabled: !!userUid,
+    staleTime: THIRTY_MINUTES_IN_MS,
+  })
+
   const [allUsers, setAllUsers] = useState<UserEntity[] | null>(null)
   const [loadingState, setLoading] = useState(initialLoadingObject)
 
   const loading = useMemo(
     () => ({
-      fetchCurrentUser: loadingState.fetchCurrentUser,
+      fetchCurrentUser: isLoadingCurrentUser,
       updateUser: loadingState.updateUser,
       getAllUsers: loadingState.getAllUsers,
       updateUserRole: loadingState.updateUserRole,
     }),
     [
-      loadingState.fetchCurrentUser,
+      isLoadingCurrentUser,
       loadingState.updateUser,
       loadingState.getAllUsers,
       loadingState.updateUserRole,
@@ -70,49 +87,17 @@ const UserProvider = ({ children }: Props) => {
   // ====================================================================
   // 🔄 SINCRONIZAÇÃO COM AUTH
   // ====================================================================
-
-  /**
-   * Carrega dados do usuário quando UID muda
-   * - Login: carrega dados
-   * - Logout: limpa dados
-   */
-  useEffect(() => {
-    if (userUid) {
-      fetchCurrentUser()
-    } else {
-      setCurrentUser(null)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userUid])
+  // useQuery com enabled: !!userUid já gerencia login/logout automaticamente
 
   // ====================================================================
   // 📖 OPERAÇÕES DE LEITURA
   // ====================================================================
 
   /**
-   * Carrega dados do usuário atual do Firestore
+   * Força reload dos dados do usuário (invalida cache TanStack Query)
    */
   const fetchCurrentUser = async () => {
-    if (!userUid) return
-
-    setLoading((prev) => ({ ...prev, fetchCurrentUser: true }))
-
-    try {
-      const { user, error } = await getUserDoc(userUid)
-
-      if (error || !user || Object.keys(user).length === 0) {
-        setCurrentUser(null)
-
-        errorToast(error)
-      } else {
-        setCurrentUser(user)
-      }
-    } catch (e) {
-      errorToast('Erro ao buscar dados do usuário')
-      console.error('[UserProvider] Erro ao buscar usuário:', e)
-    }
-
-    setLoading((prev) => ({ ...prev, fetchCurrentUser: false }))
+    await queryClient.invalidateQueries({ queryKey: ['user', userUid] })
   }
 
   /**
@@ -167,14 +152,8 @@ const UserProvider = ({ children }: Props) => {
       } else {
         successToast('Perfil atualizado com sucesso')
 
-        // 🔄 Atualizar estado local otimisticamente
-        if (currentUser) {
-          setCurrentUser({
-            ...currentUser,
-            ...updates,
-            updatedAt: new Date(),
-          })
-        }
+        // 🔄 Invalida cache do TanStack Query para re-buscar dados atualizados
+        await queryClient.invalidateQueries({ queryKey: ['user', userUid] })
       }
     } catch {
       errorToast('Erro ao atualizar perfil')
@@ -210,13 +189,9 @@ const UserProvider = ({ children }: Props) => {
           )
         }
 
-        // 🔄 Atualizar usuário atual se for o mesmo
+        // 🔄 Invalida cache TanStack Query se for o próprio usuário
         if (currentUser?.uid === uid) {
-          setCurrentUser({
-            ...currentUser,
-            role,
-            updatedAt: new Date(),
-          })
+          await queryClient.invalidateQueries({ queryKey: ['user', userUid] })
         }
       }
     } catch {
@@ -234,7 +209,7 @@ const UserProvider = ({ children }: Props) => {
    * Força reload dos dados do usuário atual
    */
   const refreshUser = async () => {
-    await fetchCurrentUser()
+    await queryClient.invalidateQueries({ queryKey: ['user', userUid] })
   }
 
   // ====================================================================

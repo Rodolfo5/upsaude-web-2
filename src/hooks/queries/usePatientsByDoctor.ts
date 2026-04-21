@@ -9,31 +9,15 @@ export function getPatientsByDoctorQueryKey(doctorId: string | undefined) {
   return ['patients', doctorId]
 }
 
+// Versão otimizada: consulta direta por doctorId (1 roundtrip Firestore)
 export const getPatientsByDoctorQueryFn =
   (doctorId: string | undefined) => async () => {
     if (!doctorId) {
       throw new Error('DoctorId é obrigatório')
     }
-
-    // Primeiro, buscar os IDs únicos
-    const idsResult = await getUniquePatientIdsByDoctor(doctorId)
-    if (idsResult.error) {
-      console.error('Erro ao obter IDs de pacientes:', idsResult.error)
-      throw new Error(idsResult.error)
-    }
-
-    // Se não houver IDs, retornar array vazio
-    if (idsResult.patientIds.length === 0) {
-      return []
-    }
-
-    // Buscar os dados dos pacientes pelos IDs
-    const patientsResult = await getPatientsByIds(idsResult.patientIds)
-    if (patientsResult.error) {
-      throw new Error(patientsResult.error)
-    }
-
-    return patientsResult.patients
+    const result = await getPatientsByDoctorId(doctorId)
+    if (result.error) throw new Error(result.error)
+    return result.patients
   }
 
 const usePatientsByDoctor = () => {
@@ -45,6 +29,7 @@ const usePatientsByDoctor = () => {
     queryFn: getPatientsByDoctorQueryFn(doctorId),
     enabled: !!doctorId,
     staleTime: FORTY_FIVE_MINUTES_IN_MS,
+    select: (data) => data ?? [],
   })
 }
 

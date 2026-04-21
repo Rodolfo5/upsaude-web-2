@@ -1,3 +1,6 @@
+/** Credenciais que permitem prescrição digital via Memed */
+export const MEMED_ALLOWED_CREDENTIALS = ['CRM', 'CRO']
+
 export const credentialTypes = [
   { value: 'CRM', label: 'CRM - Conselho Regional de Medicina' },
   { value: 'CRN', label: 'CRN - Conselho Regional de Nutrição' },

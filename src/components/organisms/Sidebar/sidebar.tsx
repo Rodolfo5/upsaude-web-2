@@ -11,6 +11,7 @@ import {
   LogOutIcon,
   PanelLeftCloseIcon,
   ChevronLeft as ChevronLeftIcon,
+  ShieldIcon,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -21,8 +22,10 @@ import { BellIconWithBadge } from '@/components/atoms/BellIconWithBadge/bellIcon
 import { NotificationsModal } from '@/components/organisms/Modals/NotificationsModal/notificationsModal'
 import { useSidebar } from '@/contexts/SidebarContext'
 import useAuth from '@/hooks/useAuth'
+import useUser from '@/hooks/useUser'
 import { useUnreadNotifications } from '@/hooks/useUnreadNotifications'
 import { cn } from '@/lib/utils'
+import { SUPER_ADMIN_EMAIL } from '@/constants/generic'
 
 type SidebarItem = {
   label: string
@@ -70,8 +73,11 @@ const secondary: SidebarItem[] = [
 export default function Sidebar() {
   const pathname = usePathname()
   const { userUid, logoutUser, loading } = useAuth()
+  const { currentUser } = useUser()
   const { isExpanded, toggleExpanded } = useSidebar()
   const { unreadCount } = useUnreadNotifications(userUid ?? undefined)
+
+  const isSuperAdmin = currentUser?.email === SUPER_ADMIN_EMAIL
 
   const handleLogoutClick = () => {
     logoutUser().catch(() => undefined)
@@ -81,7 +87,7 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 flex h-screen flex-col bg-purple-50 py-6 transition-all duration-300',
+        'fixed left-0 top-0 z-40 flex h-screen flex-col bg-purple-50 py-6 transition-[width] duration-300',
         isExpanded ? 'w-64' : 'w-16',
       )}
     >
@@ -204,6 +210,27 @@ export default function Sidebar() {
             isExpanded ? 'w-[90%]' : 'mx-auto w-12',
           )}
         />
+
+        {isSuperAdmin && (
+          <Link
+            href="/admin/home"
+            prefetch={false}
+            className={cn(
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-purple-700 transition-colors hover:bg-purple-100 hover:text-purple-900',
+              pathname.startsWith('/admin') && 'bg-purple-100 text-purple-900',
+              isExpanded ? 'w-[90%]' : 'w-12 justify-center',
+            )}
+            aria-label="Painel Admin"
+            title={!isExpanded ? 'Painel Admin' : undefined}
+          >
+            <div className="flex h-8 w-8 items-center justify-center">
+              <ShieldIcon size={20} />
+            </div>
+            {isExpanded && (
+              <span className="truncate text-sm font-medium">Painel Admin</span>
+            )}
+          </Link>
+        )}
 
         {secondary.map((item) => {
           const isActive = pathname === item.href

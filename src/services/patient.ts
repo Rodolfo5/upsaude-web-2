@@ -2,6 +2,7 @@ import { FirebaseError } from 'firebase/app'
 import {
   collection,
   doc,
+  documentId,
   getDoc,
   getDocs,
   getFirestore,
@@ -11,7 +12,7 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 import {
   getApiErrorMessage,
   postAuthenticatedJson,
@@ -31,29 +32,43 @@ interface PatientsResult {
   error: string | null
 }
 
+// Firestore 'in' queries aceitam no máximo 30 IDs por batch
+const FIRESTORE_IN_LIMIT = 30
+
+const chunkArray = <T>(arr: T[], size: number): T[][] => {
+  const chunks: T[][] = []
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size))
+  }
+  return chunks
+}
+
 export const getPatientsByIds = async (
   patientIds: string[],
 ): Promise<PatientsResult> => {
   if (!patientIds || patientIds.length === 0) {
-    return {
-      patients: [],
-      error: null,
-    }
+    return { patients: [], error: null }
   }
 
   try {
+    const usersRef = collection(db, USERS_COLLECTION)
+    const uniqueIds = [...new Set(patientIds)]
+    const batches = chunkArray(uniqueIds, FIRESTORE_IN_LIMIT)
+
+    // Todos os batches em paralelo — O(ceil(n/30)) roundtrips em vez de O(n)
+    const snapshots = await Promise.all(
+      batches.map((chunk) =>
+        getDocs(query(usersRef, where(documentId(), 'in', chunk))),
+      ),
+    )
+
     const patients: PatientEntity[] = []
-
-    // Buscar cada paciente pelo ID do documento
-    for (const patientId of patientIds) {
-      const patientDocRef = doc(db, USERS_COLLECTION, patientId)
-      const patientDoc = await getDoc(patientDocRef)
-
-      if (patientDoc.exists()) {
-        const data = patientDoc.data()
+    for (const snapshot of snapshots) {
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data()
         patients.push({
-          id: patientDoc.id,
-          uid: patientDoc.id,
+          id: docSnap.id,
+          uid: docSnap.id,
           name: data.name || '',
           email: data.email || '',
           role: data.role,
@@ -61,23 +76,15 @@ export const getPatientsByIds = async (
           updatedAt: data.updatedAt?.toDate() || new Date(),
           ...data,
         } as PatientEntity)
-      }
+      })
     }
 
-    return {
-      patients,
-      error: null,
-    }
+    return { patients, error: null }
   } catch (error: unknown) {
     console.error('Erro ao buscar pacientes:', error)
-
     if (error instanceof FirebaseError) {
-      return {
-        patients: [],
-        error: error.message,
-      }
+      return { patients: [], error: error.message }
     }
-
     return {
       patients: [],
       error:

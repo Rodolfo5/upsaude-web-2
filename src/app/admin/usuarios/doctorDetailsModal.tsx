@@ -14,6 +14,7 @@ import InputField from '@/components/molecules/InputField/inputField'
 import ProfileImageField from '@/components/molecules/ProfileImageField/profileImageField'
 import { SelectField } from '@/components/molecules/SelectField/selectField'
 import { brazilianStates } from '@/components/organisms/Forms/SignUpForm/Step2/step2'
+import { credentialTypes } from '@/constants/options'
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,7 @@ const editDoctorSchema = z.object({
   state: z.string().optional(),
   typeOfCredential: z.string().optional(),
   credential: z.string().optional(),
+  credentialState: z.string().optional(),
   specialty: z.string().optional(),
   credentialDocument: z.string().optional(),
   office: z
@@ -95,6 +97,7 @@ export function DoctorDetailsModal({
       state: doctor.state || '',
       typeOfCredential: doctor.typeOfCredential || '',
       credential: doctor.credential || '',
+      credentialState: doctor.credentialState || '',
       specialty: doctor.specialty || '',
       credentialDocument: doctor.credentialDocument || '',
       office: {
@@ -134,6 +137,8 @@ export function DoctorDetailsModal({
         if (data.typeOfCredential)
           updates.typeOfCredential = data.typeOfCredential
         if (data.credential) updates.credential = data.credential
+        if (data.credentialState !== undefined)
+          updates.credentialState = data.credentialState
         if (data.specialty) updates.specialty = data.specialty
         if (data.credentialDocument)
           updates.credentialDocument = data.credentialDocument
@@ -253,7 +258,8 @@ export function DoctorDetailsModal({
               </span>
               {!doctor.memedRegistered &&
                 !doctor.memedId &&
-                doctor.typeOfCredential === 'CRM' && (
+                (doctor.typeOfCredential === 'CRM' ||
+                  doctor.typeOfCredential === 'CRO') && (
                   <Button
                     onClick={handleRegisterInMemed}
                     variant="success"
@@ -335,18 +341,30 @@ export function DoctorDetailsModal({
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <InputField
+            <SelectField
               name="typeOfCredential"
               control={control}
               label="Tipo de Credencial"
-              placeholder="Tipo de Credencial"
+              placeholder="Selecione o tipo"
+              options={credentialTypes}
               disabled={!isEditing}
             />
             <InputField
               name="credential"
               control={control}
-              label="Credencial"
-              placeholder="Número da Credencial"
+              label="Número da Credencial"
+              placeholder="Ex: 5123"
+              disabled={!isEditing}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <SelectField
+              name="credentialState"
+              control={control}
+              label="UF da Credencial"
+              placeholder="Estado do conselho"
+              options={brazilianStates}
               disabled={!isEditing}
             />
           </div>

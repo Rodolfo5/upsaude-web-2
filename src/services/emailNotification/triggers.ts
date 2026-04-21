@@ -6,7 +6,7 @@
 
 import { doc, getDoc, getFirestore } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 import {
   EmailNotificationCategory,
   EmailNotificationEventType,

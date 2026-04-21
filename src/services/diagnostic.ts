@@ -12,7 +12,7 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 import { DiagnosticEntity } from '@/types/entities/diagnostic'
 
 const firestore = getFirestore(firebaseApp)

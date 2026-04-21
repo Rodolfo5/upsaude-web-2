@@ -1,7 +1,7 @@
 import { doc, getDoc, getFirestore, setDoc } from 'firebase/firestore'
 import { NextResponse } from 'next/server'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 
 export async function POST(request: Request) {
   try {
@@ -36,8 +36,9 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verificar se já está registrado
-    if (doctorData.memedRegistered || doctorData.memedId) {
+    // Verificar se já está registrado com memedId confirmado
+    // memedRegistered:true sem memedId = registro incompleto → permitir re-tentativa
+    if (doctorData.memedId) {
       return NextResponse.json(
         {
           success: true,
@@ -49,21 +50,51 @@ export async function POST(request: Request) {
       )
     }
 
+    // Tipos de credencial que podem prescrever e ser registrados na Memed
+    const { MEMED_ALLOWED_CREDENTIALS } = await import('@/constants/options')
+
+    // Apenas profissionais com credencial permitida podem ser registrados na Memed
+    if (!MEMED_ALLOWED_CREDENTIALS.includes(doctorData.typeOfCredential)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Este profissional possui ${doctorData.typeOfCredential || 'credencial desconhecida'}. Apenas profissionais com CRM ou CRO podem ser registrados na Memed.`,
+        },
+        { status: 400 },
+      )
+    }
+
+    if (!doctorData.credential) {
+      return NextResponse.json(
+        { success: false, error: 'Número da credencial não informado.' },
+        { status: 400 },
+      )
+    }
+
     // credentialState = UF do CRM. state = estado de moradia do médico (não usar para Memed).
-    const credentialStateUF = (doctorData.credentialState || '')
+    // Tenta extrair a UF do campo credentialState; se vazio, tenta parsear do credential (ex: "5123-RN" → "RN").
+    let credentialStateUF = (doctorData.credentialState || '')
       .toString()
       .toUpperCase()
+      .trim()
 
-    if (
-      !doctorData.credential ||
-      !credentialStateUF ||
-      doctorData.typeOfCredential !== 'CRM'
-    ) {
+    let credentialNumber = (doctorData.credential || '').toString().trim()
+
+    if (!credentialStateUF && credentialNumber.includes('-')) {
+      const parts = credentialNumber.split('-')
+      const possibleState = parts[parts.length - 1].toUpperCase()
+      if (/^[A-Z]{2}$/.test(possibleState)) {
+        credentialStateUF = possibleState
+        credentialNumber = parts.slice(0, -1).join('')
+      }
+    }
+
+    if (!credentialStateUF) {
       return NextResponse.json(
         {
           success: false,
           error:
-            'Médico não possui CRM válido. Apenas médicos com CRM podem ser registrados na Memed.',
+            'UF da credencial não informada. Edite o cadastro do profissional e preencha o campo "UF da Credencial".',
         },
         { status: 400 },
       )
@@ -107,8 +138,9 @@ export async function POST(request: Request) {
           email: doctorData.email || '',
           cpf: doctorData.cpf || '',
           birthDate: formattedBirthDate || '',
-          crm: doctorData.credential,
+          crm: credentialNumber,
           crmState: credentialStateUF,
+          credentialType: doctorData.typeOfCredential || 'CRM',
           specialty: doctorData.specialty,
         }),
       },

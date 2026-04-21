@@ -1,7 +1,9 @@
 'use client'
 
 import { Link, UserPlus } from 'lucide-react'
-import { type ReactNode, useMemo, useState, useEffect } from 'react'
+import { type ReactNode, useMemo, useState, useEffect, useRef } from 'react'
+
+import { errorToast } from '@/hooks/useAppToast'
 
 import { Button } from '@/components/atoms/Button/button'
 import { DataTable } from '@/components/organisms/DataTable/dataTable'
@@ -80,6 +82,14 @@ function DoctorsTabContent({
     enabled: isActive,
   })
 
+  const shownError = useRef<string | null>(null)
+  useEffect(() => {
+    if (data?.error && data.error !== shownError.current) {
+      shownError.current = data.error
+      errorToast(data.error)
+    }
+  }, [data?.error])
+
   const doctors = useMemo(
     () => (data?.users ?? []) as DoctorEntity[],
     [data?.users],
@@ -132,6 +142,14 @@ function PatientsTabContent({ isActive }: { isActive: boolean }) {
     cursor: currentCursor,
     enabled: isActive,
   })
+
+  const shownError = useRef<string | null>(null)
+  useEffect(() => {
+    if (data?.error && data.error !== shownError.current) {
+      shownError.current = data.error
+      errorToast(data.error)
+    }
+  }, [data?.error])
 
   const patients = useMemo(
     () => (data?.users ?? []) as PatientEntity[],

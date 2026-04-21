@@ -63,7 +63,7 @@ import { useVideoCallRecorder } from '@/hooks/useVideoCallRecorder'
 import { generateAgoraNumericUid } from '@/lib/agora/generateUid'
 import { cn } from '@/lib/utils'
 import { getAuthenticatedJsonHeaders } from '@/services/api/authenticatedFetch'
-import { updateConsultation } from '@/services/consultation'
+import { updateConsultation } from '@/services/consultation-mutations'
 import {
   getVideoCall,
   endVideoCall,
@@ -178,7 +178,8 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false)
   const [isSplitView, setIsSplitView] = useState(false)
 
-  const [localPosition, setLocalPosition] = useState({ x: 24, y: 24 })
+  const [localPosition] = useState({ x: 24, y: 24 })
+  const localPositionRef = useRef({ x: localPosition.x, y: localPosition.y })
   const dragStateRef = useRef({
     dragging: false,
     offsetX: 0,
@@ -190,6 +191,16 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
   const localAudioTrackRef = useRef<ILocalAudioTrack | null>(null)
   const localPreviewRef = useRef<HTMLDivElement | null>(null)
   const remoteVideoContainerRef = useRef<HTMLDivElement | null>(null)
+
+  // Inicializa posição do preview local sem usar style prop no JSX
+  useEffect(() => {
+    const el = localPreviewRef.current
+    if (el) {
+      el.style.top = `${localPositionRef.current.y}px`
+      el.style.left = `${localPositionRef.current.x}px`
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const hostRequestsListenerRef = useRef<ReturnType<typeof onSnapshot> | null>(
     null,
   )
@@ -1612,10 +1623,13 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
     const maxX = window.innerWidth - width - 16
     const maxY = window.innerHeight - height - 16
 
-    setLocalPosition({
-      x: clamp(nextX, 16, Math.max(maxX, 16)),
-      y: clamp(nextY, 16, Math.max(maxY, 16)),
-    })
+    const x = clamp(nextX, 16, Math.max(maxX, 16))
+    const y = clamp(nextY, 16, Math.max(maxY, 16))
+    localPositionRef.current = { x, y }
+    if (preview) {
+      preview.style.left = `${x}px`
+      preview.style.top = `${y}px`
+    }
   }, [])
 
   const handlePointerUp = useCallback(() => {
@@ -1632,13 +1646,13 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
       if (!preview) return
 
       dragStateRef.current.dragging = true
-      dragStateRef.current.offsetX = event.clientX - localPosition.x
-      dragStateRef.current.offsetY = event.clientY - localPosition.y
+      dragStateRef.current.offsetX = event.clientX - localPositionRef.current.x
+      dragStateRef.current.offsetY = event.clientY - localPositionRef.current.y
 
       window.addEventListener('pointermove', handlePointerMove)
       window.addEventListener('pointerup', handlePointerUp)
     },
-    [handlePointerMove, handlePointerUp, localPosition.x, localPosition.y],
+    [handlePointerMove, handlePointerUp],
   )
 
   const { handleSubmit, control, reset, setValue } =
@@ -2068,7 +2082,6 @@ export default function ConsultationVideoCallPage({ params }: PageProps) {
               'group absolute z-30 flex h-40 w-64 cursor-grab flex-col overflow-hidden rounded-2xl border border-white/20 bg-slate-900/80 shadow-xl transition-shadow hover:shadow-2xl active:cursor-grabbing',
               isCameraOn ? '' : 'items-center justify-center text-slate-200/80',
             )}
-            style={{ top: localPosition.y, left: localPosition.x }}
           >
             {!isCameraOn && (
               <span className="text-sm font-medium">Câmera desligada</span>

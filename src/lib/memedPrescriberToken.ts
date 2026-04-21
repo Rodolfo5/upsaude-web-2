@@ -91,6 +91,62 @@ export async function getFreshPrescriberToken(
   }
 
   if (result.error || !result.token) {
+    // ─── Último recurso: tentar (re)registrar na Memed ──────────────────────
+    // Cobre o caso onde memedRegistered:true mas sem memedId (registro incompleto
+    // ou com board_code errado). Agora tenta novamente com credentialType correto.
+    if (!options?.identifier && doctor.credential && credentialStateUF) {
+      const nameParts = (doctor.name || '').trim().split(/\s+/)
+      const firstName = nameParts[0] || ''
+      const surname = nameParts.slice(1).join(' ') || firstName
+
+      const regResult = await memedService.registerDoctor({
+        externalId: doctorId,
+        name: firstName,
+        surname,
+        email: doctor.email ? String(doctor.email) : undefined,
+        cpf: doctor.cpf ? String(doctor.cpf).replace(/\D/g, '') : undefined,
+        crm: doctor.credential.replace(/\D/g, ''),
+        crmState: credentialStateUF,
+        credentialType: String(doctor.typeOfCredential || 'CRM'),
+      })
+
+      if (regResult.success) {
+        // Persistir memedId no Firestore para lookups futuros
+        if (regResult.memedId) {
+          try {
+            const { adminFirestore } = await import(
+              '@/config/firebase/firebaseAdmin'
+            )
+            await adminFirestore()
+              .collection('users')
+              .doc(doctorId)
+              .update({
+                memedId: regResult.memedId,
+                memedRegistered: true,
+                updatedAt: new Date(),
+              })
+          } catch {
+            // não-fatal: salvar memedId é opcional aqui
+          }
+        }
+
+        // Se o registro retornou o token diretamente, usa ele
+        if (regResult.prescriberToken) {
+          return { success: true, token: regResult.prescriberToken }
+        }
+
+        // Senão, busca token via external_id (recém registrado com doctorId)
+        const tokenAfterReg = await memedService.getPrescriberToken({
+          identifier: doctorId,
+          identifierType: 'external_id',
+        })
+        if (!tokenAfterReg.error && tokenAfterReg.token) {
+          return { success: true, token: tokenAfterReg.token }
+        }
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     let errorMessage = result.error || 'Token não encontrado na Memed'
 
     const isAuthError =
@@ -99,13 +155,38 @@ export async function getFreshPrescriberToken(
       result.error?.toLowerCase().includes('código de acesso inválido') ||
       result.error?.toLowerCase().includes('codigo de acesso invalido')
 
+    const isNotFoundError =
+      result.error?.includes('404') ||
+      result.error?.toLowerCase().includes('nenhum usuário') ||
+      result.error?.toLowerCase().includes('nenhum usuario') ||
+      result.error?.toLowerCase().includes('não encontrado')
+
+    if (isNotFoundError) {
+      // Se o médico tem credencial + UF ou já foi marcado como registrado no Memed,
+      // não afirmamos que ele "não está cadastrado" — pode ser mismatch de identificador.
+      if (doctorExistsInMemed) {
+        return {
+          success: false,
+          error:
+            'Não foi possível obter o token Memed. Verifique se o número de credencial e a UF estão corretos no cadastro, ou entre em contato com o suporte.',
+          doctorNotRegistered: false,
+        }
+      }
+      return {
+        success: false,
+        error:
+          'Médico não cadastrado na Memed. É necessário realizar o cadastro antes de prescrever. Entre em contato com o suporte.',
+        doctorNotRegistered: true,
+      }
+    }
+
     if (isAuthError) {
       if (!doctorExistsInMemed) {
         errorMessage =
           'Médico não encontrado na Memed. É necessário cadastrar o médico na plataforma Memed antes de poder prescrever. Entre em contato com o suporte para realizar o cadastro.'
       } else {
         errorMessage =
-          'Acesso negado pela Memed. Verifique se as credenciais da API (api-key/secret-key) estão corretas para o ambiente integrations.api.memed.com.br.'
+          'Acesso negado pela Memed. Verifique se as credenciais da API (api-key/secret-key) estão corretas.'
       }
     }
 

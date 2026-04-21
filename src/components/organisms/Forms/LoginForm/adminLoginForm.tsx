@@ -13,6 +13,7 @@ import { UserRole } from '@/types/entities/user'
 import SignInFormSchema, { SignInFormData } from '@/validations/signIn'
 import { Button } from '@atoms/Button/button'
 import useAuth from '@hooks/useAuth'
+import { SUPER_ADMIN_EMAIL } from '@/constants/generic'
 
 export function AdminLoginForm() {
   const { setUserUid, logoutUser } = useAuth()
@@ -32,6 +33,12 @@ export function AdminLoginForm() {
     setLoading(true)
 
     try {
+      if (data.email.trim().toLowerCase() !== SUPER_ADMIN_EMAIL) {
+        errorToast('Acesso negado. Apenas o administrador autorizado pode acessar esta área.')
+        setLoading(false)
+        return
+      }
+
       const { error, user } = await signInWithEmailAndPasswordLocal(
         data.email,
         data.password,
@@ -52,7 +59,7 @@ export function AdminLoginForm() {
         return
       }
 
-      if (userData.role !== UserRole.ADMIN) {
+      if (userData.role !== UserRole.ADMIN && userData.email !== SUPER_ADMIN_EMAIL) {
         errorToast('Acesso negado. Esta área é exclusiva para administradores.')
         await logoutUser()
         setLoading(false)

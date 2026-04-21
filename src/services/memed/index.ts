@@ -217,7 +217,7 @@ class MemedService {
             nome: data.name,
             sobrenome: data.surname,
             board: {
-              board_code: 'CRM',
+              board_code: (data.credentialType || 'CRM').toUpperCase(),
               board_number: cleanCrm,
               board_state: data.crmState.toUpperCase(),
             },
@@ -331,7 +331,7 @@ class MemedService {
         sexo: prescriberData.sexo || data.gender,
         gender: prescriberData.sexo || data.gender,
         board: prescriberData.board || {
-          board_code: 'CRM',
+          board_code: (data.credentialType || 'CRM').toUpperCase(),
           board_number: cleanCrm,
           board_state: data.crmState.toUpperCase(),
         },

@@ -13,7 +13,7 @@ import { useForm } from 'react-hook-form'
 
 import { Button } from '@/components/atoms/Button/button'
 import { ConfirmationModal } from '@/components/organisms/Modals/ConfirmationModal/confirmationModal'
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 
 import {
   PasswordRequirements,

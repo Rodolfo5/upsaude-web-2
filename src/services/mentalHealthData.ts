@@ -6,7 +6,7 @@ import {
   query,
 } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 import { parseDateFromId } from '@/lib/parseDataFromId'
 import { HumorEntity, SleepTimeEntity } from '@/types/entities/healthPillar'
 import { QuestionnaireEntity } from '@/types/entities/questionnaireEntity'

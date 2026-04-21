@@ -30,7 +30,7 @@ import {
 } from 'firebase/storage'
 import { v4 as uuidv4 } from 'uuid'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 
 // ====================================================================
 // 🔧 CONFIGURAÇÃO E INSTÂNCIAS

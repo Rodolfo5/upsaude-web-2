@@ -1,9 +1,8 @@
-import { startOfDay } from 'date-fns'
+﻿import { startOfDay } from 'date-fns'
 import { FirebaseError } from 'firebase/app'
 import {
   collection,
   doc,
-  FieldValue,
   getDoc,
   getDocs,
   getFirestore,
@@ -13,13 +12,10 @@ import {
   query,
   QueryDocumentSnapshot,
   Timestamp,
-  updateDoc,
   where,
 } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
-import logger from '@/lib/logger'
-import { notifyConsultationCanceled } from '@/services/emailNotification'
+import firebaseApp from '@/config/firebase/app'
 import { ConsultationEntity, SoapData } from '@/types/entities/consultation'
 
 const db = getFirestore(firebaseApp)
@@ -36,35 +32,13 @@ interface ConsultationsResult {
   error: string | null
 }
 
-interface UpdateConsultationData {
-  date?: Date
-  hour?: string
-  status?: string
-  format?: string
-  patientAuthorized?: boolean
-  value?: string | number
-  soap?: SoapData
-  audioUrl?: string
-  audioTranscription?: string
-  aiSummary?: string
-  aiSummaryUpdatedAt?: Date
-  aiSummaryModel?: string
-  startedAt?: Date
-  endedAt?: Date
-}
-
-interface OperationResult {
-  success: boolean
-  error: string | null
-}
-
 export const getUniquePatientIdsByDoctor = async (
   doctorId: string,
 ): Promise<PatientIdsResult> => {
   if (!doctorId) {
     return {
       patientIds: [],
-      error: 'DoctorId é obrigatório',
+      error: 'DoctorId Ã© obrigatÃ³rio',
     }
   }
 
@@ -212,7 +186,44 @@ export const getAllConsultationsByDoctor = async (
       error:
         error instanceof Error
           ? error.message
-          : 'Erro ao buscar consultas do médico',
+          : 'Erro ao buscar consultas do mÃ©dico',
+    }
+  }
+}
+
+/**
+ * Busca consultas de um mÃ©dico a partir de uma data (date-scoped).
+ * Usa Ã­ndice composto doctorId + date para evitar busca full-scan.
+ * Ideal para dashboard (apenas mÃªs atual ou hoje).
+ */
+export const getConsultationsByDoctorSince = async (
+  doctorId: string,
+  since: Date,
+): Promise<ConsultationsResult> => {
+  if (!doctorId) return { consultations: [], error: null }
+  try {
+    const consultationsRef = collection(db, COLLECTION_NAME)
+    const sinceTimestamp = Timestamp.fromDate(since)
+    const q = query(
+      consultationsRef,
+      where('doctorId', '==', doctorId),
+      where('date', '>=', sinceTimestamp),
+      orderBy('date', 'desc'),
+      limit(500),
+    )
+    const querySnapshot = await getDocs(q)
+    const consultations = querySnapshot.docs.map(mapDocToConsultationEntity)
+    return { consultations, error: null }
+  } catch (error: unknown) {
+    if (error instanceof FirebaseError) {
+      return { consultations: [], error: error.message }
+    }
+    return {
+      consultations: [],
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Erro ao buscar consultas por perÃ­odo',
     }
   }
 }
@@ -267,10 +278,10 @@ function mapDocToConsultationEntity(
 }
 
 /**
- * Inscreve em tempo real nas consultas de um médico em uma data (início do dia).
+ * Inscreve em tempo real nas consultas de um mÃ©dico em uma data (inÃ­cio do dia).
  * Busca por doctorId e filtra no cliente pelo dia, para ser consistente com
- * a forma como a data é armazenada (Timestamp ou outro formato).
- * Retorna função para cancelar a inscrição.
+ * a forma como a data Ã© armazenada (Timestamp ou outro formato).
+ * Retorna funÃ§Ã£o para cancelar a inscriÃ§Ã£o.
  */
 export function subscribeToDoctorConsultationsByDate(
   doctorId: string,
@@ -314,10 +325,10 @@ function toDate(value: Timestamp | Date | undefined): Date | null {
 }
 
 /**
- * Calcula o tempo médio de consultas concluídas.
+ * Calcula o tempo mÃ©dio de consultas concluÃ­das.
  * - Presenciais: usa startedAt e endedAt do documento da consulta.
  * - Online: usa createdAt e endedAt do documento na subcollection videoCalls.
- * Apenas consultas com status COMPLETED são consideradas.
+ * Apenas consultas com status COMPLETED sÃ£o consideradas.
  */
 export const getAverageConsultationDuration =
   async (): Promise<AverageConsultationDurationResult> => {
@@ -380,13 +391,13 @@ export const getAverageConsultationDuration =
         error: null,
       }
     } catch (error: unknown) {
-      console.error('Erro ao calcular tempo médio de consultas:', error)
+      console.error('Erro ao calcular tempo mÃ©dio de consultas:', error)
       const errorMessage =
         error instanceof FirebaseError
           ? error.message
           : error instanceof Error
             ? error.message
-            : 'Erro ao calcular tempo médio'
+            : 'Erro ao calcular tempo mÃ©dio'
       return {
         averageMinutes: null,
         totalCount: 0,
@@ -423,9 +434,9 @@ function parseScheduledAt(
 }
 
 /**
- * Tempo médio de espera para entrar em consulta online (só COMPLETED).
- * Compara o horário agendado (date + hour) com o createdAt da videochamada.
- * Se começou antes do agendado = 0 min de espera; se depois = diferença em minutos.
+ * Tempo mÃ©dio de espera para entrar em consulta online (sÃ³ COMPLETED).
+ * Compara o horÃ¡rio agendado (date + hour) com o createdAt da videochamada.
+ * Se comeÃ§ou antes do agendado = 0 min de espera; se depois = diferenÃ§a em minutos.
  */
 export const getAverageOnlineWaitingTime =
   async (): Promise<AverageOnlineWaitingResult> => {
@@ -477,13 +488,13 @@ export const getAverageOnlineWaitingTime =
         error: null,
       }
     } catch (error: unknown) {
-      console.error('Erro ao calcular tempo médio de espera online:', error)
+      console.error('Erro ao calcular tempo mÃ©dio de espera online:', error)
       const errorMessage =
         error instanceof FirebaseError
           ? error.message
           : error instanceof Error
             ? error.message
-            : 'Erro ao calcular tempo médio de espera'
+            : 'Erro ao calcular tempo mÃ©dio de espera'
       return {
         averageWaitingMinutes: null,
         totalCount: 0,
@@ -498,7 +509,7 @@ export const getConsultationsByPatientId = async (
   if (!patientId) {
     return {
       consultations: [],
-      error: 'PatientId é obrigatório',
+      error: 'PatientId Ã© obrigatÃ³rio',
     }
   }
 
@@ -570,361 +581,44 @@ export const getConsultationsByPatientId = async (
   }
 }
 
-export const updateConsultation = async (
-  consultationId: string,
-  updates: UpdateConsultationData,
-): Promise<OperationResult> => {
-  if (!consultationId) {
-    return {
-      success: false,
-      error: 'ID da consulta é obrigatório',
-    }
-  }
-
-  try {
-    const consultationRef = doc(db, COLLECTION_NAME, consultationId)
-
-    const updateData: Record<string, unknown> = {
-      updatedAt: Timestamp.now(),
-    }
-
-    if (updates.date !== undefined) {
-      updateData.date = Timestamp.fromDate(updates.date)
-    }
-    if (updates.hour !== undefined) {
-      updateData.hour = updates.hour
-    }
-    if (updates.status !== undefined) {
-      updateData.status = updates.status
-    }
-    if (updates.format !== undefined) {
-      updateData.format = updates.format
-    }
-    if (updates.value !== undefined) {
-      updateData.value = updates.value
-    }
-    if (updates.soap !== undefined) {
-      updateData.soap = updates.soap
-    }
-    if (
-      updates.audioUrl !== undefined &&
-      updates.audioUrl !== null &&
-      updates.audioUrl !== ''
-    ) {
-      updateData.audioUrl = updates.audioUrl
-      logger.log('Salvando audioUrl no Firestore:', updates.audioUrl)
-    } else {
-      logger.log('audioUrl n\u00e3o ser\u00e1 salvo:', {
-        audioUrl: updates.audioUrl,
-        isUndefined: updates.audioUrl === undefined,
-        isNull: updates.audioUrl === null,
-        isEmpty: updates.audioUrl === '',
-      })
-    }
-    if (
-      updates.audioTranscription !== undefined &&
-      updates.audioTranscription !== null &&
-      updates.audioTranscription !== ''
-    ) {
-      updateData.audioTranscription = updates.audioTranscription
-    }
-    if (updates.aiSummary !== undefined) {
-      updateData.aiSummary = updates.aiSummary
-    }
-    if (updates.aiSummaryUpdatedAt !== undefined) {
-      updateData.aiSummaryUpdatedAt = Timestamp.fromDate(
-        updates.aiSummaryUpdatedAt,
-      )
-    }
-    if (updates.aiSummaryModel !== undefined) {
-      updateData.aiSummaryModel = updates.aiSummaryModel
-    }
-    if (updates.patientAuthorized !== undefined) {
-      updateData.patientAuthorized = updates.patientAuthorized
-    }
-    if (updates.startedAt !== undefined) {
-      updateData.startedAt = Timestamp.fromDate(updates.startedAt)
-    }
-    if (updates.endedAt !== undefined) {
-      updateData.endedAt = Timestamp.fromDate(updates.endedAt)
-    }
-
-    await updateDoc(
-      consultationRef,
-      updateData as { [x: string]: FieldValue | Partial<unknown> },
-    )
-
-    return {
-      success: true,
-      error: null,
-    }
-  } catch (error: unknown) {
-    console.error('Erro ao atualizar consulta:', error)
-
-    if (error instanceof FirebaseError) {
-      return {
-        success: false,
-        error: error.message,
-      }
-    }
-
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Erro ao atualizar consulta',
-    }
-  }
-}
-
-export const cancelConsultation = async (
-  consultationId: string,
-): Promise<OperationResult> => {
-  if (!consultationId) {
-    return {
-      success: false,
-      error: 'ID da consulta é obrigatório',
-    }
-  }
-
-  try {
-    const consultationRef = doc(db, COLLECTION_NAME, consultationId)
-    const consultationSnap = await getDoc(consultationRef)
-
-    if (!consultationSnap.exists()) {
-      return {
-        success: false,
-        error: 'Consulta não encontrada',
-      }
-    }
-
-    const consultationData = consultationSnap.data()
-    const doctorId = consultationData?.doctorId
-    const date = consultationData?.date?.toDate
-      ? consultationData.date.toDate()
-      : new Date(consultationData?.date)
-    const hour = consultationData?.hour || ''
-    const dateTimeStr =
-      hour && date
-        ? `${hour}, ${date.toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          })}`
-        : date?.toLocaleDateString('pt-BR') || 'data não informada'
-
-    await updateDoc(consultationRef, {
-      status: 'CANCELLED',
-      updatedAt: Timestamp.now(),
-    })
-
-    if (doctorId) {
-      notifyConsultationCanceled(doctorId, consultationId, dateTimeStr).catch(
-        (err: unknown) =>
-          console.error('Erro ao enviar notificação de cancelamento:', err),
-      )
-    }
-
-    return {
-      success: true,
-      error: null,
-    }
-  } catch (error: unknown) {
-    console.error('Erro ao cancelar consulta:', error)
-
-    if (error instanceof FirebaseError) {
-      return {
-        success: false,
-        error: error.message,
-      }
-    }
-
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Erro ao cancelar consulta',
-    }
-  }
-}
-
 interface SoapResult {
   data: SoapData | null
   error: string | null
 }
 
-interface UpdateSoapResult {
-  success: boolean
-  error: string | null
-}
-
-/**
- * Busca os dados SOAP de uma consulta específica
- * @param consultationId - ID da consulta
- * @returns Dados SOAP ou erro
- */
 export const getConsultationSoap = async (
   consultationId: string,
 ): Promise<SoapResult> => {
   try {
     if (!consultationId) {
-      return {
-        data: null,
-        error: 'ID da consulta é obrigatório',
-      }
+      return { data: null, error: 'ID da consulta é obrigatório' }
     }
 
     const consultationRef = doc(db, COLLECTION_NAME, consultationId)
     const consultationSnap = await getDoc(consultationRef)
 
     if (!consultationSnap.exists()) {
-      return {
-        data: null,
-        error: 'Consulta não encontrada',
-      }
+      return { data: null, error: 'Consulta não encontrada' }
     }
 
-    const consultationData = consultationSnap.data()
-    const soap = consultationData?.soap as SoapData | undefined
-
-    if (!soap) {
-      return {
-        data: {
-          subjective: '',
-          objective: '',
-          assessment: '',
-          plan: '',
-        },
-        error: null,
-      }
-    }
+    const soap = consultationSnap.data()?.soap as SoapData | undefined
 
     return {
       data: {
-        subjective: soap.subjective || '',
-        objective: soap.objective || '',
-        assessment: soap.assessment || '',
-        plan: soap.plan || '',
+        subjective: soap?.subjective || '',
+        objective: soap?.objective || '',
+        assessment: soap?.assessment || '',
+        plan: soap?.plan || '',
       },
       error: null,
     }
   } catch (error) {
-    const errorMessage =
-      error instanceof FirebaseError
-        ? error.message
-        : 'Erro ao buscar dados SOAP'
     return {
       data: null,
-      error: errorMessage,
-    }
-  }
-}
-
-/**
- * Atualiza um campo específico do SOAP
- * @param consultationId - ID da consulta
- * @param field - Campo a ser atualizado (subjective, objective, assessment, plan)
- * @param value - Novo valor do campo
- * @returns Resultado da operação
- */
-export const updateConsultationSoapField = async (
-  consultationId: string,
-  field: keyof SoapData,
-  value: string,
-): Promise<UpdateSoapResult> => {
-  try {
-    if (!consultationId) {
-      return {
-        success: false,
-        error: 'ID da consulta é obrigatório',
-      }
-    }
-
-    if (!['subjective', 'objective', 'assessment', 'plan'].includes(field)) {
-      return {
-        success: false,
-        error: 'Campo SOAP inválido',
-      }
-    }
-
-    const consultationRef = doc(db, COLLECTION_NAME, consultationId)
-
-    const consultationSnap = await getDoc(consultationRef)
-
-    if (!consultationSnap.exists()) {
-      return {
-        success: false,
-        error: 'Consulta não encontrada',
-      }
-    }
-
-    const consultationData = consultationSnap.data()
-    const existingSoap = (consultationData?.soap as SoapData | undefined) || {
-      subjective: '',
-      objective: '',
-      assessment: '',
-      plan: '',
-    }
-
-    await updateDoc(consultationRef, {
-      soap: {
-        ...existingSoap,
-        [field]: value,
-      },
-      updatedAt: Timestamp.now(),
-    })
-
-    return {
-      success: true,
-      error: null,
-    }
-  } catch (error) {
-    const errorMessage =
-      error instanceof FirebaseError
-        ? error.message
-        : 'Erro ao atualizar dados SOAP'
-    return {
-      success: false,
-      error: errorMessage,
-    }
-  }
-}
-
-/**
- * Atualiza apenas o campo de transcrição de áudio de uma consulta
- * @param consultationId - ID da consulta
- * @param transcription - Texto transcrito do áudio
- * @returns Resultado da operação
- */
-export const updateConsultationTranscription = async (
-  consultationId: string,
-  transcription: string,
-): Promise<OperationResult> => {
-  try {
-    if (!consultationId) {
-      return {
-        success: false,
-        error: 'ID da consulta é obrigatório',
-      }
-    }
-
-    const consultationRef = doc(db, COLLECTION_NAME, consultationId)
-
-    await updateDoc(consultationRef, {
-      audioTranscription: transcription,
-      updatedAt: Timestamp.now(),
-    })
-
-    return {
-      success: true,
-      error: null,
-    }
-  } catch (error) {
-    const errorMessage =
-      error instanceof FirebaseError
-        ? error.message
-        : 'Erro ao atualizar transcrição'
-    return {
-      success: false,
-      error: errorMessage,
+      error:
+        error instanceof FirebaseError
+          ? error.message
+          : 'Erro ao buscar dados SOAP',
     }
   }
 }

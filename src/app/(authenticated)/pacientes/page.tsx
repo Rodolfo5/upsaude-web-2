@@ -16,18 +16,18 @@ import {
 import { useRouter } from 'next/navigation'
 import { useState, useCallback, useMemo } from 'react'
 
-import { Button } from '@/components/atoms/Button/button'
-import Input from '@/components/atoms/Input/input'
-import Select from '@/components/atoms/Select/select'
-import { DataTable } from '@/components/organisms/DataTable/dataTable'
+import { Button } from '../../../components/atoms/Button/button'
+import Input from '../../../components/atoms/Input/input'
+import Select from '../../../components/atoms/Select/select'
+import { DataTable } from '../../../components/organisms/DataTable/dataTable'
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { TooltipProvider } from '@/components/ui/tooltip'
+} from '../../../components/ui/dialog'
+import { TooltipProvider } from '../../../components/ui/tooltip'
 import useChatsByDoctor from '@/hooks/queries/useChatsByDoctor'
 import useClassifiedPatientsByDoctor from '@/hooks/queries/useClassifiedPatientsByDoctor'
 import { useCreateChat } from '@/hooks/queries/useCreateChat'
@@ -48,7 +48,7 @@ import { patientsColumns } from './columns'
 
 const AddNewPatientForm = dynamic(
   () =>
-    import('@/components/organisms/Modals/AddNewPatient/addNewPatient').then(
+    import('../../../components/organisms/Modals/AddNewPatient/addNewPatient').then(
       (module) => module.AddNewPatientForm,
     ),
 )
@@ -56,7 +56,7 @@ const AddNewPatientForm = dynamic(
 const PrescriptionModal = dynamic(
   () =>
     import(
-      '@/components/organisms/Modals/PrescriptionModal/prescriptionModal'
+      '../../../components/organisms/Modals/PrescriptionModal/prescriptionModal'
     ).then((module) => module.PrescriptionModal),
 )
 

@@ -13,7 +13,7 @@ import {
   where,
 } from 'firebase/firestore'
 
-import firebaseApp from '@/config/firebase/firebase'
+import firebaseApp from '@/config/firebase/app'
 import { TrackEntity } from '@/types/entities/healthPillar'
 
 const firestore = getFirestore(firebaseApp)

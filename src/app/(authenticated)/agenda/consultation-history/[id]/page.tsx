@@ -30,7 +30,7 @@ import useAllConsultations, {
 import { successToast } from '@/hooks/useAppToast'
 import useDoctor from '@/hooks/useDoctor'
 import { usePatient } from '@/hooks/usePatient'
-import { updateConsultation } from '@/services/consultation'
+import { updateConsultation } from '@/services/consultation-mutations'
 import { calculateAge } from '@/utils/calculateAge'
 import { generateConsultationPDF } from '@/utils/pdf/generateConsultationPDF'
 
@@ -429,14 +429,18 @@ export default function ConsultationDetailPage({
                   Subjetivo
                 </h3>
                 {isEditingSOAP ? (
-                  <textarea
-                    value={soapData.subjective}
-                    onChange={(e) =>
-                      setSoapData({ ...soapData, subjective: e.target.value })
-                    }
-                    className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-purple-100"
-                    rows={3}
-                  />
+                    <>
+                      <label htmlFor="soap-subjective" className="sr-only">Subjetivo</label>
+                      <textarea
+                        id="soap-subjective"
+                        value={soapData.subjective}
+                        onChange={(e) =>
+                          setSoapData({ ...soapData, subjective: e.target.value })
+                        }
+                        className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-purple-100"
+                        rows={3}
+                      />
+                    </>
                 ) : (
                   <p className="text-sm text-gray-700">{soapData.subjective}</p>
                 )}
@@ -447,14 +451,18 @@ export default function ConsultationDetailPage({
                   Objetivo
                 </h3>
                 {isEditingSOAP ? (
-                  <textarea
-                    value={soapData.objective}
-                    onChange={(e) =>
-                      setSoapData({ ...soapData, objective: e.target.value })
-                    }
-                    className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-purple-100"
-                    rows={3}
-                  />
+                    <>
+                      <label htmlFor="soap-objective" className="sr-only">Objetivo</label>
+                      <textarea
+                        id="soap-objective"
+                        value={soapData.objective}
+                        onChange={(e) =>
+                          setSoapData({ ...soapData, objective: e.target.value })
+                        }
+                        className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-purple-100"
+                        rows={3}
+                      />
+                    </>
                 ) : (
                   <p className="text-sm text-gray-700">{soapData.objective}</p>
                 )}
@@ -465,14 +473,18 @@ export default function ConsultationDetailPage({
                   Avaliação
                 </h3>
                 {isEditingSOAP ? (
-                  <textarea
-                    value={soapData.assessment}
-                    onChange={(e) =>
-                      setSoapData({ ...soapData, assessment: e.target.value })
-                    }
-                    className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-purple-100"
-                    rows={3}
-                  />
+                    <>
+                      <label htmlFor="soap-assessment" className="sr-only">Avaliação</label>
+                      <textarea
+                        id="soap-assessment"
+                        value={soapData.assessment}
+                        onChange={(e) =>
+                          setSoapData({ ...soapData, assessment: e.target.value })
+                        }
+                        className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-purple-100"
+                        rows={3}
+                      />
+                    </>
                 ) : (
                   <p className="text-sm text-gray-700">{soapData.assessment}</p>
                 )}
@@ -483,14 +495,18 @@ export default function ConsultationDetailPage({
                   Plano
                 </h3>
                 {isEditingSOAP ? (
-                  <textarea
-                    value={soapData.plan}
-                    onChange={(e) =>
-                      setSoapData({ ...soapData, plan: e.target.value })
-                    }
-                    className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-purple-100"
-                    rows={3}
-                  />
+                    <>
+                      <label htmlFor="soap-plan" className="sr-only">Plano</label>
+                      <textarea
+                        id="soap-plan"
+                        value={soapData.plan}
+                        onChange={(e) =>
+                          setSoapData({ ...soapData, plan: e.target.value })
+                        }
+                        className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-purple-100"
+                        rows={3}
+                      />
+                    </>
                 ) : (
                   <p className="text-sm text-gray-700">{soapData.plan}</p>
                 )}
